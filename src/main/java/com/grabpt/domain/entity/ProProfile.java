@@ -12,6 +12,7 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -50,7 +51,7 @@ public class ProProfile extends BaseEntity {
 
 	private String career;
 
-	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	@JoinColumn(name = "pro_profile_id") // Category 테이블에 외래키로 생성
 	private List<Category> categories = new ArrayList<>();
 
@@ -59,7 +60,8 @@ public class ProProfile extends BaseEntity {
 	@JoinColumn(name = "user_id")
 	private Users user;
 
-	@OneToMany(mappedBy = "proProfile", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "proProfile", cascade = CascadeType.ALL,
+		orphanRemoval = true, fetch = FetchType.LAZY)
 	private List<Suggestions> suggestions = new ArrayList<>();
 
 	public void addSuggestion(Suggestions suggestion) {

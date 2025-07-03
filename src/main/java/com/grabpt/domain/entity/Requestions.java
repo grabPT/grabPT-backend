@@ -17,6 +17,7 @@ import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -45,14 +46,15 @@ public class Requestions extends BaseEntity {
 	@Column(name = "requestions_id")
 	private Long id;
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id")
 	private Users user;
 
-	@OneToMany(mappedBy = "requestion", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "requestion", cascade = CascadeType.ALL,
+		orphanRemoval = true, fetch = FetchType.LAZY)
 	private List<Suggestions> suggestions = new ArrayList<>();
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "category_id")
 	private Category category;
 

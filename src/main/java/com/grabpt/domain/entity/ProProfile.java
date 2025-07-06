@@ -51,6 +51,7 @@ public class ProProfile extends BaseEntity {
 
 	private String career;
 
+
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	@JoinColumn(name = "pro_profile_id") // Category 테이블에 외래키로 생성
 	private List<Category> categories = new ArrayList<>();
@@ -63,6 +64,19 @@ public class ProProfile extends BaseEntity {
 	@OneToMany(mappedBy = "proProfile", cascade = CascadeType.ALL,
 		orphanRemoval = true, fetch = FetchType.LAZY)
 	private List<Suggestions> suggestions = new ArrayList<>();
+
+	// --- 새로 추가된 1:N 관계들 ---
+	@OneToMany(mappedBy = "proProfile", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<ProCertification> certifications = new ArrayList<>();
+
+	@OneToMany(mappedBy = "proProfile", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<ProPhoto> photos = new ArrayList<>();
+
+	@OneToMany(mappedBy = "proProfile", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<ProProgram> programs = new ArrayList<>();
+
+	@OneToMany(mappedBy = "proProfile", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<Review> reviews = new ArrayList<>();
 
 	public void addSuggestion(Suggestions suggestion) {
 		this.suggestions.add(suggestion);

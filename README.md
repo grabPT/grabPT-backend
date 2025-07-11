@@ -105,3 +105,6 @@ assignees: ''
 ```
 
 ---
+
+## ERD 설계
+- https://dbdiagram.io/d/Copy-of-Copy-of-Untitled-Diagram-68665d7ff413ba35081ba57a

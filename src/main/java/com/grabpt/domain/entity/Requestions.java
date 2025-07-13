@@ -62,6 +62,9 @@ public class Requestions extends BaseEntity {
 	private Integer price;
 
 	@Column(nullable = false)
+	private Integer sessionCount;
+
+	@Column(nullable = false)
 	private String purpose;
 
 	@Column(nullable = false)

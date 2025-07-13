@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.grabpt.apiPayload.ApiResponse;
 import com.grabpt.dto.response.MyReviewListDTO;
-import com.grabpt.service.ProfileService;
+import com.grabpt.service.ProfileService.ProfileService;
 
 import lombok.RequiredArgsConstructor;
 

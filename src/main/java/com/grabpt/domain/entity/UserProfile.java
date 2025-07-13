@@ -8,17 +8,16 @@ import org.hibernate.annotations.DynamicUpdate;
 
 import com.grabpt.domain.common.BaseEntity;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.MapsId;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -53,8 +52,12 @@ public class UserProfile extends BaseEntity {
 	private List<String> preferredAreas; // 운동희망지역
 
 	// 양방향 연관관계
-	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_profile_id") // FK 컬럼이 Category 테이블에 생성됨
+	@ManyToMany
+	@JoinTable(
+		name = "user_profile_preferred_category",
+		joinColumns = @JoinColumn(name = "user_profile_id"),
+		inverseJoinColumns = @JoinColumn(name = "category_id")
+	)
 	private List<Category> categories = new ArrayList<>();
 
 	// 편의 메서드

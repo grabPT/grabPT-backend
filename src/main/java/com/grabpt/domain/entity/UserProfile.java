@@ -47,10 +47,10 @@ public class UserProfile extends BaseEntity {
 	@JoinColumn(name = "user_id")
 	private Users user;
 
-	private String residence;
+	private String residence; // 거주지역
 
 	@ElementCollection
-	private List<String> preferredAreas;
+	private List<String> preferredAreas; // 운동희망지역
 
 	// 양방향 연관관계
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)

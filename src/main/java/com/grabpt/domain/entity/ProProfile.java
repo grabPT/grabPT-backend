@@ -20,6 +20,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -42,14 +43,17 @@ public class ProProfile extends BaseEntity {
 	@Column(name = "pro_profile_id")
 	private Long id;
 
-	private String residence;
+	private String residence; // 거주지역
 
 	@ElementCollection
-	private List<String> activityAreas;
+	private List<String> activityAreas; // 위치
 
 	private String center;
 
 	private String career;
+
+	private String description; // 소개
+
 
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	@JoinColumn(name = "pro_profile_id") // Category 테이블에 외래키로 생성
@@ -63,6 +67,22 @@ public class ProProfile extends BaseEntity {
 	@OneToMany(mappedBy = "proProfile", cascade = CascadeType.ALL,
 		orphanRemoval = true, fetch = FetchType.LAZY)
 	private List<Suggestions> suggestions = new ArrayList<>();
+
+	// --- 새로 추가된 1:N 관계들 ---
+	@OneToMany(mappedBy = "proProfile", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<ProCertification> certifications = new ArrayList<>();
+
+	// 소개 사진
+	@OneToMany(mappedBy = "proProfile", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<ProPhoto> photos = new ArrayList<>();
+
+	// 프로그램
+	@OneToMany(mappedBy = "proProfile", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<ProProgram> programs = new ArrayList<>();
+
+	// 리뷰
+	@OneToMany(mappedBy = "proProfile", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<Review> reviews = new ArrayList<>();
 
 	public void addSuggestion(Suggestions suggestion) {
 		this.suggestions.add(suggestion);

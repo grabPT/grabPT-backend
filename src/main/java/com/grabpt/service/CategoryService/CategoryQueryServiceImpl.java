@@ -1,6 +1,7 @@
 package com.grabpt.service.CategoryService;
 
 import com.grabpt.domain.entity.Category;
+import com.grabpt.domain.entity.Requestions;
 import com.grabpt.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -18,5 +19,10 @@ public class CategoryQueryServiceImpl implements CategoryQueryService{
 	@Override
 	public List<Category> getCategories() {
 		return categoryRepository.findAll();
+	}
+
+	@Override
+	public List<Requestions> getReqeustions(String categoryCode, Pageable pageable) {
+		return categoryRepository.findTop6RequestionsByCategory(categoryCode, pageable);
 	}
 }

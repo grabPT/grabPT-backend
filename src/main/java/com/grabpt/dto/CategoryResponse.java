@@ -59,12 +59,12 @@ public class CategoryResponse {
 	@AllArgsConstructor
 	public static class RequestListDto{
 		Long id;
-		String nickname;
-		String region;
-		int sessionCount;
+		String nickname; //request.user.nickname
+		String region; //requestion.location
+		int sessionCount; // requestion.sessionCount 없음
 		int totalPrice;
-		RequestStatus matchStatus;
-		String profileImageUrl;
+		RequestStatus matchStatus; //reqeustion.status
+		String profileImageUrl; // //UserProfile에 url없음
 	}
 
 

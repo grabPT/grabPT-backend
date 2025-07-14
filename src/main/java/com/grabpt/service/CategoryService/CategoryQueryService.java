@@ -9,5 +9,4 @@ import java.util.List;
 
 public interface CategoryQueryService {
 	List<Category> getCategories();
-	List<Requestions> getReqeustions(String categoryCode, Pageable pageable);
 }

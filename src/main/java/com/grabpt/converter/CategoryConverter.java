@@ -2,7 +2,7 @@ package com.grabpt.converter;
 
 import com.grabpt.domain.entity.Category;
 import com.grabpt.domain.entity.Requestions;
-import com.grabpt.dto.CategoryResponse;
+import com.grabpt.dto.response.CategoryResponse;
 import org.springframework.data.domain.Page;
 
 import java.util.List;

@@ -28,6 +28,18 @@ public enum ErrorStatus implements BaseErrorCode {
 	// 테스트용 - flag가 2인경우 exception
 	TEMP_EXCEPTION(HttpStatus.BAD_REQUEST, "TEMP4001", "이거는 테스트"),
 
+	CATEGORY_NOT_FOUND(HttpStatus.BAD_REQUEST, "CATE4001", "해당하는 카테고리가 없습니다."),
+
+	INVALID_JWT_ISSUE(HttpStatus.BAD_REQUEST, "JWT4001", "유효한 JWT 토큰이 아닙니다."),
+
+	INVALID_JWT_ISSUE_REFRESH(HttpStatus.BAD_REQUEST, "JWT4002", "유효한 Refresh 토큰이 아닙니다."),
+
+	UNAUTHORIZED_SMS(HttpStatus.BAD_REQUEST, "SMS4001", "SMS 인증 실패, 인증 번호가 일치하지 않습니다."),
+
+	INVALID_ROLE(HttpStatus.BAD_REQUEST, "ROLE4001", "올바르지 않은 Role 인풋입니다"),
+
+	INVALID_GENDER(HttpStatus.BAD_REQUEST, "GENDER4001", "올바르지 않은 Gender 인풋입니다"),
+
 	;
 
 	private final HttpStatus httpStatus;

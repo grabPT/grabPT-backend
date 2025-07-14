@@ -1,12 +1,25 @@
 package com.grabpt.controller;
 
+import java.util.List;
+
+import com.grabpt.service.RequestionService.RequestionService;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.grabpt.apiPayload.ApiResponse;
 import com.grabpt.converter.CategoryConverter;
 import com.grabpt.domain.entity.Category;
 import com.grabpt.domain.entity.Requestions;
 import com.grabpt.domain.enums.RequestStatus;
-import com.grabpt.dto.CategoryResponse;
+import com.grabpt.dto.response.CategoryResponse;
 import com.grabpt.service.CategoryService.CategoryQueryService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
@@ -15,14 +28,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.data.domain.Pageable;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -30,6 +35,7 @@ import java.util.List;
 public class CategoryRestController {
 
 	private final CategoryQueryService categoryQueryService;
+	private final RequestionService requestionService;
 
 	@Operation(
 		summary = "카테고리 목록 조회 API",
@@ -71,7 +77,7 @@ public class CategoryRestController {
 		@RequestParam(name = "region", required = false) String region,
 		@RequestParam(defaultValue = "1") int page) {
 
-		Pageable pageable = PageRequest.of(page-1, 4, Sort.by("rating").descending());
+		Pageable pageable = PageRequest.of(page - 1, 4, Sort.by("rating").descending());
 		return ApiResponse.onSuccess(new CategoryResponse.TrainerPreviewListDto(null, 0, 0, 0L, true, true));
 	}
 
@@ -96,9 +102,8 @@ public class CategoryRestController {
 	public ApiResponse<List<CategoryResponse.RequestListDto>> getRequestList(@PathVariable(name = "code") String code) {
 
 		Pageable pageable = PageRequest.of(0,6);
-		List<Requestions> reqeustions = categoryQueryService.getReqeustions(code, pageable);
+		List<Requestions> reqeustions = requestionService.getReqeustions(code, pageable);
 		return ApiResponse.onSuccess(CategoryConverter.toRequestListDto(reqeustions));
 	}
-
 
 }

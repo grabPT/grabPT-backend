@@ -62,7 +62,7 @@ public class Requestions extends BaseEntity {
 	private Integer price;
 
 	@Column(nullable = false)
-	private Integer sessionCount;
+	private Integer sessionCount; // 추가
 
 	@Column(nullable = false)
 	private String purpose;

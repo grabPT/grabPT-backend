@@ -2,6 +2,7 @@ package com.grabpt.controller;
 
 import java.util.List;
 
+import com.grabpt.service.RequestionService.RequestionService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.grabpt.apiPayload.ApiResponse;
 import com.grabpt.converter.CategoryConverter;
 import com.grabpt.domain.entity.Category;
+import com.grabpt.domain.entity.Requestions;
 import com.grabpt.domain.enums.RequestStatus;
 import com.grabpt.dto.response.CategoryResponse;
 import com.grabpt.service.CategoryService.CategoryQueryService;
@@ -33,6 +35,7 @@ import lombok.RequiredArgsConstructor;
 public class CategoryRestController {
 
 	private final CategoryQueryService categoryQueryService;
+	private final RequestionService requestionService;
 
 	@Operation(
 		summary = "카테고리 목록 조회 API",
@@ -97,19 +100,10 @@ public class CategoryRestController {
 	})
 	@GetMapping("/requests/{code}")
 	public ApiResponse<List<CategoryResponse.RequestListDto>> getRequestList(@PathVariable(name = "code") String code) {
-		//예시 값
-		List<CategoryResponse.RequestListDto> dummyList = List.of(
-			CategoryResponse.RequestListDto.builder()
-				.id(1L)
-				.nickname("홍길동")
-				.region("서울시 동작구 상도1동")
-				.sessionCount(3)
-				.totalPrice(120000)
-				.matchStatus(RequestStatus.MATCHING)
-				.profileImageUrl("https://example.com/images/profile1.jpg")
-				.build());
 
-		return ApiResponse.onSuccess(dummyList);
+		Pageable pageable = PageRequest.of(0,6);
+		List<Requestions> reqeustions = requestionService.getReqeustions(code, pageable);
+		return ApiResponse.onSuccess(CategoryConverter.toRequestListDto(reqeustions));
 	}
 
 }

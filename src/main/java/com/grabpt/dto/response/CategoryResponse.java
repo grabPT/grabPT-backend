@@ -37,11 +37,11 @@ public class CategoryResponse {
 	@Getter
 	@AllArgsConstructor
 	public static class TrainerPreviewDto {
-		Long id;
-		String name;
-		double rating;
-		CenterDto centerDto;
-		int pricePerSession;
+		Long id;  //ProProfile.id
+		String name; //ProProfile.User.name
+		double rating;  //ProProfile.reviews.getAverageReview
+		CenterDto centerDto; //
+		int pricePerSession; //Proprofile.Suggestions.price
 		String profileImageUrl;
 	}
 
@@ -50,7 +50,7 @@ public class CategoryResponse {
 	@AllArgsConstructor
 	public static class CenterDto {
 		String name;
-		String address;
+		String address; //center가 없음
 	}
 
 	//요청서 목록을 위한 Dto
@@ -59,12 +59,12 @@ public class CategoryResponse {
 	@AllArgsConstructor
 	public static class RequestListDto {
 		Long id;
-		String nickname;
-		String region;
-		int sessionCount;
+		String nickname; //request.user.nickname
+		String region; //requestion.location
+		int sessionCount; // requestion.sessionCount 없음
 		int totalPrice;
-		RequestStatus matchStatus;
-		String profileImageUrl;
+		RequestStatus matchStatus; //reqeustion.status
+		String profileImageUrl; // //UserProfile에 url없음
 	}
 
 }

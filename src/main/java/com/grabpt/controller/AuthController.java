@@ -43,16 +43,29 @@ public class AuthController {
 	private final AuthService authService;
 
 	@Operation(
-		summary = "회원가입 요청",
+		summary = "User 회원가입 요청",
 		description = "회원가입에 필요한 정보 전달 시 DB 저장 및 JWT 토큰 생성 후 반환, access, refresh 토큰은 쿠키로 전달"
 	)
 	// 최종 회원가입
-	@PostMapping("/signup")
-	public ApiResponse<String> signup(@RequestBody SignupRequest signupRequest,
+	@PostMapping("/user-signup")
+	public ApiResponse<String> user_signup(@RequestBody SignupRequest.UserSignupRequestDto signupRequest,
 		HttpServletResponse response) {
 		authService.registerUser(signupRequest, response);
 
-		return ApiResponse.onSuccess("토큰 저장 완료");
+		return ApiResponse.onSuccess("User 토큰 저장 완료");
+	}
+
+	@Operation(
+		summary = "Pro 회원가입 요청",
+		description = "회원가입에 필요한 정보 전달 시 DB 저장 및 JWT 토큰 생성 후 반환, access, refresh 토큰은 쿠키로 전달"
+	)
+	// 최종 회원가입
+	@PostMapping("/pro-signup")
+	public ApiResponse<String> pro_signup(@RequestBody SignupRequest.ProSignupRequestDto signupRequest,
+		HttpServletResponse response) {
+		authService.registerPro(signupRequest, response);
+
+		return ApiResponse.onSuccess("Pro 토큰 저장 완료");
 	}
 
 	// JWT 토큰 재발행

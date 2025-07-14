@@ -2,13 +2,9 @@ package com.grabpt.service.AuthService;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +14,7 @@ import com.grabpt.apiPayload.exception.handler.UserHandler;
 import com.grabpt.config.jwt.JwtTokenProvider;
 import com.grabpt.domain.entity.Address;
 import com.grabpt.domain.entity.Category;
+import com.grabpt.domain.entity.ProProfile;
 import com.grabpt.domain.entity.UserProfile;
 import com.grabpt.domain.entity.Users;
 import com.grabpt.domain.enums.AuthRole;
@@ -42,7 +39,7 @@ public class AuthService {
 	private final JwtTokenProvider jwtTokenProvider;
 	private final CategoryRepository categoryRepository;
 
-	public void registerUser(SignupRequest req, HttpServletResponse response) {
+	public void registerUser(SignupRequest.UserSignupRequestDto req, HttpServletResponse response) {
 
 		// 카테고리 ID 리스트 → 엔티티 리스트
 		List<Category> categoryList = req.getCategories().stream()
@@ -61,7 +58,7 @@ public class AuthService {
 			.collect(Collectors.toList());
 
 		// UserProfile 생성
-		UserProfile profile = UserProfile.builder()
+		UserProfile userPrprofile = UserProfile.builder()
 			.categories(categoryList)
 			.build();
 
@@ -79,16 +76,63 @@ public class AuthService {
 			.profileImageUrl(req.getProfileImageUrl())
 			.oauthId(URLDecoder.decode(req.getOauthId(), StandardCharsets.UTF_8)) // 디코딩 해서 db 저장
 			.oauthProvider(URLDecoder.decode(req.getOauthProvider(), StandardCharsets.UTF_8)) // 디코딩 해서 db 저장
-			.userProfile(profile)  // 연관관계 연결
+			.userProfile(userPrprofile)  // 연관관계 연결
 			.build();
 
-		profile.setUser(user);
+		userPrprofile.setUser(user);
 
 		userRepository.save(user);
 
-		// 토큰 생성 로직
-		Authentication authentication = new UsernamePasswordAuthenticationToken(user.getEmail(), null,
-			Collections.singleton(new SimpleGrantedAuthority("ROLE_USER"))); // 권한 적절히 설정
+		createTokenAndSetCookie(user, response);
+	}
+
+	public void registerPro(SignupRequest.ProSignupRequestDto req, HttpServletResponse response) {
+
+		// 카테고리 ID 리스트 → 엔티티 리스트
+		List<Category> categoryList = req.getCategories().stream()
+			.map(id -> categoryRepository.findById(id)
+				.orElseThrow(() -> new CategoryHandler(ErrorStatus.CATEGORY_NOT_FOUND)))
+			.collect(Collectors.toList());
+
+		// address 리스트 매핑
+		List<Address> addressList = req.getAddress().stream()
+			.map(addr -> Address.builder()
+				.city(addr.getCity())
+				.district(addr.getDistrict())
+				.street(addr.getStreet())
+				.zipcode(addr.getZipcode())
+				.build())
+			.collect(Collectors.toList());
+
+		//  ProProfile 생성 및 Users 연관 설정
+		ProProfile proProfile = ProProfile.builder()
+			.activityAreas(req.getActivityAreas())
+			.center(req.getCenter())
+			.career(req.getCareer())
+			.description(req.getDescription())
+			.categories(categoryList)
+			.build();
+
+		// Users 생성 및 연관관계 설정
+		Users user = Users.builder()
+			.username(req.getUsername())
+			.email(req.getEmail())
+			.phone_number(req.getPhoneNum())
+			.addresses(addressList)
+			.password(passwordEncoder.encode(req.getPassword()))
+			.nickname(req.getNickname())
+			.role(mapToRole(req.getRole())) // Role.PRO
+			.gender(mapToGender(req.getGender()))
+			.authRole(AuthRole.ROLE_USER)
+			.profileImageUrl(req.getProfileImageUrl())
+			.oauthId(URLDecoder.decode(req.getOauthId(), StandardCharsets.UTF_8))
+			.oauthProvider(URLDecoder.decode(req.getOauthProvider(), StandardCharsets.UTF_8))
+			.proProfile(proProfile)
+			.build();
+
+		proProfile.setUser(user);
+
+		userRepository.save(user);
 
 		createTokenAndSetCookie(user, response);
 	}

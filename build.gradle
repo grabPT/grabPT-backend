@@ -57,6 +57,9 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
+    // websocket
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
     // coolsms
     implementation 'net.nurigo:sdk:4.3.0'
 

@@ -1,11 +1,12 @@
 package com.grabpt.dto.request;
 
+import java.util.List;
+
+import com.grabpt.domain.entity.Center;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import java.util.List;
-
 import lombok.Getter;
 
 @Getter
@@ -17,7 +18,7 @@ public class ProProfileUpdateRequestDTO {
 
 	private String residence;
 
-	private String center;
+	private Center center;
 
 	private String career;
 

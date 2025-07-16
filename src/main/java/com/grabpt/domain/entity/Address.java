@@ -28,10 +28,10 @@ public class Address {
 	@Column(name = "address_id")
 	private Long id;
 
-	private String city;
-	private String district;
-	private String street;
-	private String zipcode;
+	private String city; // 도/특별시/광역시 (서울시)
+	private String district; // 시/군/구 (관악구)
+	private String street; // 읍/면/동 (봉천동)
+	private String zipcode; // 우편번호 (12345)
 
 	@ManyToOne
 	@JoinColumn(name = "user_id")

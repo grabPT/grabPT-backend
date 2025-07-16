@@ -29,4 +29,15 @@ public class ChatResponse {
 		Long userId;
 		Long chatRoomId;
 	}
+
+	@AllArgsConstructor
+	@Setter
+	@Getter
+	@Builder
+	public static class ChatRoomPreviewDto{
+		Long chatRoomId;
+		String roomName;
+		String lastMessage;
+		LocalDateTime lastMessageTime;
+	}
 }

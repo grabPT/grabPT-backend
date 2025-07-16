@@ -10,7 +10,7 @@ public class ChatRequest {
 		Long roomId;
 		Long senderId;
 		String content;
-		String type;
+		String messageType;
 	}
 
 	@AllArgsConstructor

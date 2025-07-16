@@ -6,6 +6,8 @@ import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @Setter
@@ -32,5 +34,8 @@ public class ChatRooms extends BaseEntity {
 
 	@Column
 	private String lastMessage;
+
+	@Column
+	private LocalDateTime lastMessageTime;
 
 }

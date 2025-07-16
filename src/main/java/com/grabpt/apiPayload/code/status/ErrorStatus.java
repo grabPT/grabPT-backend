@@ -40,7 +40,7 @@ public enum ErrorStatus implements BaseErrorCode {
 
 	INVALID_GENDER(HttpStatus.BAD_REQUEST, "GENDER4001", "올바르지 않은 Gender 인풋입니다"),
 
-	;
+	CHATROOM_NOT_FOUND(HttpStatus.BAD_REQUEST, "CHAT4001", "존재하지 않는 채팅입니다.");
 
 	private final HttpStatus httpStatus;
 	private final String code;

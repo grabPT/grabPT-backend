@@ -1,0 +1,233 @@
+<!--<!DOCTYPE html>-->
+<!--<html>-->
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <title>실시간 채팅 테스트 (senderId only)</title>-->
+<!--    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>-->
+<!--    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>-->
+<!--    <style>-->
+<!--        body { font-family: 'Segoe UI', sans-serif; padding: 20px; }-->
+<!--        #log { background: #f0f0f0; padding: 10px; height: 250px; overflow-y: auto; }-->
+<!--        input { margin: 5px; }-->
+<!--    </style>-->
+<!--</head>-->
+<!--<body>-->
+<!--<h2>GrabPT 실시간 채팅 테스트</h2>-->
+
+<!--<label>Room ID:-->
+<!--    <input type="number" id="roomId" value="1">-->
+<!--</label><br>-->
+<!--<label>Sender ID:-->
+<!--    <input type="number" id="senderId" value="1001">-->
+<!--</label><br>-->
+<!--<button onclick="connect()">채팅방 입장</button>-->
+
+<!--<div style="margin-top: 10px;">-->
+<!--    <input type="text" id="msg" placeholder="메시지 입력" style="width: 300px;">-->
+<!--    <button onclick="sendMsg()">전송</button>-->
+<!--</div>-->
+
+<!--<h3>채팅 로그</h3>-->
+<!--<pre id="log"></pre>-->
+
+<!--<script>-->
+<!--    let stompClient = null;-->
+
+<!--    function connect() {-->
+<!--      const roomId = document.getElementById('roomId').value;-->
+<!--      stompClient = Stomp.over(new SockJS("/ws-connect"));-->
+
+<!--      stompClient.connect({}, function () {-->
+<!--        log(`✅ 웹소켓 연결 완료. 방 번호: ${roomId}`);-->
+
+<!--        // 해당 방 구독-->
+<!--        stompClient.subscribe("/subscribe/chat/" + roomId, function (msg) {-->
+<!--          const messageBody = JSON.parse(msg.body);-->
+<!--          // 내 senderId와 같으면 로그 출력 생략-->
+<!--        if (messageBody.senderId === Number(document.getElementById("senderId").value)) {-->
+<!--            return; // 내가 보낸 메시지는 출력하지 않음-->
+<!--        }-->
+<!--          log(`[수신] senderId=${messageBody.senderId}: ${messageBody.content}`);-->
+<!--        });-->
+<!--      });-->
+<!--    }-->
+
+<!--    function sendMsg() {-->
+<!--      const roomId = Number(document.getElementById('roomId').value);-->
+<!--      const senderId = Number(document.getElementById('senderId').value);-->
+<!--      const content = document.getElementById('msg').value;-->
+
+<!--      if (!roomId || !senderId || !content) {-->
+<!--        alert("roomId / senderId / content 모두 입력해야 합니다.");-->
+<!--        return;-->
+<!--      }-->
+
+<!--      stompClient.send("/publish/chat/" + roomId, {}, JSON.stringify({-->
+<!--        roomId: roomId,-->
+<!--        senderId: senderId,-->
+<!--        content: content,-->
+<!--        messageType: "TEXT"-->
+<!--      }));-->
+
+<!--      log(`[보냄] 나(${senderId}): ${content}`);-->
+<!--      document.getElementById('msg').value = '';-->
+<!--    }-->
+
+<!--    function log(text) {-->
+<!--      const logBox = document.getElementById("log");-->
+<!--      logBox.textContent += text + "\n";-->
+<!--      logBox.scrollTop = logBox.scrollHeight;-->
+<!--    }-->
+<!--</script>-->
+<!--</body>-->
+<!--</html>-->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>GrabPT 실시간 채팅</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; padding: 20px; }
+        #chat-room-list button { display: block; margin: 5px 0; padding: 10px; width: 100%; }
+        #chat-log { background: #f9f9f9; border: 1px solid #ccc; padding: 10px; height: 250px; overflow-y: scroll; margin-top: 10px; }
+        .mine { text-align: right; color: green; }
+        .other { text-align: left; color: black; }
+    </style>
+</head>
+<body>
+
+<h2>🙋 채팅방 리스트</h2>
+<div>
+    <label>사용자 ID:
+        <input type="number" id="senderId" value="1" />
+    </label>
+    <button onclick="loadChatRooms()">채팅방 불러오기</button>
+</div>
+
+<div id="chat-room-list"></div>
+
+<hr>
+
+<div id="chat-room" style="display: none;">
+    <h3 id="chat-title">채팅방</h3>
+    <div id="chat-log"></div>
+
+    <input type="text" id="msg-input" placeholder="메시지를 입력하세요" />
+    <button onclick="sendMsg()">전송</button>
+</div>
+
+<script>
+    let stompClient = null;
+    let currentRoomId = null;
+    let senderId = null;
+
+    // 채팅방 목록 가져오기
+    async function loadChatRooms() {
+        senderId = Number(document.getElementById("senderId").value);
+        if (!senderId) {
+            return alert("사용자 ID를 입력하세요!");
+        }
+
+        const res = await fetch(`/chatRoom/list?userId=${senderId}`);
+        const result = await res.json();
+
+        const list = document.getElementById("chat-room-list");
+        list.innerHTML = "<h3>내 채팅방</h3>";
+
+        // ✅ 응답 구조가 { isSuccess: true, result: [...] } 인 경우
+        if (result.isSuccess) {
+            const rooms = result.result;
+
+            rooms.forEach(room => {
+                const btn = document.createElement("button");
+                btn.textContent = `👤 ${room.roomName} - ${room.lastMessage || '(대화 없음)'}`;
+
+                // ✅ 올바른 chatRoomId로 전송
+                btn.onclick = () => enterRoom(room.chatRoomId);
+
+                list.appendChild(btn);
+            });
+        } else {
+            alert("채팅방 목록을 불러오지 못했습니다.");
+        }
+    }
+
+    // 채팅방 들어가기
+    async function enterRoom(roomId) {
+        currentRoomId = roomId;
+
+        // 초기화
+        document.getElementById("chat-title").textContent = `채팅방 #${roomId}`;
+        document.getElementById("chat-log").innerHTML = "";
+        document.getElementById("chat-room").style.display = "block";
+
+        // 이전 메시지 불러오기
+        const res = await fetch(`/chatRoom/${roomId}/messages`);
+        const result = await res.json();
+
+        if (result.isSuccess) {
+            const messages = result.result;
+            messages.forEach(msg => {
+                appendMessage(msg.senderId, msg.content);
+            });
+        }
+
+        // 웹소켓 연결
+        connectSocket(roomId);
+    }
+
+    // 웹소켓 연결 및 구독
+    function connectSocket(roomId) {
+        if (stompClient && stompClient.connected) {
+            stompClient.disconnect(() => console.log("기존 WebSocket 연결 해제됨"));
+        }
+
+        const socket = new SockJS("/ws-connect");
+        stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, () => {
+            stompClient.subscribe(`/subscribe/chat/${roomId}`, function (msg) {
+                const body = JSON.parse(msg.body);
+                appendMessage(body.senderId, body.content);
+            });
+        });
+    }
+
+    // 메시지 전송
+    function sendMsg() {
+        const input = document.getElementById("msg-input");
+        const content = input.value.trim();
+        if (!content) return;
+
+        const message = {
+            roomId: currentRoomId,
+            senderId: senderId,
+            content: content,
+            messageType: "TEXT"
+        };
+
+        stompClient.send(`/publish/chat/${currentRoomId}`, {}, JSON.stringify(message));
+<!--        appendMessage(senderId, content); // 내 메시지 즉시 표시-->
+        input.value = '';
+    }
+
+    // 메시지 화면 표시
+    function appendMessage(sender, content) {
+        const log = document.getElementById("chat-log");
+        const div = document.createElement("div");
+        const isMine = sender === senderId;
+
+        div.textContent = `${isMine ? "🟢 나" : `🔵 ${sender}`}: ${content}`;
+        div.className = isMine ? "mine" : "other";
+
+        log.appendChild(div);
+        log.scrollTop = log.scrollHeight;
+    }
+</script>
+
+
+</body>
+</html>
+

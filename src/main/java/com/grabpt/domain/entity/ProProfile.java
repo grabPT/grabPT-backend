@@ -11,6 +11,7 @@ import com.grabpt.domain.common.BaseEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -20,7 +21,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
-import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -48,16 +48,12 @@ public class ProProfile extends BaseEntity {
 	@ElementCollection
 	private List<String> activityAreas; // 위치
 
-	private String center;
+	@Embedded
+	private Center center;
 
 	private String career;
 
 	private String description; // 소개
-
-	private String programDescription; // 프로그램 상세 설명
-	private Integer pricePerSession; // 1회당 가격
-	private Integer totalSessions; // 총 세션 수
-
 
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	@JoinColumn(name = "pro_profile_id") // Category 테이블에 외래키로 생성
@@ -79,6 +75,10 @@ public class ProProfile extends BaseEntity {
 	// 소개 사진
 	@OneToMany(mappedBy = "proProfile", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<ProPhoto> photos = new ArrayList<>();
+
+	// 프로그램
+	@OneToMany(mappedBy = "proProfile", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<ProProgram> programs = new ArrayList<>();
 
 	// 리뷰
 	@OneToMany(mappedBy = "proProfile", cascade = CascadeType.ALL, orphanRemoval = true)

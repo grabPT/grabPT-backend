@@ -11,7 +11,7 @@ import com.grabpt.apiPayload.ApiResponse;
 import com.grabpt.dto.request.ProProfileUpdateRequestDTO;
 import com.grabpt.dto.request.UserProfileUpdateRequestDTO;
 import com.grabpt.dto.response.ProfileResponseDTO;
-import com.grabpt.service.ProfileService;
+import com.grabpt.service.ProfileService.ProfileService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +30,8 @@ public class MyProfileController {
 	}
 
 	@GetMapping("/pro")
-	public ApiResponse<ProfileResponseDTO.MyProProfileDTO> getMyProUserProfile(@RequestParam(name = "userId") Long userId) {
+	public ApiResponse<ProfileResponseDTO.MyProProfileDTO> getMyProUserProfile(
+		@RequestParam(name = "userId") Long userId) {
 		return ApiResponse.onSuccess(profileService.findMyProUserProfile(userId));
 	}
 

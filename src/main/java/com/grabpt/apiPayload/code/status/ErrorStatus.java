@@ -22,6 +22,9 @@ public enum ErrorStatus implements BaseErrorCode {
 	MEMBER_NOT_FOUND(HttpStatus.BAD_REQUEST, "MEMBER4001", "사용자가 없습니다."),
 	NICKNAME_NOT_EXIST(HttpStatus.BAD_REQUEST, "MEMBER4002", "닉네임은 필수 입니다."),
 
+	//채팅 관련 에러
+	CHATROOM_NOT_FOUND(HttpStatus.BAD_REQUEST, "CHAT4001", "채팅방이 존재하지 않습니다"),
+
 	// 예시,,,
 	ARTICLE_NOT_FOUND(HttpStatus.NOT_FOUND, "ARTICLE4001", "게시글이 없습니다."),
 
@@ -38,9 +41,7 @@ public enum ErrorStatus implements BaseErrorCode {
 
 	INVALID_ROLE(HttpStatus.BAD_REQUEST, "ROLE4001", "올바르지 않은 Role 인풋입니다"),
 
-	INVALID_GENDER(HttpStatus.BAD_REQUEST, "GENDER4001", "올바르지 않은 Gender 인풋입니다"),
-
-	;
+	INVALID_GENDER(HttpStatus.BAD_REQUEST, "GENDER4001", "올바르지 않은 Gender 인풋입니다");
 
 	private final HttpStatus httpStatus;
 	private final String code;

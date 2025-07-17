@@ -7,6 +7,10 @@ import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -21,16 +25,8 @@ public class ChatRooms extends BaseEntity {
 	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column
-	private String roomName;
-
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "pro_id")
-	private Users pro;
-
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_id")
-	private Users user;
+	@OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL)
+	private List<UserChatRoom> userChatRooms = new ArrayList<>();
 
 	@Column
 	private String lastMessage;
@@ -38,4 +34,8 @@ public class ChatRooms extends BaseEntity {
 	@Column
 	private LocalDateTime lastMessageTime;
 
+	public void addUserChatRoom(UserChatRoom userChatRoom) {
+		userChatRooms.add(userChatRoom);
+		userChatRoom.setChatRoom(this);
+	}
 }

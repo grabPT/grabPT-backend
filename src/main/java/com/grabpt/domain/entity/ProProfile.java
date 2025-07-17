@@ -11,6 +11,7 @@ import com.grabpt.domain.common.BaseEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -47,8 +48,7 @@ public class ProProfile extends BaseEntity {
 	@ElementCollection
 	private List<String> activityAreas; // 위치
 
-	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-	@JoinColumn(name = "center_id") // FK
+	@Embedded
 	private Center center;
 
 	private String career;

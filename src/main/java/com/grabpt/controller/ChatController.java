@@ -40,8 +40,8 @@ public class ChatController {
 
 	@PostMapping("/chatRoom/request")
 	@ResponseBody
-	public ChatResponse.CreateChatRoomResponseDto createChatRoom(@RequestBody ChatRequest.CreateChatRoomRequestDto request){
-		return chatService.getOrcreateChatRoom(request);
+	public ApiResponse<ChatResponse.CreateChatRoomResponseDto> createChatRoom(@RequestBody ChatRequest.CreateChatRoomRequestDto request){
+		return ApiResponse.onSuccess(chatService.getOrcreateChatRoom(request));
 	}
 
 	@GetMapping("/chatRoom/{roomId}/messages")
@@ -52,8 +52,7 @@ public class ChatController {
 
 	@GetMapping("/chatRoom/list") //로그인 유저 정보
 	@ResponseBody
-	public ApiResponse<List<ChatResponse.ChatRoomPreviewDto>> getChatRoomList(@RequestParam(name = "userId") Long userId){ //임시
-
+	public ApiResponse<List<ChatResponse.ChatRoomPreviewDto>> getChatRoomList(@RequestParam(name = "userId") Long userId){ //임
 		return ApiResponse.onSuccess(chatService.getChatRoomList(userId));
 	}
 

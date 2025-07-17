@@ -55,6 +55,7 @@ public class ProProfile extends BaseEntity {
 	private String description; // 소개
 
 
+	//?
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	@JoinColumn(name = "pro_profile_id") // Category 테이블에 외래키로 생성
 	private List<Category> categories = new ArrayList<>();

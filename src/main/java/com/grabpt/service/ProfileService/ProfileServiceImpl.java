@@ -19,7 +19,7 @@ import com.grabpt.dto.response.MyRequestListDTO;
 import com.grabpt.dto.response.MyReviewListDTO;
 import com.grabpt.dto.response.ProProfileResponseDTO;
 import com.grabpt.dto.response.ProfileResponseDTO;
-import com.grabpt.repository.RequestioinRepository.requestionRepository;
+import com.grabpt.repository.RequestionRepository.RequestionRepository;
 import com.grabpt.repository.ReviewRepository.reviewRepository;
 import com.grabpt.repository.UserRepository.UserRepository;
 import com.grabpt.service.CertificationService.CertificationService;
@@ -34,7 +34,7 @@ import lombok.RequiredArgsConstructor;
 public class ProfileServiceImpl implements ProfileService {
 
 	private final UserRepository userRepository;
-	private final requestionRepository requestionRepository;
+	private final RequestionRepository requestionRepository;
 	private final reviewRepository reviewRepository;
 
 	private final PhotoService photoService;

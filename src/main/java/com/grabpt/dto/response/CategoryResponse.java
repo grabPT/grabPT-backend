@@ -25,7 +25,7 @@ public class CategoryResponse {
 	@Getter
 	@AllArgsConstructor
 	public static class TrainerPreviewListDto {
-		List<CategoryResponse.TrainerPreviewDto> trainerList;
+		List<CategoryResponse.TrainerListDto> trainerList;
 		Integer listSize;
 		Integer totalPage;
 		Long totalElements;
@@ -36,7 +36,7 @@ public class CategoryResponse {
 	@Builder
 	@Getter
 	@AllArgsConstructor
-	public static class TrainerPreviewDto {
+	public static class TrainerListDto {
 		Long id;  //ProProfile.id
 		String name; //ProProfile.User.name
 		double rating;  //ProProfile.reviews.getAverageReview

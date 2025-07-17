@@ -25,8 +25,6 @@ public class ChatResponse {
 	@Getter
 	@Builder
 	public static class CreateChatRoomResponseDto{
-		Long proId;
-		Long userId;
 		Long chatRoomId;
 	}
 

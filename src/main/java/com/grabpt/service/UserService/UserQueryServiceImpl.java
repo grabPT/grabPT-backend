@@ -2,6 +2,7 @@ package com.grabpt.service.UserService;
 
 import java.util.Optional;
 
+import org.apache.catalina.User;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +38,18 @@ public class UserQueryServiceImpl implements UserQueryService {
 		Users user = userRepository.findByEmail(email)
 			.orElseThrow(() -> new UserHandler(ErrorStatus.MEMBER_NOT_FOUND));
 		return UserConverter.toUserInfoDTO(user);
+	}
+
+	@Override
+	@Transactional
+	public Long getUserId(HttpServletRequest request) throws IllegalAccessException {
+		Authentication authentication = jwtTokenProvider.extractAuthentication(request);
+		Long userId = ((PrincipalDetails) authentication.getPrincipal()).getUser().getId();
+		if(userRepository.existsById(userId)){
+			return userId;
+		} else{
+			throw new UserHandler(ErrorStatus.MEMBER_NOT_FOUND);
+		}
 	}
 
 	@Override

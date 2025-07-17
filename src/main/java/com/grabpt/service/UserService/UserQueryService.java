@@ -12,6 +12,8 @@ public interface UserQueryService {
 
 	Optional<Users> findByEmail(String email);
 
+	Long getUserId(HttpServletRequest request)  throws IllegalAccessException;
+
 	void save(Users user);
 
 	boolean existsByNickname(String nickname);

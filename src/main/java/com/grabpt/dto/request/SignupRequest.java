@@ -106,7 +106,7 @@ public class SignupRequest {
 		@Schema(description = "사용자가 입력한 성별, 1:남성/2:여성", example = "1")
 		private Integer gender;
 
-		@Schema(description = "일반 사용자, 트레이너 입력, 1:일반(USER)/2:트레이너(PRO)", example = "1")
+		@Schema(description = "일반 사용자, 트레이너 입력, 1:일반(USER)/2:트레이너(PRO)", example = "2")
 		private Integer role;
 
 		@Data

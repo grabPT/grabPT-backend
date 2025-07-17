@@ -6,6 +6,7 @@ import lombok.Getter;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.grabpt.domain.entity.Center;
 import com.grabpt.domain.entity.ProCertification;
 import com.grabpt.domain.entity.ProPhoto;
 import com.grabpt.domain.entity.Review;
@@ -40,11 +41,14 @@ public class ProfileResponseDTO {
 		private Long proId;
 		private String nickname;
 		private String description;
-		private String residence;
+		private Center center;
 
 		// 소개 이미지
 		private List<MyProProfileDTO.PhotoDTO> photos;
 
+		private List<MyProProfileDTO.ReviewDTO> reviews;
+
+		private List<MyProProfileDTO.CertificationDTO> certifications;
 		// PT 프로그램 과정
 		private String programDescription;
 		private Integer pricePerSession;

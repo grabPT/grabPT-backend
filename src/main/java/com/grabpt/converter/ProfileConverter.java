@@ -21,20 +21,17 @@ public class ProfileConverter {
 		if (profile == null) {
 			return ProfileResponseDTO.MyProfileDTO.builder()
 				.userId(user.getId())
-				.name(user.getNickname())
+				.name(user.getUsername())
 				.nickname(user.getNickname())
-				.email()
+				.email(user.getEmail())
 				.build();
 		}
 
 		return ProfileResponseDTO.MyProfileDTO.builder()
 			.userId(user.getId())
+			.name(user.getUsername())
 			.nickname(user.getNickname())
-			.residence(profile.getResidence())
-			.preferredAreas(profile.getPreferredAreas())
-			.categories(profile.getCategories().stream()
-				.map(category -> category.getName())
-				.collect(Collectors.toList()))
+			.email(user.getEmail())
 			.build();
 	}
 
@@ -48,10 +45,10 @@ public class ProfileConverter {
 				.nickname(user.getNickname())
 				.description(null)
 				.photos(Collections.emptyList())
-				.certifications(Collections.emptyList())
 				.programDescription(proProfile.getProgramDescription())
 				.pricePerSession(proProfile.getPricePerSession())
 				.totalSessions(proProfile.getTotalSessions())
+				.certifications(Collections.emptyList())
 				.reviews(Collections.emptyList())
 				.build();
 		}
@@ -84,10 +81,10 @@ public class ProfileConverter {
 			.nickname(user.getNickname())
 			.description(proProfile.getDescription())
 			.photos(photoDTOS)
-			.certifications(certificationDTOS)
 			.programDescription(proProfile.getProgramDescription())
 			.pricePerSession(proProfile.getPricePerSession())
 			.totalSessions(proProfile.getTotalSessions())
+			.certifications(certificationDTOS)
 			.reviews(reviewDTOS)
 			.build();
 	}
@@ -100,9 +97,6 @@ public class ProfileConverter {
 			.map(ProProfileResponseDTO.CertificationDTO::from)
 			.collect(Collectors.toList());
 
-		List<ProProfileResponseDTO.ReviewDTO> reviewDTOS = proProfile.getReviews().stream()
-			.map(ProProfileResponseDTO.ReviewDTO::from)
-			.collect(Collectors.toList());
 
 		List<ProProfileResponseDTO.PhotoDTO> photoDTOS = proProfile.getPhotos().stream()
 			.map(ProProfileResponseDTO.PhotoDTO::from)
@@ -110,14 +104,12 @@ public class ProfileConverter {
 
 		return ProProfileResponseDTO.builder()
 			.name(user.getNickname())
-			.location(proProfile.getActivityAreas())
 			.photos(photoDTOS)
 			.introduction(proProfile.getDescription())
 			.certifications(certificationDTOS)
 			.programDescription(proProfile.getProgramDescription())
 			.pricePerSession(proProfile.getPricePerSession())
 			.totalSessions(proProfile.getTotalSessions())
-			.reviews(reviewDTOS)
 			.build();
 	}
 }

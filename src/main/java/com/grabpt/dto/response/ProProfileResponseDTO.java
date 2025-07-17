@@ -31,6 +31,8 @@ public class ProProfileResponseDTO {
 
 	// PT 프로그램 과정
 	private String programDescription;
+	private Integer pricePerSession;
+	private Integer totalSessions;
 
 	// 이용자 후기
 	private List<ReviewDTO> reviews;

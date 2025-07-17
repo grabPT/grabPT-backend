@@ -13,7 +13,6 @@ import com.grabpt.repository.reviewRepository;
 import com.grabpt.service.CertificationService;
 import com.grabpt.service.PhotoService;
 import com.grabpt.service.ProfileService;
-import com.grabpt.service.ProgramService;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -31,7 +30,6 @@ public class ProfileServiceImpl implements ProfileService {
 	private final reviewRepository reviewRepository;
 
 	private final PhotoService photoService;
-	private final ProgramService programService;
 	private final CertificationService certificationService;
 
 	@Override
@@ -87,9 +85,11 @@ public class ProfileServiceImpl implements ProfileService {
 		proProfile.setDescription(request.getDescription());
 		proProfile.setActivityAreas(request.getActivityAreas());
 
+		proProfile.setProgramDescription(request.getProgramDescription());
+		proProfile.setPricePerSession(request.getPricePerSession());
+		proProfile.setTotalSessions(request.getTotalSessions());
 
 		photoService.updatePhotos(proProfile, request.getPhotos());
-		programService.updatePrograms(proProfile, request.getPrograms());
 		certificationService.updateCertifications(proProfile, request.getCertifications());
 	}
 

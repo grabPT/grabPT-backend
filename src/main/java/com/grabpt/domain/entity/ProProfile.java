@@ -54,6 +54,10 @@ public class ProProfile extends BaseEntity {
 
 	private String description; // 소개
 
+	private String programDescription; // 프로그램 상세 설명
+	private Integer pricePerSession; // 1회당 가격
+	private Integer totalSessions; // 총 세션 수
+
 
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	@JoinColumn(name = "pro_profile_id") // Category 테이블에 외래키로 생성
@@ -75,10 +79,6 @@ public class ProProfile extends BaseEntity {
 	// 소개 사진
 	@OneToMany(mappedBy = "proProfile", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<ProPhoto> photos = new ArrayList<>();
-
-	// 프로그램
-	@OneToMany(mappedBy = "proProfile", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<ProProgram> programs = new ArrayList<>();
 
 	// 리뷰
 	@OneToMany(mappedBy = "proProfile", cascade = CascadeType.ALL, orphanRemoval = true)

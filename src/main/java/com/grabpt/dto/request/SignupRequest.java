@@ -2,6 +2,8 @@ package com.grabpt.dto.request;
 
 import java.util.List;
 
+import com.grabpt.domain.entity.Center;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -122,8 +124,8 @@ public class SignupRequest {
 		@Schema(description = "활동지역")
 		private List<String> activityAreas;
 
-		@Schema(description = "센터", example = "자메이카 휘트니스")
-		private String center;
+		@Schema(description = "센터")
+		private Center center;
 
 		@Schema(description = "커리어", example = "부산외대 스포츠재활학 석사, 한국재활기능운동학회 정회원, ...")
 		private String career;

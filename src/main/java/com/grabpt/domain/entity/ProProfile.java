@@ -20,7 +20,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
-import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -48,14 +47,14 @@ public class ProProfile extends BaseEntity {
 	@ElementCollection
 	private List<String> activityAreas; // 위치
 
-	private String center;
+	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@JoinColumn(name = "center_id") // FK
+	private Center center;
 
 	private String career;
 
 	private String description; // 소개
 
-
-	//?
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	@JoinColumn(name = "pro_profile_id") // Category 테이블에 외래키로 생성
 	private List<Category> categories = new ArrayList<>();

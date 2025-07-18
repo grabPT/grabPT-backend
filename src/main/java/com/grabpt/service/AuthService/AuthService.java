@@ -106,7 +106,6 @@ public class AuthService {
 
 		//  ProProfile 생성 및 Users 연관 설정
 		ProProfile proProfile = ProProfile.builder()
-			.activityAreas(req.getActivityAreas())
 			.center(req.getCenter())
 			.career(req.getCareer())
 			.description(req.getDescription())

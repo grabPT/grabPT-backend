@@ -1,14 +1,14 @@
 package com.grabpt.service.ProfileService;
 
+import com.grabpt.domain.entity.ProProfile;
+import com.grabpt.dto.response.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import com.grabpt.dto.request.ProProfileUpdateRequestDTO;
 import com.grabpt.dto.request.UserProfileUpdateRequestDTO;
-import com.grabpt.dto.response.MyRequestListDTO;
-import com.grabpt.dto.response.MyReviewListDTO;
-import com.grabpt.dto.response.ProProfileResponseDTO;
-import com.grabpt.dto.response.ProfileResponseDTO;
+
+import java.util.List;
 
 public interface ProfileService {
 	ProfileResponseDTO.MyProfileDTO findMyUserProfile(Long userId);
@@ -28,4 +28,6 @@ public interface ProfileService {
 	ProProfileResponseDTO findProProfile(Long userId);
 
 	Page<ProProfileResponseDTO> findProProfilesByCategory(String categoryCode, Pageable pageable);
+
+	List<CategoryResponse.ProListDto> findAllProByCategoryCodeAndRegion(String categoryCode, String region);
 }

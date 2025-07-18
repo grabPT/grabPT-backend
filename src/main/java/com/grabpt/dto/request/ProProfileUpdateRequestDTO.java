@@ -31,10 +31,9 @@ public class ProProfileUpdateRequestDTO {
 	@Valid
 	private List<PhotoRequestDTO> photos; // 소개 사진
 
-	private Integer price;
-
-	@Valid
-	private List<ProgramRequestDTO> programs;
+	private String programDescription;
+	private Integer pricePerSession;
+	private Integer totalSessions;
 
 	@Valid
 	private List<CertificationRequestDTO> certifications;

@@ -30,6 +30,7 @@ public class CategoryResponse {
 		double rating;  //ProProfile.reviews.getAverageReview
 		String centerName;
 		int pricePerSession; //Proprofile.Suggestions.price
+		int totalSessions;
 		String profileImageUrl;
 	}
 

@@ -79,6 +79,9 @@ public class Users extends BaseEntity {
 	private String refreshToken;
 
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<UserChatRoom> userChatRooms = new ArrayList<>();
+
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Address> addresses = new ArrayList<>();
 
 	// 양방향 연관관계 매핑
@@ -121,6 +124,11 @@ public class Users extends BaseEntity {
 	public void removeRequestion(Requestions requestion) {
 		this.requestions.remove(requestion);
 		requestion.setUser(null);
+	}
+
+	public void addUserChatRoom(UserChatRoom userChatRoom) {
+		userChatRooms.add(userChatRoom);
+		userChatRoom.setUser(this);
 	}
 
 	public void encodePassword(String password) {

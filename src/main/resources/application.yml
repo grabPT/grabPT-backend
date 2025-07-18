@@ -83,11 +83,11 @@ spring:
 
 jwt:
   token:
-    secret-key: "012345678901234567890123456789012345678901234567890123456789abcd"
+    secret-key: ${JWT_SECRET_KEY}
     expiration:
       access: 14400000
 
 coolsms:
-  apiKey: NCS90HS6MQNCNZPA
-  apiSecret: PGOCVTEAW4DHSFNCKCAXDHNWVBCZO7DX
-  fromNumber: 01063506423
+  apiKey: ${COOLSMS_API_KEY}
+  apiSecret: ${COOLSMS_API_SECRET}
+  fromNumber: ${FROM_NUMBER}

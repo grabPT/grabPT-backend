@@ -1,14 +1,14 @@
 package com.grabpt.repository.RequestionRepository;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-
-import com.grabpt.domain.entity.Requestions;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.util.List;
+import com.grabpt.domain.entity.Requestions;
 
 public interface RequestionRepository extends JpaRepository<Requestions, Long> {
 	Page<Requestions> findAllByUserId(Long userId, Pageable pageable);

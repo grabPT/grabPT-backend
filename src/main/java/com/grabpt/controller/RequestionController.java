@@ -1,5 +1,7 @@
 package com.grabpt.controller;
 
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -8,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.grabpt.apiPayload.ApiResponse;
 import com.grabpt.domain.entity.Requestions;
 import com.grabpt.dto.request.RequestionRequestDto;
+import com.grabpt.dto.response.RequestionResponseDto;
 import com.grabpt.dto.response.UserResponseDto;
 import com.grabpt.service.RequestionService.RequestionService;
 import com.grabpt.service.UserService.UserQueryService;
@@ -41,4 +44,15 @@ public class RequestionController {
 		return ApiResponse.onSuccess(saved.getId().toString() + "저장 완료");
 	}
 
+	@GetMapping("/{requestionId}")
+	@Operation(
+		summary = "요청서 상세 조회 API",
+		description = "요청서와 유저 정보를 함께 조회합니다."
+	)
+	public ApiResponse<RequestionResponseDto.RequestionDetailResponseDto> getRequestionDetail(
+		@PathVariable Long requestionId
+	) {
+		RequestionResponseDto.RequestionDetailResponseDto response = requestionService.getDetail(requestionId);
+		return ApiResponse.onSuccess(response);
+	}
 }

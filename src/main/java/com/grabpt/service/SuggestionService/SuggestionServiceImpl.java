@@ -7,12 +7,14 @@ import org.springframework.stereotype.Service;
 import com.grabpt.apiPayload.code.status.ErrorStatus;
 import com.grabpt.apiPayload.exception.handler.ProHandler;
 import com.grabpt.apiPayload.exception.handler.RequestionHandler;
+import com.grabpt.apiPayload.exception.handler.SuggestionHandler;
 import com.grabpt.apiPayload.exception.handler.UserHandler;
 import com.grabpt.domain.entity.ProProfile;
 import com.grabpt.domain.entity.Requestions;
 import com.grabpt.domain.entity.Suggestions;
 import com.grabpt.domain.entity.Users;
 import com.grabpt.dto.request.SuggestionRequestDto;
+import com.grabpt.dto.response.SuggestionResponseDto;
 import com.grabpt.repository.ProProfileRepository.ProProfileRepository;
 import com.grabpt.repository.RequestionRepository.RequestionRepository;
 import com.grabpt.repository.SuggestionRepository.SuggestionRepository;
@@ -52,5 +54,12 @@ public class SuggestionServiceImpl implements SuggestionService {
 		suggestion.setRequestion(requestion);   // 연관관계 설정
 
 		return suggestionRepository.save(suggestion);
+	}
+
+	@Override
+	public SuggestionResponseDto.SuggestionDetailResponseDto getDetail(Long suggestionId) {
+		Suggestions suggestion = suggestionRepository.findById(suggestionId)
+			.orElseThrow(() -> new SuggestionHandler(ErrorStatus.SUGGESTION_NOT_FOUND));
+		return SuggestionResponseDto.SuggestionDetailResponseDto.from(suggestion);
 	}
 }

@@ -6,13 +6,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.grabpt.apiPayload.code.status.ErrorStatus;
-import com.grabpt.apiPayload.exception.handler.CategoryHandler;
-import com.grabpt.apiPayload.exception.handler.UserHandler;
+import com.grabpt.apiPayload.exception.handler.RequestionHandler;
 import com.grabpt.domain.entity.Category;
 import com.grabpt.domain.entity.Requestions;
 import com.grabpt.domain.entity.Users;
 import com.grabpt.domain.enums.RequestStatus;
 import com.grabpt.dto.request.RequestionRequestDto;
+import com.grabpt.dto.response.RequestionResponseDto;
 import com.grabpt.repository.CategoryRepository.CategoryRepository;
 import com.grabpt.repository.RequestionRepository.RequestionRepository;
 import com.grabpt.repository.UserRepository.UserRepository;
@@ -35,10 +35,10 @@ public class RequestionServiceImpl implements RequestionService {
 	@Override
 	public Requestions save(RequestionRequestDto dto, String email) {
 		Users user = userRepository.findByEmail(email)
-			.orElseThrow(() -> new UserHandler(ErrorStatus.MEMBER_NOT_FOUND));
+			.orElseThrow(() -> new RuntimeException("사용자 없음"));
 
 		Category category = categoryRepository.findById(dto.getCategoryId())
-			.orElseThrow(() -> new CategoryHandler(ErrorStatus.CATEGORY_NOT_FOUND));
+			.orElseThrow(() -> new RuntimeException("카테고리 없음"));
 
 		Requestions requestion = Requestions.builder()
 			.user(user)  // JWT 기반으로 추출된 사용자
@@ -59,5 +59,12 @@ public class RequestionServiceImpl implements RequestionService {
 		requestion.setUser(user); // 연관관계 설정
 
 		return requestionRepository.save(requestion);
+	}
+
+	@Override
+	public RequestionResponseDto.RequestionDetailResponseDto getDetail(Long requestionId) {
+		Requestions r = requestionRepository.findById(requestionId)
+			.orElseThrow(() -> new RequestionHandler(ErrorStatus.REQUESTION_NOT_FOUND));
+		return RequestionResponseDto.RequestionDetailResponseDto.from(r);
 	}
 }

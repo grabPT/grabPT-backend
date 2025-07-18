@@ -45,6 +45,8 @@ public enum ErrorStatus implements BaseErrorCode {
 	PRO_NOT_FOUND(HttpStatus.BAD_REQUEST, "PRO4001", "존재하지 않는 트레이너입니다."),
 
 	REQUESTION_NOT_FOUND(HttpStatus.BAD_REQUEST, "REQ4001", "존재하지 않는 요청서입니다."),
+
+	SUGGESTION_NOT_FOUND(HttpStatus.BAD_REQUEST, "SUG4001", "존재하지 않는 지원서입니다."),
 	;
 
 	private final HttpStatus httpStatus;

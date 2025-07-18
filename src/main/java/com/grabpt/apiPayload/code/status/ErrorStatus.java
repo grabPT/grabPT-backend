@@ -47,6 +47,13 @@ public enum ErrorStatus implements BaseErrorCode {
 	REQUESTION_NOT_FOUND(HttpStatus.BAD_REQUEST, "REQ4001", "존재하지 않는 요청서입니다."),
 
 	SUGGESTION_NOT_FOUND(HttpStatus.BAD_REQUEST, "SUG4001", "존재하지 않는 지원서입니다."),
+
+	REQUESTION_ALREADY_MATCHED(HttpStatus.BAD_REQUEST, "REQ4002", "요청서가 이미 매치되었습니다."),
+
+	MATCHING_NOT_FOUND(HttpStatus.BAD_REQUEST, "REQ4002", "매칭을 찾을 수 없습니다."),
+
+	MATCHING_ALREADY_CANCLED(HttpStatus.BAD_REQUEST, "REQ4002", "매칭이 이미 취소되었습니다."),
+
 	;
 
 	private final HttpStatus httpStatus;

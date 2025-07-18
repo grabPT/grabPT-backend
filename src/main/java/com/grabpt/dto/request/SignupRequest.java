@@ -91,8 +91,8 @@ public class SignupRequest {
 		@Schema(description = "주소 객체")
 		private List<UserSignupRequestDto.AddressRequest> address;
 
-		@Schema(description = "카테고리 리스트", example = "[1, 2, 3]")
-		private List<Long> categories;
+		@Schema(description = "카테고리(프로는 하나)", example = "1")
+		private Long categoryId;
 
 		@Schema(description = "사용자가 입력한 프로필 이미지", example = "eoiaIOQJ2414kldsfPOVMIasd.png")
 		private String profileImageUrl;

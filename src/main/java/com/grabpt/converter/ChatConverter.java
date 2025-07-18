@@ -40,7 +40,9 @@ public class ChatConverter {
 	public static ChatResponse.ChatRoomPreviewDto toChatRoomPreviewDto(UserChatRoom userChatRoom, Long unreadCount){
 		return ChatResponse.ChatRoomPreviewDto.builder()
 			.chatRoomId(userChatRoom.getChatRoom().getId())
+			.userId(userChatRoom.getUser().getId())
 			.unreadCount(unreadCount)
+			.otherUserProfile(userChatRoom.getOtherUser().getProfileImageUrl())
 			.roomName(userChatRoom.getRoomName())
 			.lastMessage(userChatRoom.getChatRoom().getLastMessage())
 			.lastMessageTime(userChatRoom.getChatRoom().getLastMessageTime())

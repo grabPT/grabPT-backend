@@ -34,9 +34,11 @@ public class ChatResponse {
 	@Builder
 	public static class ChatRoomPreviewDto{
 		Long chatRoomId;
+		Long userId;
 		Long unreadCount; //추가
 		String roomName;
 		String lastMessage;
 		LocalDateTime lastMessageTime;
+		String otherUserProfile;
 	}
 }

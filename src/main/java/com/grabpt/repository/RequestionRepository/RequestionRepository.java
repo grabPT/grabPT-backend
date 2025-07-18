@@ -21,4 +21,6 @@ public interface RequestionRepository extends JpaRepository<Requestions, Long> {
 			ORDER BY r.createdAt DESC
 		""")
 	List<Requestions> findTop6RequestionsByCategory(@Param("categoryCode") String categoryCode, Pageable pageable);
+
+
 }

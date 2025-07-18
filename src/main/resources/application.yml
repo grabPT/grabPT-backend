@@ -91,3 +91,17 @@ coolsms:
   apiKey: ${COOLSMS_API_KEY}
   apiSecret: ${COOLSMS_API_SECRET}
   fromNumber: ${FROM_NUMBER}
+
+cloud:
+  aws:
+    s3:
+      bucket: grabpt
+      path:
+        proPhoto : proPhoto
+    region:
+      static: ap-northeast-2
+    stack:
+      auto: false
+    credentials:
+      accessKey: ${AWS_ACCESS_KEY_ID}
+      secretKey: ${AWS_SECRET_ACCESS_KEY}

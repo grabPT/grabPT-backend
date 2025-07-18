@@ -28,4 +28,6 @@ public interface ProfileService {
 	ProProfileResponseDTO findProProfile(Long userId);
 
 	Page<ProProfileResponseDTO> findProProfilesByCategory(String categoryCode, Pageable pageable);
+
+
 }

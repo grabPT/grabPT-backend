@@ -2,7 +2,6 @@ package com.grabpt.converter;
 
 
 import com.grabpt.domain.entity.ProProfile;
-import com.grabpt.domain.entity.ProProgram;
 import com.grabpt.domain.entity.UserProfile;
 import com.grabpt.domain.entity.Users;
 import com.grabpt.dto.response.ProProfileResponseDTO;
@@ -22,21 +21,17 @@ public class ProfileConverter {
 		if (profile == null) {
 			return ProfileResponseDTO.MyProfileDTO.builder()
 				.userId(user.getId())
+				.name(user.getUsername())
 				.nickname(user.getNickname())
-				.residence(null)
-				.preferredAreas(Collections.emptyList())
-				.categories(Collections.emptyList())
+				.email(user.getEmail())
 				.build();
 		}
 
 		return ProfileResponseDTO.MyProfileDTO.builder()
 			.userId(user.getId())
+			.name(user.getUsername())
 			.nickname(user.getNickname())
-			.residence(profile.getResidence())
-			.preferredAreas(profile.getPreferredAreas())
-			.categories(profile.getCategories().stream()
-				.map(category -> category.getName())
-				.collect(Collectors.toList()))
+			.email(user.getEmail())
 			.build();
 	}
 
@@ -50,8 +45,10 @@ public class ProfileConverter {
 				.nickname(user.getNickname())
 				.description(null)
 				.photos(Collections.emptyList())
+				.programDescription(proProfile.getProgramDescription())
+				.pricePerSession(proProfile.getPricePerSession())
+				.totalSessions(proProfile.getTotalSessions())
 				.certifications(Collections.emptyList())
-				.programs(Collections.emptyList())
 				.reviews(Collections.emptyList())
 				.build();
 		}
@@ -71,15 +68,6 @@ public class ProfileConverter {
 				.build())
 			.collect(Collectors.toList());
 
-		List<ProfileResponseDTO.MyProProfileDTO.ProgramDTO> programDTOS = proProfile.getPrograms().stream()
-			.map(program -> ProfileResponseDTO.MyProProfileDTO.ProgramDTO.builder()
-				.title(program.getTitle())
-				.description(program.getDescription())
-				.pricePerSession(program.getPricePerSession())
-				.totalSessions(program.getTotalSessions())
-				.build())
-			.collect(Collectors.toList());
-
 		List<ProfileResponseDTO.MyProProfileDTO.ReviewDTO> reviewDTOS = proProfile.getReviews().stream()
 			.map(review -> ProfileResponseDTO.MyProProfileDTO.ReviewDTO.builder()
 				.authorName(review.getUser().getNickname())
@@ -93,8 +81,10 @@ public class ProfileConverter {
 			.nickname(user.getNickname())
 			.description(proProfile.getDescription())
 			.photos(photoDTOS)
+			.programDescription(proProfile.getProgramDescription())
+			.pricePerSession(proProfile.getPricePerSession())
+			.totalSessions(proProfile.getTotalSessions())
 			.certifications(certificationDTOS)
-			.programs(programDTOS)
 			.reviews(reviewDTOS)
 			.build();
 	}
@@ -107,13 +97,6 @@ public class ProfileConverter {
 			.map(ProProfileResponseDTO.CertificationDTO::from)
 			.collect(Collectors.toList());
 
-		List<ProProfileResponseDTO.ProgramDTO> programDTOS = proProfile.getPrograms().stream()
-			.map(ProProfileResponseDTO.ProgramDTO::from)
-			.collect(Collectors.toList());
-
-		List<ProProfileResponseDTO.ReviewDTO> reviewDTOS = proProfile.getReviews().stream()
-			.map(ProProfileResponseDTO.ReviewDTO::from)
-			.collect(Collectors.toList());
 
 		List<ProProfileResponseDTO.PhotoDTO> photoDTOS = proProfile.getPhotos().stream()
 			.map(ProProfileResponseDTO.PhotoDTO::from)
@@ -121,16 +104,12 @@ public class ProfileConverter {
 
 		return ProProfileResponseDTO.builder()
 			.name(user.getNickname())
-			.location(proProfile.getActivityAreas())
-			.price(proProfile.getPrograms().stream()
-				.map(ProProgram::getPricePerSession)
-				.findFirst()
-				.orElse(null))
 			.photos(photoDTOS)
 			.introduction(proProfile.getDescription())
 			.certifications(certificationDTOS)
-			.programs(programDTOS)
-			.reviews(reviewDTOS)
+			.programDescription(proProfile.getProgramDescription())
+			.pricePerSession(proProfile.getPricePerSession())
+			.totalSessions(proProfile.getTotalSessions())
 			.build();
 	}
 }

@@ -2,7 +2,6 @@ package com.grabpt.dto.response;
 
 import com.grabpt.domain.entity.ProCertification;
 import com.grabpt.domain.entity.ProPhoto;
-import com.grabpt.domain.entity.ProProgram;
 import com.grabpt.domain.entity.Review;
 import com.grabpt.domain.entity.Users;
 
@@ -18,11 +17,7 @@ public class ProProfileResponseDTO {
 
 	// 프로필 카드
 	private String name;
-	private List<String> location;
-	private Integer price;
-
-	// 소개 이미지
-	private List<PhotoDTO> photos;
+	private String center;
 
 	// 소개 글
 	private String introduction;
@@ -30,8 +25,14 @@ public class ProProfileResponseDTO {
 	// 자격 사항
 	private List<CertificationDTO> certifications;
 
+	// 소개 이미지
+	private List<PhotoDTO> photos;
+
+
 	// PT 프로그램 과정
-	private List<ProgramDTO> programs;
+	private String programDescription;
+	private Integer pricePerSession;
+	private Integer totalSessions;
 
 	// 이용자 후기
 	private List<ReviewDTO> reviews;
@@ -53,23 +54,6 @@ public class ProProfileResponseDTO {
 		}
 	}
 
-	@Getter
-	@Builder
-	public static class ProgramDTO {
-		private String title;
-		private String description;
-		private Integer pricePerSession;
-		private Integer totalSessions;
-
-		public static ProgramDTO from(ProProgram program) {
-			return ProgramDTO.builder()
-				.title(program.getTitle())
-				.description(program.getDescription())
-				.pricePerSession(program.getPricePerSession())
-				.totalSessions(program.getTotalSessions())
-				.build();
-		}
-	}
 
 	@Getter
 	@Builder

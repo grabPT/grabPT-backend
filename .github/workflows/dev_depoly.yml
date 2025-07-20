@@ -1,74 +1,81 @@
-name: CI/CD Pipeline for Develop
+name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ develop ]
+    branches: [ develop ]  # develop 브랜치에 push 시 실행
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
 
-    env:
-      EC2_HOST: ${{ secrets.EC2_HOST }}
-      EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
-      EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
-      ENV_PROPERTIES: |
-        GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
-        GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
-        KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }}
-        KAKAO_CLIENT_SECRET=${{ secrets.KAKAO_CLIENT_SECRET }}
-        NAVER_CLIENT_ID=${{ secrets.NAVER_CLIENT_ID }}
-        NAVER_CLIENT_SECRET=${{ secrets.NAVER_CLIENT_SECRET }}
-        JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
-        COOLSMS_API_KEY=${{ secrets.COOLSMS_API_KEY }}
-        COOLSMS_API_SECRET=${{ secrets.COOLSMS_API_SECRET }}
-        FROM_NUMBER=${{ secrets.FROM_NUMBER }}
-        AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
     steps:
-      - name: Checkout source
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4  # 저장소 코드 체크아웃
 
-      - name: Set up JDK
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Make application.yml
+        run: |
+          cd ./src/main/resources
+          echo "${{ secrets.APPLICATION_YML }}" > ./application.yml
+        shell: bash
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
       - name: Build with Gradle
-        run: ./gradlew clean build -x test
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: build
 
-      - name: Create SSH key file
+      - name: Rename and Upload build artifact
         run: |
-          echo "$EC2_SSH_KEY" > ec2_key.pem
-          chmod 600 ec2_key.pem
+          mkdir -p upload
+          cp $(find build/libs -name '*.jar' ! -name '*plain.jar' | head -n 1) upload/grabPT.jar
+        shell: bash
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: grabPT
+          path: upload/grabPT.jar
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: grabPT
+          path: .
 
       - name: Deploy to EC2
+        env:
+          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+          EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          ENV_PROPERTIES: ${{ secrets.ENV_PROPERTIES }}
         run: |
-          JAR_FILE=$(find build/libs -name "*.jar" ! -name "*plain.jar" | head -n 1)
+          echo "$EC2_SSH_KEY" > private_key.pem
+          chmod 600 private_key.pem
 
-          echo "Uploading JAR to EC2..."
-          scp -i ec2_key.pem -o StrictHostKeyChecking=no "$JAR_FILE" $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/app.jar
+          # .jar 업로드
+          scp -i private_key.pem -o StrictHostKeyChecking=no grabPT.jar $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/grabPT.jar
 
-          echo "Creating .env.properties locally with correct line breaks..."
-          printf "%s\n" "$ENV_PROPERTIES" > .env.properties
+          # .env.properties 생성 및 업로드
+          echo "$ENV_PROPERTIES" > .env.properties
+          scp -i private_key.pem -o StrictHostKeyChecking=no .env.properties $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/.env.properties
 
-          echo "Uploading .env.properties to EC2..."
-          scp -i ec2_key.pem -o StrictHostKeyChecking=no .env.properties $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/.env.properties
+          # EC2에서 기존 Java 프로세스 종료 후 재시작
+          ssh -i private_key.pem -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_HOST "
+            pgrep java | xargs -r kill -15
+            sleep 10
+            nohup java -Dspring.config.import=optional:file:.env.properties -jar /home/$EC2_USERNAME/grabPT.jar > app.log 2>&1 &
+          "
 
-          echo "Restarting app on EC2..."
-          ssh -i ec2_key.pem -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_HOST <<EOF
-            pkill -f 'java' || true
-            sleep 5
-            cd /home/$EC2_USERNAME
-            nohup java "-Dspring.config.import=optional:file:.env.properties" -jar app.jar > app.log 2>&1 &
-          EOF
-
-      - name: Clean up SSH key and temp files
-        run: |
-          rm -f ec2_key.pem
-          rm -f .env.properties
+          # 민감한 파일 삭제
+          rm -f private_key.pem .env.properties

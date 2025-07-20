@@ -12,6 +12,19 @@ jobs:
       EC2_HOST: ${{ secrets.EC2_HOST }}
       EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
       EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+      ENV_PROPERTIES: |
+        GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+        GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+        KAKAO_CLIENT_ID=${{ secrets.KAKAO_CLIENT_ID }}
+        KAKAO_CLIENT_SECRET=${{ secrets.KAKAO_CLIENT_SECRET }}
+        NAVER_CLIENT_ID=${{ secrets.NAVER_CLIENT_ID }}
+        NAVER_CLIENT_SECRET=${{ secrets.NAVER_CLIENT_SECRET }}
+        JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
+        COOLSMS_API_KEY=${{ secrets.COOLSMS_API_KEY }}
+        COOLSMS_API_SECRET=${{ secrets.COOLSMS_API_SECRET }}
+        FROM_NUMBER=${{ secrets.FROM_NUMBER }}
+        AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
     steps:
       - name: Checkout source
@@ -22,9 +35,6 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-
-      - name: Create .env.properties file from GitHub Secret
-        run: echo "${{ secrets.ENV_PROPERTIES }}" > .env.properties
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -39,15 +49,19 @@ jobs:
 
       - name: Deploy to EC2
         run: |
-          # 전송
-          scp -i ec2_key.pem -o StrictHostKeyChecking=no build/libs/grabpt-1.0.0.jar $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/app.jar
-          scp -i ec2_key.pem -o StrictHostKeyChecking=no .env.properties $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/.env.properties
+          JAR_FILE=$(find build/libs -name "*.jar" ! -name "*plain.jar" | head -n 1)
 
-          # 실행
-          ssh -i ec2_key.pem -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_HOST << 'EOF'
+          # JAR 전송
+          scp -i ec2_key.pem -o StrictHostKeyChecking=no "$JAR_FILE" $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/app.jar
+
+          # .env.properties 전송 및 앱 재시작
+          ssh -i ec2_key.pem -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_HOST <<EOF
+            echo "$ENV_PROPERTIES" > /home/$EC2_USERNAME/.env.properties
+
+            echo "Restarting app..."
             pkill -f 'java' || true
             sleep 5
-            cd /home/$USER
+            cd /home/$EC2_USERNAME
             nohup java -Dspring.config.import=optional:file:.env.properties -jar app.jar > app.log 2>&1 &
           EOF
 

@@ -2,6 +2,7 @@ package com.grabpt.service.AuthService;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -92,16 +93,6 @@ public class AuthService {
 		Category proCategory = categoryRepository.findById(req.getCategoryId())
 			.orElseThrow(() -> new CategoryHandler(ErrorStatus.CATEGORY_NOT_FOUND));
 
-		// address 리스트 매핑
-		List<Address> addressList = req.getAddress().stream()
-			.map(addr -> Address.builder()
-				.city(addr.getCity())
-				.district(addr.getDistrict())
-				.street(addr.getStreet())
-				.zipcode(addr.getZipcode())
-				.build())
-			.collect(Collectors.toList());
-
 		//  ProProfile 생성 및 Users 연관 설정
 		ProProfile proProfile = ProProfile.builder()
 			.center(req.getCenter())
@@ -115,7 +106,7 @@ public class AuthService {
 			.username(req.getUsername())
 			.email(req.getEmail())
 			.phone_number(req.getPhoneNum())
-			.addresses(addressList)
+			.addresses(new ArrayList<>())
 			.password(passwordEncoder.encode(req.getPassword()))
 			.nickname(req.getNickname())
 			.role(mapToRole(req.getRole())) // Role.PRO
@@ -126,6 +117,16 @@ public class AuthService {
 			.oauthProvider(URLDecoder.decode(req.getOauthProvider(), StandardCharsets.UTF_8))
 			.proProfile(proProfile)
 			.build();
+
+		for (SignupRequest.UserSignupRequestDto.AddressRequest addr : req.getAddress()) {
+			Address address = Address.builder()
+				.city(addr.getCity())
+				.district(addr.getDistrict())
+				.street(addr.getStreet())
+				.zipcode(addr.getZipcode())
+				.build();
+			user.addAddress(address);  // ★ 연관관계 메서드 사용
+		}
 
 		proProfile.setUser(user);
 

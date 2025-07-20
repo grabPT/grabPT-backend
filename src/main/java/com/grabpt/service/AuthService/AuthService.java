@@ -89,10 +89,8 @@ public class AuthService {
 	public void registerPro(SignupRequest.ProSignupRequestDto req, HttpServletResponse response) {
 
 		// 카테고리 ID 리스트 → 엔티티 리스트
-		List<Category> categoryList = req.getCategories().stream()
-			.map(id -> categoryRepository.findById(id)
-				.orElseThrow(() -> new CategoryHandler(ErrorStatus.CATEGORY_NOT_FOUND)))
-			.collect(Collectors.toList());
+		Category proCategory = categoryRepository.findById(req.getCategoryId())
+			.orElseThrow(() -> new CategoryHandler(ErrorStatus.CATEGORY_NOT_FOUND));
 
 		// address 리스트 매핑
 		List<Address> addressList = req.getAddress().stream()
@@ -109,7 +107,7 @@ public class AuthService {
 			.center(req.getCenter())
 			.career(req.getCareer())
 			.description(req.getDescription())
-			.categories(categoryList)
+			.category(proCategory)
 			.build();
 
 		// Users 생성 및 연관관계 설정

@@ -115,7 +115,7 @@ public class ProfileServiceImpl implements ProfileService {
 
 	@Override
 	public Page<ProProfileResponseDTO> findProProfilesByCategory(String categoryCode, Pageable pageable) {
-		Page<Users> users = userRepository.findAllByProProfile_Categories_Code(categoryCode, pageable);
+		Page<Users> users = userRepository.findAllByProProfile_Category_Code(categoryCode, pageable);
 		return users.map(ProfileConverter::toProProfileDetailDTO);
 	}
 

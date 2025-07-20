@@ -1,3 +1,4 @@
+
 package com.grabpt.apiPayload.code.status;
 
 import org.springframework.http.HttpStatus;
@@ -22,9 +23,6 @@ public enum ErrorStatus implements BaseErrorCode {
 	MEMBER_NOT_FOUND(HttpStatus.BAD_REQUEST, "MEMBER4001", "사용자가 없습니다."),
 	NICKNAME_NOT_EXIST(HttpStatus.BAD_REQUEST, "MEMBER4002", "닉네임은 필수 입니다."),
 
-	//채팅 관련 에러
-	CHATROOM_NOT_FOUND(HttpStatus.BAD_REQUEST, "CHAT4001", "채팅방이 존재하지 않습니다"),
-
 	// 예시,,,
 	ARTICLE_NOT_FOUND(HttpStatus.NOT_FOUND, "ARTICLE4001", "게시글이 없습니다."),
 
@@ -41,7 +39,24 @@ public enum ErrorStatus implements BaseErrorCode {
 
 	INVALID_ROLE(HttpStatus.BAD_REQUEST, "ROLE4001", "올바르지 않은 Role 인풋입니다"),
 
-	INVALID_GENDER(HttpStatus.BAD_REQUEST, "GENDER4001", "올바르지 않은 Gender 인풋입니다");
+	INVALID_GENDER(HttpStatus.BAD_REQUEST, "GENDER4001", "올바르지 않은 Gender 인풋입니다"),
+
+	CHATROOM_NOT_FOUND(HttpStatus.BAD_REQUEST, "CHAT4001", "존재하지 않는 채팅입니다."),
+
+	PRO_NOT_FOUND(HttpStatus.BAD_REQUEST, "PRO4001", "존재하지 않는 트레이너입니다."),
+
+	REQUESTION_NOT_FOUND(HttpStatus.BAD_REQUEST, "REQ4001", "존재하지 않는 요청서입니다."),
+
+	SUGGESTION_NOT_FOUND(HttpStatus.BAD_REQUEST, "SUG4001", "존재하지 않는 지원서입니다."),
+
+	REQUESTION_ALREADY_MATCHED(HttpStatus.BAD_REQUEST, "REQ4002", "요청서가 이미 매치되었습니다."),
+
+	MATCHING_NOT_FOUND(HttpStatus.BAD_REQUEST, "REQ4002", "매칭을 찾을 수 없습니다."),
+
+	MATCHING_ALREADY_CANCLED(HttpStatus.BAD_REQUEST, "REQ4002", "매칭이 이미 취소되었습니다."),
+
+	;
+
 	private final HttpStatus httpStatus;
 	private final String code;
 	private final String message;

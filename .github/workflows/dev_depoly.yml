@@ -37,7 +37,7 @@ jobs:
           cp $(find build/libs -name '*.jar' ! -name '*plain.jar' | head -n 1) upload/grabPT.jar
         shell: bash
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: grabPT
           path: upload/grabPT.jar
@@ -48,7 +48,7 @@ jobs:
 
     steps:
       - name: Download build artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: grabPT
           path: .

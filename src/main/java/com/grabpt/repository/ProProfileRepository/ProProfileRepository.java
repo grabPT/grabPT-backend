@@ -13,12 +13,13 @@ public interface ProProfileRepository extends JpaRepository<ProProfile, Long> {
 	@Query("""
     SELECT p
     FROM ProProfile p
-    JOIN p.categories cat
+    JOIN p.category cat
     JOIN FETCH p.user u
-    JOIN FETCH p.center c
+    JOIN u.addresses addr
     WHERE cat.code = :categoryCode
-    AND p.center.centerAddress LIKE %:region%
+    AND addr.street LIKE %:region%
 	""")
 	List<ProProfile> findAllProByCategoryCodeAndRegion(String categoryCode, String region);
+
 
 }

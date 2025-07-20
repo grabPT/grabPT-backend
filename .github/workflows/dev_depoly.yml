@@ -40,9 +40,9 @@ jobs:
       - name: Deploy to EC2
         run: |
           # 전송
-          scp -i ec2_key.pem -o StrictHostKeyChecking=no build/libs/*.jar $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/app.jar
+          scp -i ec2_key.pem -o StrictHostKeyChecking=no build/libs/grabpt-1.0.0.jar $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/app.jar
           scp -i ec2_key.pem -o StrictHostKeyChecking=no .env.properties $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/.env.properties
-          
+
           # 실행
           ssh -i ec2_key.pem -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_HOST << 'EOF'
             pkill -f 'java' || true

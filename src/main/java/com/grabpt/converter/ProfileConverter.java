@@ -6,7 +6,7 @@ import com.grabpt.domain.entity.UserProfile;
 import com.grabpt.domain.entity.Users;
 import com.grabpt.dto.response.ProProfileResponseDTO;
 import com.grabpt.dto.response.ProfileResponseDTO;
-
+import com.grabpt.domain.entity.Review;
 
 import java.util.Collections;
 import java.util.List;
@@ -21,6 +21,7 @@ public class ProfileConverter {
 		if (profile == null) {
 			return ProfileResponseDTO.MyProfileDTO.builder()
 				.userId(user.getId())
+				.profileImageUrl(user.getProfileImageUrl())
 				.name(user.getUsername())
 				.nickname(user.getNickname())
 				.email(user.getEmail())
@@ -39,17 +40,25 @@ public class ProfileConverter {
 	public static ProfileResponseDTO.MyProProfileDTO toMyProProfileDTO(Users user) {
 		ProProfile proProfile = user.getProProfile();
 
+		double averageRating = proProfile.getReviews().stream()
+			.mapToDouble(Review::getRating)
+			.average()
+			.orElse(0.0); // 리뷰가 없으면 0.0을 반환
+
 		if (proProfile == null) {
 			return ProfileResponseDTO.MyProProfileDTO.builder()
 				.proId(user.getId())
-				.nickname(user.getNickname())
+				.profileImageUrl(user.getProfileImageUrl())
+				.proName(user.getUsername())
+				.centerName(proProfile.getCenter().getCenterName())
+				.categoryName(user.getProProfile().getCategory().getName())
+				.averageRating(averageRating)
 				.description(null)
 				.photos(Collections.emptyList())
 				.programDescription(proProfile.getProgramDescription())
 				.pricePerSession(proProfile.getPricePerSession())
 				.totalSessions(proProfile.getTotalSessions())
-				.certifications(Collections.emptyList())
-				.reviews(Collections.emptyList())
+				.center(proProfile.getCenter())
 				.build();
 		}
 
@@ -60,32 +69,20 @@ public class ProfileConverter {
 				.build())
 			.collect(Collectors.toList());
 
-		List<ProfileResponseDTO.MyProProfileDTO.CertificationDTO> certificationDTOS = proProfile.getCertifications().stream()
-			.map(certification -> ProfileResponseDTO.MyProProfileDTO.CertificationDTO.builder()
-				.name(certification.getName())
-				.issuer(certification.getIssuer())
-				.issuedDate(certification.getIssuedDate())
-				.build())
-			.collect(Collectors.toList());
-
-		List<ProfileResponseDTO.MyProProfileDTO.ReviewDTO> reviewDTOS = proProfile.getReviews().stream()
-			.map(review -> ProfileResponseDTO.MyProProfileDTO.ReviewDTO.builder()
-				.authorName(review.getUser().getNickname())
-				.rating(review.getRating())
-				.content(review.getContent())
-				.build())
-			.collect(Collectors.toList());
 
 		return ProfileResponseDTO.MyProProfileDTO.builder()
 			.proId(user.getId())
-			.nickname(user.getNickname())
+			.profileImageUrl(user.getProfileImageUrl())
+			.proName(user.getUsername())
+			.centerName(proProfile.getCenter().getCenterName())
+			.categoryName(user.getProProfile().getCategory().getName())
+			.averageRating(averageRating)
 			.description(proProfile.getDescription())
 			.photos(photoDTOS)
 			.programDescription(proProfile.getProgramDescription())
 			.pricePerSession(proProfile.getPricePerSession())
 			.totalSessions(proProfile.getTotalSessions())
-			.certifications(certificationDTOS)
-			.reviews(reviewDTOS)
+			.center(proProfile.getCenter())
 			.build();
 	}
 

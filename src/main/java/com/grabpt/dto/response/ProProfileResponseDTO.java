@@ -4,7 +4,9 @@ import com.grabpt.domain.entity.ProCertification;
 import com.grabpt.domain.entity.ProPhoto;
 import com.grabpt.domain.entity.Review;
 import com.grabpt.domain.entity.Users;
+import com.grabpt.domain.enums.CertificationType;
 
+import jakarta.persistence.Column;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -41,15 +43,17 @@ public class ProProfileResponseDTO {
 	@Getter
 	@Builder
 	public static class CertificationDTO {
-		private String name;
-		private String issuer;
-		private LocalDateTime issuedDate;
+		private CertificationType certificationType; // 자격증 이름
+
+		private String description;
+
+		private String imageUrl;
 
 		public static CertificationDTO from(ProCertification certification) {
 			return CertificationDTO.builder()
-				.name(certification.getName())
-				.issuer(certification.getIssuer())
-				.issuedDate(certification.getIssuedDate())
+				.certificationType(certification.getCertificationType())
+				.description(certification.getDescription())
+				.imageUrl(certification.getImageUrl())
 				.build();
 		}
 	}

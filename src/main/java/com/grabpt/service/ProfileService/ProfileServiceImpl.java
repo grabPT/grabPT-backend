@@ -1,20 +1,32 @@
 package com.grabpt.service.ProfileService;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.grabpt.apiPayload.code.status.ErrorStatus;
 import com.grabpt.apiPayload.exception.GeneralException;
 import com.grabpt.converter.ProfileConverter;
+import com.grabpt.domain.entity.Center;
 import com.grabpt.domain.entity.ProProfile;
 import com.grabpt.domain.entity.Requestions;
 import com.grabpt.domain.entity.Review;
 import com.grabpt.domain.entity.UserProfile;
 import com.grabpt.domain.entity.Users;
+import com.grabpt.dto.request.CenterUpdateRequestDTO;
+import com.grabpt.dto.request.CertificationRequestDTO;
+import com.grabpt.dto.request.CertificationUpdateRequestDTO;
+import com.grabpt.dto.request.DescriptionUpdateRequestDTO;
 import com.grabpt.dto.request.ProProfileUpdateRequestDTO;
+import com.grabpt.dto.request.PtPriceUpdateRequestDTO;
+import com.grabpt.dto.request.PtProgramUpdateRequestDTO;
 import com.grabpt.dto.request.UserProfileUpdateRequestDTO;
+import com.grabpt.dto.response.CertificationResponseDTO;
 import com.grabpt.dto.response.MyRequestListDTO;
 import com.grabpt.dto.response.MyReviewListDTO;
 import com.grabpt.dto.response.ProProfileResponseDTO;
@@ -76,26 +88,6 @@ public class ProfileServiceImpl implements ProfileService {
 		userProfile.setPreferredAreas(request.getPreferredAreas());
 	}
 
-	@Override
-	@Transactional
-	public void updateMyProUserProfile(Long userId, ProProfileUpdateRequestDTO request) {
-		Users user = findUserById(userId);
-		ProProfile proProfile = user.getProProfile();
-		if (proProfile == null) {
-			throw new GeneralException(ErrorStatus.MEMBER_NOT_FOUND);
-		}
-
-		user.setNickname(request.getNickname());
-		proProfile.setCenter(request.getCenter());
-		proProfile.setCareer(request.getCareer());
-		proProfile.setDescription(request.getDescription());
-		proProfile.setProgramDescription(request.getProgramDescription());
-		proProfile.setPricePerSession(request.getPricePerSession());
-		proProfile.setTotalSessions(request.getTotalSessions());
-
-		photoService.updatePhotos(proProfile, request.getPhotos());
-		certificationService.updateCertifications(proProfile, request.getCertifications());
-	}
 
 	@Override
 	public Page<MyReviewListDTO> findProReviews(Long userId, Pageable pageable) {
@@ -125,5 +117,76 @@ public class ProfileServiceImpl implements ProfileService {
 	private Users findUserById(Long userId) {
 		return userRepository.findById(userId)
 			.orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+	}
+
+	@Override
+	@Transactional
+	public void updateProCenter(Long userId, CenterUpdateRequestDTO request) {
+		Users user = findUserById(userId);
+		ProProfile proProfile = user.getProProfile();
+		if (proProfile == null) {
+			throw new GeneralException(ErrorStatus.MEMBER_NOT_FOUND);
+		}
+
+		Center center = proProfile.getCenter();
+
+		center.setCenterName(request.getCenterName());
+		center.setCenterAddress(request.getCenterAddress());
+		proProfile.setCenter(center);
+	}
+
+	@Override
+	@Transactional
+	public void updateProDescription(Long userId, DescriptionUpdateRequestDTO request) {
+		ProProfile proProfile = findUserById(userId).getProProfile();
+		proProfile.setDescription(request.getDescription());
+	}
+
+	@Override
+	@Transactional
+	public void updateProPhotos(Long userId, List<MultipartFile> photoFiles) {
+		ProProfile proProfile = findUserById(userId).getProProfile();
+		if (proProfile == null) {
+			throw new GeneralException(ErrorStatus.MEMBER_NOT_FOUND);
+		}
+		photoService.updatePhotos(proProfile, photoFiles);
+	}
+
+	@Override
+	@Transactional
+	public void updateProPtPrice(Long userId, PtPriceUpdateRequestDTO request) {
+		ProProfile proProfile = findUserById(userId).getProProfile();
+		proProfile.setPricePerSession(request.getPricePerSession());
+		proProfile.setTotalSessions(request.getTotalSessions());
+	}
+
+	@Override
+	@Transactional
+	public void updateProProgram(Long userId, PtProgramUpdateRequestDTO request) {
+		ProProfile proProfile = findUserById(userId).getProProfile();
+		proProfile.setProgramDescription(request.getProgramDescription());
+	}
+
+	@Override
+	@Transactional
+	public void updateUserProfileImage(Long userId, MultipartFile profileImage) {
+		Users user = findUserById(userId);
+		photoService.updateUserProfileImage(user, profileImage);
+	}
+
+	@Override
+	public CertificationResponseDTO findMyCertifications(Long userId) {
+		ProProfile proProfile = findUserById(userId).getProProfile();
+		return CertificationResponseDTO.from(proProfile != null ? proProfile.getCertifications() : Collections.emptyList());
+	}
+
+	@Override
+	@Transactional
+	public void updateProCertifications(Long userId, CertificationUpdateRequestDTO request, List<MultipartFile> images) {
+		ProProfile proProfile = findUserById(userId).getProProfile();
+		if (proProfile == null) {
+			throw new GeneralException(ErrorStatus.MEMBER_NOT_FOUND);
+		}
+		certificationService.updateCertifications(proProfile, request.getCertifications(), images);
 	}
 }

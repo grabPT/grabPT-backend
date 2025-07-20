@@ -13,7 +13,9 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j; // Slf4j import 추가
 
+@Slf4j // Slf4j 어노테이션 추가
 @Configuration
 @Getter
 public class AmazonConfig {
@@ -29,7 +31,7 @@ public class AmazonConfig {
 	@Value("${cloud.aws.region.static}")
 	private String region;
 
-	@Value(("{cloud.aws.s3.bucket}"))
+	@Value("${cloud.aws.s3.bucket}")
 	private String bucket;
 
 	@Value("${cloud.aws.s3.path.proPhoto}")
@@ -39,6 +41,8 @@ public class AmazonConfig {
 	@PostConstruct
 	public void init() {
 		this.awsCredentials = new BasicAWSCredentials(accessKey, secretKey);
+		// 디버깅을 위한 로그 추가: 애플리케이션 시작 시 로드된 버킷 이름을 콘솔에 출력합니다.
+		log.info("AWS S3 Bucket name loaded from properties: [{}]", bucket);
 	}
 
 	@Bean

@@ -7,9 +7,9 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
 
-spring:
-  config:
-    import: optional:file:.env.properties
+  spring:
+    config:
+      import: optional:file:.env.properties
 
   datasource:
     url: jdbc:mysql://grabdb.cx08oc6c8i7a.ap-northeast-2.rds.amazonaws.com:3306/grabdb

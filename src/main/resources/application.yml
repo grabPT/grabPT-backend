@@ -37,7 +37,7 @@ spring:
     oauth2:
       client:
         registration:
-          google: # /oauth2/authorization/google 이 주소를 동작하게 한다.
+          google:
             client-id: ${GOOGLE_CLIENT_ID}
             client-secret: ${GOOGLE_CLIENT_SECRET}
             scope:

@@ -2,8 +2,8 @@ server:
   port: 8080
 
 spring:
-  config:
-    import: classpath:.env.properties
+  #  config:
+  #    import: classpath:.env.properties
 
   datasource:
     url: jdbc:mysql://grabdb.cx08oc6c8i7a.ap-northeast-2.rds.amazonaws.com:3306/grabdb

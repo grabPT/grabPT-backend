@@ -61,9 +61,6 @@ dependencies {
     // coolsms
     implementation 'net.nurigo:sdk:4.3.0'
 
-    // MySQL
-    runtimeOnly 'com.mysql:mysql-connector-j'
-
     // Test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'

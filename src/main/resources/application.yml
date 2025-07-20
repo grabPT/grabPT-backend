@@ -12,7 +12,7 @@ spring:
     import: optional:file:.env.properties
 
   datasource:
-    url: jdbc:mysql://grabdb.cx08oc6c8i7a.ap-northeast-2.rds.amazonaws.com:3306/grabdb?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    url: jdbc:mysql://grabdb.cx08oc6c8i7a.ap-northeast-2.rds.amazonaws.com:3306/grabdb
     username: root
     password: ${RDS_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver

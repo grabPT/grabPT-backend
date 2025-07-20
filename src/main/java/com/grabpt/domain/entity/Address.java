@@ -32,6 +32,8 @@ public class Address {
 	private String district; // 시/군/구 (관악구)
 	private String street; // 읍/면/동 (봉천동)
 	private String zipcode; // 우편번호 (12345)
+	private String streetCode; // 도로명주소
+	private String specAddress; // 상세주소
 
 	@ManyToOne
 	@JoinColumn(name = "user_id")

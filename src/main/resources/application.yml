@@ -20,7 +20,7 @@ spring:
   jpa:
     generate-ddl: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
@@ -97,7 +97,7 @@ cloud:
     s3:
       bucket: grabpt
       path:
-        proPhoto : proPhoto
+        proPhoto: proPhoto
     region:
       static: ap-northeast-2
     stack:

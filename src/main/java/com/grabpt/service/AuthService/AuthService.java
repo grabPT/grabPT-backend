@@ -48,16 +48,6 @@ public class AuthService {
 				.orElseThrow(() -> new CategoryHandler(ErrorStatus.CATEGORY_NOT_FOUND)))
 			.collect(Collectors.toList());
 
-		// address 리스트 매핑
-		List<Address> addressList = req.getAddress().stream()
-			.map(addr -> Address.builder()
-				.city(addr.getCity())
-				.district(addr.getDistrict())
-				.street(addr.getStreet())
-				.zipcode(addr.getZipcode())
-				.build())
-			.collect(Collectors.toList());
-
 		// UserProfile 생성
 		UserProfile userPrprofile = UserProfile.builder()
 			.categories(categoryList)
@@ -68,7 +58,7 @@ public class AuthService {
 			.username(req.getUsername())
 			.email(req.getEmail())
 			.phone_number(req.getPhoneNum())
-			.addresses(addressList)
+			.addresses(new ArrayList<>())
 			.password(passwordEncoder.encode(req.getPassword()))
 			.nickname(req.getNickname())
 			.role(mapToRole(req.getRole()))
@@ -79,6 +69,17 @@ public class AuthService {
 			.oauthProvider(URLDecoder.decode(req.getOauthProvider(), StandardCharsets.UTF_8)) // 디코딩 해서 db 저장
 			.userProfile(userPrprofile)  // 연관관계 연결
 			.build();
+
+		// address 리스트 매핑
+		for (SignupRequest.UserSignupRequestDto.AddressRequest addr : req.getAddress()) {
+			Address address = Address.builder()
+				.city(addr.getCity())
+				.district(addr.getDistrict())
+				.street(addr.getStreet())
+				.zipcode(addr.getZipcode())
+				.build();
+			user.addAddress(address);  //  연관관계 메서드 사용
+		}
 
 		userPrprofile.setUser(user);
 

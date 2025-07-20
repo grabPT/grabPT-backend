@@ -127,8 +127,8 @@ public class SignupRequest {
 		@Schema(description = "센터")
 		private Center center;
 
-		@Schema(description = "커리어", example = "부산외대 스포츠재활학 석사, 한국재활기능운동학회 정회원, ...")
-		private String career;
+		@Schema(description = "연차", example = "3")
+		private Integer career;
 
 		@Schema(description = "소개", example = "안녕하세요. 트레이너 홍길동입니다.")
 		private String description;

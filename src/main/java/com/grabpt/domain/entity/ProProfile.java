@@ -10,7 +10,6 @@ import com.grabpt.domain.common.BaseEntity;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -46,7 +45,7 @@ public class ProProfile extends BaseEntity {
 	@Embedded
 	private Center center;
 
-	private String career;
+	private Integer career; // 연차
 
 	private String description; // 소개
 

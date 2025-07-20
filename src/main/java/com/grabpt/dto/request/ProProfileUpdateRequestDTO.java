@@ -20,7 +20,7 @@ public class ProProfileUpdateRequestDTO {
 
 	private Center center;
 
-	private String career;
+	private Integer career;
 
 	@Size(max = 3, message = "운동 희망 지역은 최대 3개까지 선택 가능합니다.")
 	private List<String> preferredAreas;

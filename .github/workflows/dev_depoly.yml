@@ -51,22 +51,24 @@ jobs:
         run: |
           JAR_FILE=$(find build/libs -name "*.jar" ! -name "*plain.jar" | head -n 1)
 
-          echo "📦 Uploading JAR to EC2..."
+          echo "Uploading JAR to EC2..."
           scp -i ec2_key.pem -o StrictHostKeyChecking=no "$JAR_FILE" $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/app.jar
 
-          echo "📄 Creating .env.properties locally..."
-          echo "$ENV_PROPERTIES" > .env.properties
+          echo "Creating .env.properties locally with correct line breaks..."
+          printf "%s\n" "$ENV_PROPERTIES" > .env.properties
 
-          echo "📄 Uploading .env.properties to EC2..."
+          echo "Uploading .env.properties to EC2..."
           scp -i ec2_key.pem -o StrictHostKeyChecking=no .env.properties $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/.env.properties
 
-          echo "🚀 Restarting app on EC2..."
+          echo "Restarting app on EC2..."
           ssh -i ec2_key.pem -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_HOST <<EOF
             pkill -f 'java' || true
             sleep 5
             cd /home/$EC2_USERNAME
-            nohup java -Dspring.config.import=optional:file:.env.properties -jar app.jar > app.log 2>&1 &
+            nohup java "-Dspring.config.import=optional:file:.env.properties" -jar app.jar > app.log 2>&1 &
           EOF
 
-      - name: Clean up SSH key
-        run: rm -f ec2_key.pem
+      - name: Clean up SSH key and temp files
+        run: |
+          rm -f ec2_key.pem
+          rm -f .env.properties

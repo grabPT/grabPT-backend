@@ -9,18 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-      KAKAO_CLIENT_ID: ${{ secrets.KAKAO_CLIENT_ID }}
-      KAKAO_CLIENT_SECRET: ${{ secrets.KAKAO_CLIENT_SECRET }}
-      NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
-      NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
-      JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
-      COOLSMS_API_KEY: ${{ secrets.COOLSMS_API_KEY }}
-      COOLSMS_API_SECRET: ${{ secrets.COOLSMS_API_SECRET }}
-      FROM_NUMBER: ${{ secrets.FROM_NUMBER }}
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      ENV_PROPERTIES: ${{ secrets.ENV_PROPERTIES }}
       EC2_HOST: ${{ secrets.EC2_HOST }}
       EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
       EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
@@ -35,21 +24,6 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Make .env.properties
-        run: |
-          echo "GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID" >> .env.properties
-          echo "GOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET" >> .env.properties
-          echo "KAKAO_CLIENT_ID=$KAKAO_CLIENT_ID" >> .env.properties
-          echo "KAKAO_CLIENT_SECRET=$KAKAO_CLIENT_SECRET" >> .env.properties
-          echo "NAVER_CLIENT_ID=$NAVER_CLIENT_ID" >> .env.properties
-          echo "NAVER_CLIENT_SECRET=$NAVER_CLIENT_SECRET" >> .env.properties
-          echo "JWT_SECRET_KEY=$JWT_SECRET_KEY" >> .env.properties
-          echo "COOLSMS_API_KEY=$COOLSMS_API_KEY" >> .env.properties
-          echo "COOLSMS_API_SECRET=$COOLSMS_API_SECRET" >> .env.properties
-          echo "FROM_NUMBER=$FROM_NUMBER" >> .env.properties
-          echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> .env.properties
-          echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> .env.properties
-
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
@@ -63,15 +37,21 @@ jobs:
 
       - name: Deploy to EC2
         run: |
-          # 전송
+          # JAR 전송
           scp -i ec2_key.pem -o StrictHostKeyChecking=no build/libs/*.jar $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/app.jar
-          scp -i ec2_key.pem -o StrictHostKeyChecking=no .env.properties $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/.env.properties
-          
-          # 실행
-          ssh -i ec2_key.pem -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_HOST << 'EOF'
+
+          # SSH 접속 후 배포
+          ssh -i ec2_key.pem -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_HOST << EOF
+            # 환경변수 파일 생성
+            echo "$ENV_PROPERTIES" > /home/$EC2_USERNAME/.env.properties
+
+            # 기존 프로세스 종료
             pkill -f 'java' || true
             sleep 5
-            nohup java -jar /home/$USER/app.jar > app.log 2>&1 &
+
+            # 실행
+            cd /home/$EC2_USERNAME
+            nohup java -Dspring.config.import=optional:file:.env.properties -jar app.jar > app.log 2>&1 &
           EOF
 
       - name: Clean up SSH key

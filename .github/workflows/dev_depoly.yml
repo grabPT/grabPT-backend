@@ -9,7 +9,6 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      ENV_PROPERTIES: ${{ secrets.ENV_PROPERTIES }}
       EC2_HOST: ${{ secrets.EC2_HOST }}
       EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
       EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
@@ -24,6 +23,9 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Create .env.properties file from GitHub Secret
+        run: echo "${{ secrets.ENV_PROPERTIES }}" > .env.properties
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
@@ -37,11 +39,8 @@ jobs:
 
       - name: Deploy to EC2
         run: |
-          echo "$EC2_SSH_KEY" > ec2_key.pem
-          chmod 600 ec2_key.pem
-          
-          # 전송 (JAR 이름 명확히 지정)
-          scp -i ec2_key.pem -o StrictHostKeyChecking=no build/libs/grabpt-0.0.1-SNAPSHOT.jar $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/app.jar
+          # 전송
+          scp -i ec2_key.pem -o StrictHostKeyChecking=no build/libs/*.jar $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/app.jar
           scp -i ec2_key.pem -o StrictHostKeyChecking=no .env.properties $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/.env.properties
           
           # 실행

@@ -3,6 +3,7 @@ package com.grabpt.controller;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,6 +20,7 @@ import com.grabpt.dto.response.MyReviewListDTO;
 import com.grabpt.dto.response.ProfileResponseDTO;
 import com.grabpt.service.ProfileService.ProfileService;
 
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -69,5 +71,10 @@ public class MyProfileController {
 		return ApiResponse.onSuccess("프로필 이미지가 성공적으로 수정되었습니다.");
 	}
 
-
+	@DeleteMapping
+	@Operation(summary = "회원 탈퇴 API", description = "현재 로그인된 사용자의 계정을 비활성화합니다.")
+	public ApiResponse<String> withdrawUser(@RequestParam(name = "userId") Long userId) {
+		profileService.deleteUser(userId);
+		return ApiResponse.onSuccess("회원 탈퇴가 성공적으로 처리되었습니다.");
+	}
 }

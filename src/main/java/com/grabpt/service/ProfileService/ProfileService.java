@@ -46,4 +46,6 @@ public interface ProfileService {
 	void updateUserProfileImage(Long userId, MultipartFile profileImage);
 	CertificationResponseDTO findMyCertifications(Long userId);
 	void updateProCertifications(Long userId, CertificationUpdateRequestDTO request, List<MultipartFile> images);
+
+	void deleteUser(Long userId); // 회원 탈퇴 메서드 선언
 }

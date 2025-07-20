@@ -189,4 +189,11 @@ public class ProfileServiceImpl implements ProfileService {
 		}
 		certificationService.updateCertifications(proProfile, request.getCertifications(), images);
 	}
+
+	@Override
+	@Transactional
+	public void deleteUser(Long userId) {
+		Users user = findUserById(userId);
+		user.withdraw(); // Users 엔티티에 추가한 탈퇴 메서드 호출
+	}
 }

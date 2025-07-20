@@ -51,14 +51,17 @@ jobs:
         run: |
           JAR_FILE=$(find build/libs -name "*.jar" ! -name "*plain.jar" | head -n 1)
 
-          # JAR 전송
+          echo "📦 Uploading JAR to EC2..."
           scp -i ec2_key.pem -o StrictHostKeyChecking=no "$JAR_FILE" $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/app.jar
 
-          # .env.properties 전송 및 앱 재시작
-          ssh -i ec2_key.pem -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_HOST <<EOF
-            echo "$ENV_PROPERTIES" > /home/$EC2_USERNAME/.env.properties
+          echo "📄 Creating .env.properties locally..."
+          echo "$ENV_PROPERTIES" > .env.properties
 
-            echo "Restarting app..."
+          echo "📄 Uploading .env.properties to EC2..."
+          scp -i ec2_key.pem -o StrictHostKeyChecking=no .env.properties $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/.env.properties
+
+          echo "🚀 Restarting app on EC2..."
+          ssh -i ec2_key.pem -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_HOST <<EOF
             pkill -f 'java' || true
             sleep 5
             cd /home/$EC2_USERNAME

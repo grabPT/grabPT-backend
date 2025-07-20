@@ -56,11 +56,18 @@ jobs:
         run: |
           echo "$EC2_SSH_KEY" > private_key.pem
           chmod 600 private_key.pem
+
+          # JAR 파일 이름 감지 후 EC2로 복사 (grabpt-0.0.1-SNAPSHOT.jar로 저장)
           jar_file=$(find build/libs -name '*.jar' ! -name '*plain.jar' | head -n 1)
-          scp -i private_key.pem -o StrictHostKeyChecking=no "$jar_file" $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/umc7thServer.jar
+          scp -i private_key.pem -o StrictHostKeyChecking=no "$jar_file" $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/grabpt-0.0.1-SNAPSHOT.jar
+
+          # EC2에 SSH 접속해서 기존 프로세스 종료 후 새로운 JAR 실행
           ssh -i private_key.pem -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_HOST "
-            pgrep java | xargs -r kill -15  # 기존에 실행 중인 Java 프로세스 종료
+            pgrep java | xargs -r kill -15
             sleep 10
-            nohup java -jar /home/$EC2_USERNAME/umc7thServer.jar > app.log 2>&1 &  # 새 버전 애플리케이션 실행
+            nohup java -jar /home/$EC2_USERNAME/grabpt-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
           "
-          rm -f private_key.pem  # 민감한 정보 삭제
+
+          # SSH 키 삭제
+          rm -f private_key.pem
+        

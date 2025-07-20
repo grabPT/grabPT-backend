@@ -2,8 +2,6 @@ package com.grabpt.dto.request;
 
 import java.util.List;
 
-import com.grabpt.domain.entity.Center;
-
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -125,7 +123,7 @@ public class SignupRequest {
 		private List<String> activityAreas;
 
 		@Schema(description = "센터")
-		private Center center;
+		private String center;
 
 		@Schema(description = "연차", example = "3")
 		private Integer career;

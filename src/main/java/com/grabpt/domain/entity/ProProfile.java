@@ -10,7 +10,6 @@ import com.grabpt.domain.common.BaseEntity;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
-import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -42,8 +41,7 @@ public class ProProfile extends BaseEntity {
 	@Column(name = "pro_profile_id")
 	private Long id;
 
-	@Embedded
-	private Center center;
+	private String center;
 
 	private Integer career; // 연차
 

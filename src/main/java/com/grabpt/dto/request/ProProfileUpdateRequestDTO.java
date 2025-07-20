@@ -2,8 +2,6 @@ package com.grabpt.dto.request;
 
 import java.util.List;
 
-import com.grabpt.domain.entity.Center;
-
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -18,7 +16,7 @@ public class ProProfileUpdateRequestDTO {
 
 	private String residence;
 
-	private Center center;
+	private String center;
 
 	private Integer career;
 

@@ -1,12 +1,8 @@
 package com.grabpt.service.ProfileService;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.grabpt.apiPayload.code.status.ErrorStatus;
 import com.grabpt.apiPayload.exception.GeneralException;
+import com.grabpt.converter.CategoryConverter;
 import com.grabpt.converter.ProfileConverter;
 import com.grabpt.domain.entity.ProProfile;
 import com.grabpt.domain.entity.Requestions;
@@ -24,9 +20,15 @@ import com.grabpt.repository.ReviewRepository.reviewRepository;
 import com.grabpt.repository.UserRepository.UserRepository;
 import com.grabpt.service.CertificationService.CertificationService;
 import com.grabpt.service.PhotoService.PhotoService;
-import com.grabpt.service.ProgramService.ProgramService;
 
+import com.grabpt.service.ProgramService.ProgramService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -88,14 +90,12 @@ public class ProfileServiceImpl implements ProfileService {
 		}
 
 		user.setNickname(request.getNickname());
-		proProfile.setResidence(request.getResidence());
 		proProfile.setCenter(request.getCenter());
 		proProfile.setCareer(request.getCareer());
 		proProfile.setDescription(request.getDescription());
 		proProfile.setActivityAreas(request.getActivityAreas());
 
 		photoService.updatePhotos(proProfile, request.getPhotos());
-		programService.updatePrograms(proProfile, request.getPrograms());
 		certificationService.updateCertifications(proProfile, request.getCertifications());
 	}
 
@@ -124,8 +124,15 @@ public class ProfileServiceImpl implements ProfileService {
 		return users.map(ProfileConverter::toProProfileDetailDTO);
 	}
 
+	@Override
+	public List<CategoryResponse.ProListDto> findAllProByCategoryCodeAndRegion(String categoryCode, String region){
+		return CategoryConverter.toProListDto(proProfileRepository.
+			findAllProByCategoryCodeAndRegion(categoryCode, region));
+	}
+
 	private Users findUserById(Long userId) {
 		return userRepository.findById(userId)
 			.orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
 	}
+
 }

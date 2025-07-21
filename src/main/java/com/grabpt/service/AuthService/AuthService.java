@@ -42,13 +42,22 @@ public class AuthService {
 
 	public void registerUser(SignupRequest.UserSignupRequestDto req, HttpServletResponse response) {
 
-		// 카테고리 ID 리스트 → 엔티티 리스트
 		List<Category> categoryList = req.getCategories().stream()
 			.map(id -> categoryRepository.findById(id)
 				.orElseThrow(() -> new CategoryHandler(ErrorStatus.CATEGORY_NOT_FOUND)))
 			.collect(Collectors.toList());
+    
+    // address 리스트 매핑
+		List<Address> addressList = req.getAddress().stream()
+			.map(addr -> Address.builder()
+				.city(addr.getCity())
+				.district(addr.getDistrict())
+				.street(addr.getStreet())
+				.zipcode(addr.getZipcode())
+				.build())
+			.collect(Collectors.toList());
 
-		// UserProfile 생성
+    // UserProfile 생성
 		UserProfile userPrprofile = UserProfile.builder()
 			.categories(categoryList)
 			.build();
@@ -58,7 +67,7 @@ public class AuthService {
 			.username(req.getUsername())
 			.email(req.getEmail())
 			.phone_number(req.getPhoneNum())
-			.addresses(new ArrayList<>())
+			.addresses(addressList)
 			.password(passwordEncoder.encode(req.getPassword()))
 			.nickname(req.getNickname())
 			.role(mapToRole(req.getRole()))
@@ -70,27 +79,15 @@ public class AuthService {
 			.userProfile(userPrprofile)  // 연관관계 연결
 			.build();
 
-		// address 리스트 매핑
-		for (SignupRequest.UserSignupRequestDto.AddressRequest addr : req.getAddress()) {
-			Address address = Address.builder()
-				.city(addr.getCity())
-				.district(addr.getDistrict())
-				.street(addr.getStreet())
-				.zipcode(addr.getZipcode())
-				.build();
-			user.addAddress(address);  //  연관관계 메서드 사용
-		}
-
-		userPrprofile.setUser(user);
-
+    userPrprofile.setUser(user);
 		userRepository.save(user);
 
-		createTokenAndSetCookie(user, response);
+		createTokenAndSetCookie(savedUser, response);
 	}
 
 	public void registerPro(SignupRequest.ProSignupRequestDto req, HttpServletResponse response) {
 
-		// 카테고리 ID 리스트 → 엔티티 리스트
+		// 카테고리 조회
 		Category proCategory = categoryRepository.findById(req.getCategoryId())
 			.orElseThrow(() -> new CategoryHandler(ErrorStatus.CATEGORY_NOT_FOUND));
 
@@ -130,7 +127,7 @@ public class AuthService {
 		}
 
 		proProfile.setUser(user);
-
+    
 		userRepository.save(user);
 
 		createTokenAndSetCookie(user, response);

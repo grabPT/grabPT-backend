@@ -22,5 +22,9 @@ public interface RequestionRepository extends JpaRepository<Requestions, Long> {
 		""")
 	List<Requestions> findTop6RequestionsByCategory(@Param("categoryCode") String categoryCode, Pageable pageable);
 
+	// 최신순
+	Page<Requestions> findByLocationOrderByCreatedAtDesc(String location, Pageable pageable);
 
+	// 가격 높은 순
+	Page<Requestions> findByLocationOrderByPriceDesc(String location, Pageable pageable);
 }

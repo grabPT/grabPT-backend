@@ -3,6 +3,7 @@ package com.grabpt.domain.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.persistence.*;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
@@ -50,7 +51,8 @@ public class ProProfile extends BaseEntity {
 	private Integer pricePerSession; // 1회당 가격
 	private Integer totalSessions; // 총 세션 수
 
-	@OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "category_id")
 	private Category category;
 
 	@OneToOne
@@ -85,6 +87,13 @@ public class ProProfile extends BaseEntity {
 		if (suggestion.getProProfile() == this) {
 			suggestion.setProProfile(null);
 		}
+	}
+
+	public double getAverageRating() {
+		return reviews.stream()
+			.mapToDouble(Review::getRating)
+			.average()
+			.orElse(0.0);  // 리뷰 없으면 0.0 반환
 	}
 
 	// 편의 메서드

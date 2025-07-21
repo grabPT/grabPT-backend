@@ -1,6 +1,7 @@
 package com.grabpt.converter;
 
 import com.grabpt.domain.entity.Category;
+import com.grabpt.domain.entity.ProProfile;
 import com.grabpt.domain.entity.Requestions;
 import com.grabpt.dto.response.CategoryResponse;
 import org.springframework.data.domain.Page;
@@ -29,6 +30,20 @@ public class CategoryConverter {
 				.profileImageUrl(null)
 				.totalPrice(requestion.getPrice())
 				.sessionCount(requestion.getSessionCount())
+				.build())
+			.collect(Collectors.toList());
+	}
+
+	public static List<CategoryResponse.ProListDto> toProListDto(List<ProProfile> proList){
+		return proList.stream()
+			.map(pro -> CategoryResponse.ProListDto.builder()
+				.name(pro.getUser().getNickname())
+				.profileImageUrl(pro.getUser().getProfileImageUrl())
+				.rating(pro.getAverageRating())
+				.centerName(pro.getCenter().getCenterName())
+				.pricePerSession(pro.getPricePerSession())
+				.totalSessions(pro.getTotalSessions())
+				.id(pro.getUser().getId())
 				.build())
 			.collect(Collectors.toList());
 	}

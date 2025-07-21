@@ -34,13 +34,13 @@ jobs:
       - name: Rename and Upload build artifact
         run: |
           mkdir -p upload
-          cp $(find build/libs -name '*.jar' ! -name '*plain.jar' | head -n 1) upload/grabPT.jar
+          cp $(find build/libs -name '*.jar' ! -name '*plain.jar' | head -n 1) upload/umc7thServer.jar
         shell: bash
 
       - uses: actions/upload-artifact@v4
         with:
-          name: grabPT
-          path: upload/grabPT.jar
+          name: umc7thServer
+          path: upload/umc7thServer.jar
 
   deploy:
     needs: build
@@ -50,7 +50,7 @@ jobs:
       - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
-          name: grabPT
+          name: umc7thServer
           path: .
 
       - name: Deploy to EC2
@@ -62,15 +62,15 @@ jobs:
           echo "$EC2_SSH_KEY" > private_key.pem
           chmod 600 private_key.pem
 
-          # JAR 파일만 업로드 (env.properties는 제외)
-          scp -i private_key.pem -o StrictHostKeyChecking=no grabPT.jar $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/grabPT.jar
+          # .jar 파일 전송 (이전 grabPT.jar → umc7thServer.jar)
+          scp -i private_key.pem -o StrictHostKeyChecking=no umc7thServer.jar $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/umc7thServer.jar
 
-          # EC2 서버에서 실행 (env.properties는 EC2에 이미 존재한다고 가정)
+          # EC2에서 기존 프로세스 종료 및 새로 실행
           ssh -i private_key.pem -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_HOST "
             pgrep java | xargs -r kill -15
             sleep 10
-            nohup java -Dspring.config.import=optional:file:.env.properties -jar /home/$EC2_USERNAME/grabPT.jar > app.log 2>&1 &
+            nohup java -Dspring.config.import=optional:file:.env.properties -jar /home/$EC2_USERNAME/umc7thServer.jar > app.log 2>&1 &
           "
 
+          # 민감 파일 삭제
           rm -f private_key.pem
-  

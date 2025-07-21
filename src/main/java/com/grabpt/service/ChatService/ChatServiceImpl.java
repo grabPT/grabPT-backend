@@ -88,7 +88,7 @@ public class ChatServiceImpl implements ChatService{
 
 		chatRoom.setLastMessage(save.getContent());
 		chatRoom.setLastMessageTime(save.getSentAt());
-		chatRoomRepository.save(chatRoom);
+		//chatRoomRepository.save(chatRoom);
 
 		return newMessage;
 	}
@@ -101,7 +101,7 @@ public class ChatServiceImpl implements ChatService{
 		return messageResponseDto;
 	}
 
-	@Override
+	@Override //fetch join고려
 	public List<ChatResponse.ChatRoomPreviewDto> getChatRoomList(Long userId) {
 		Users user = userRepository.findById(userId)
 			.orElseThrow(() -> new UserHandler(ErrorStatus.MEMBER_NOT_FOUND));
@@ -119,7 +119,7 @@ public class ChatServiceImpl implements ChatService{
 	//Message Count 관련
 	//채팅방에서 유저가 마지막으로 읽은 메시지의 아이디 가져옴
 	@Override
-	public Long getLastUnReadMessageId(Long roomId, Long userId){
+	public Long getLastReadMessageId(Long roomId, Long userId){
 		UserChatRoom chatRoom = userChatRoomRepository.findByRoomIdAndUserId(roomId, userId).orElseThrow(
 			() -> new ChatHandler(ErrorStatus.CHATROOM_NOT_FOUND));
 		return chatRoom.getLastReadMessageId();
@@ -128,7 +128,7 @@ public class ChatServiceImpl implements ChatService{
 	//채팅방에서 유저가 마지막으로 읽은 메시지보다 id가 큰 메시지의 개수
 	@Override
 	public Long getUnreadMessageCount(Long roomId, Long userId){
-		Long lastUnReadMessageId = getLastUnReadMessageId(roomId, userId);
+		Long lastUnReadMessageId = getLastReadMessageId(roomId, userId);
 		if(lastUnReadMessageId == null){
 			return messageRepository.countByRoomId(roomId);
 		}

@@ -58,24 +58,19 @@ jobs:
           EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
           EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
           EC2_HOST: ${{ secrets.EC2_HOST }}
-          ENV_PROPERTIES: ${{ secrets.ENV_PROPERTIES }}
         run: |
           echo "$EC2_SSH_KEY" > private_key.pem
           chmod 600 private_key.pem
 
-          # .jar 업로드
+          # JAR 파일만 업로드 (env.properties는 제외)
           scp -i private_key.pem -o StrictHostKeyChecking=no grabPT.jar $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/grabPT.jar
 
-          # .env.properties 생성 및 업로드
-          echo "$ENV_PROPERTIES" > .env.properties
-          scp -i private_key.pem -o StrictHostKeyChecking=no .env.properties $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/.env.properties
-
-          # EC2에서 기존 Java 프로세스 종료 후 재시작
+          # EC2 서버에서 실행 (env.properties는 EC2에 이미 존재한다고 가정)
           ssh -i private_key.pem -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_HOST "
             pgrep java | xargs -r kill -15
             sleep 10
             nohup java -Dspring.config.import=optional:file:.env.properties -jar /home/$EC2_USERNAME/grabPT.jar > app.log 2>&1 &
           "
 
-          # 민감한 파일 삭제
-          rm -f private_key.pem .env.properties
+          rm -f private_key.pem
+  

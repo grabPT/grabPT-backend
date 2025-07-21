@@ -5,6 +5,7 @@ import java.util.List;
 import com.grabpt.domain.entity.Requestions;
 import com.grabpt.domain.entity.Users;
 import com.grabpt.domain.enums.Gender;
+import com.grabpt.domain.enums.RequestStatus;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -57,4 +58,15 @@ public class RequestionResponseDto {
 		}
 	}
 
+	@Builder
+	@Getter
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class RequestionResponsePagingDto {
+		private String username;        // 일반 유저 닉네임
+		private String userStreet;      // 주소 - 동
+		private Integer sessionCount;   // 세션 횟수
+		private Integer price;          // 1회당 가격
+		private RequestStatus status;   // 상태 (대기중 등)
+	}
 }

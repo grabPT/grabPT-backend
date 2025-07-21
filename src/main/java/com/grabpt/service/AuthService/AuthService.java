@@ -41,68 +41,63 @@ public class AuthService {
 
 	public void registerUser(SignupRequest.UserSignupRequestDto req, HttpServletResponse response) {
 
-		// 카테고리 ID 리스트 → 엔티티 리스트
 		List<Category> categoryList = req.getCategories().stream()
 			.map(id -> categoryRepository.findById(id)
 				.orElseThrow(() -> new CategoryHandler(ErrorStatus.CATEGORY_NOT_FOUND)))
 			.collect(Collectors.toList());
 
-		// address 리스트 매핑
-		List<Address> addressList = req.getAddress().stream()
-			.map(addr -> Address.builder()
-				.city(addr.getCity())
-				.district(addr.getDistrict())
-				.street(addr.getStreet())
-				.zipcode(addr.getZipcode())
-				.build())
-			.collect(Collectors.toList());
-
-		// UserProfile 생성
-		UserProfile userPrprofile = UserProfile.builder()
-			.categories(categoryList)
+		Address address = Address.builder()
+			.city(req.getAddress().get(0).getCity())
+			.district(req.getAddress().get(0).getDistrict())
+			.street(req.getAddress().get(0).getStreet())
+			.zipcode(req.getAddress().get(0).getZipcode())
 			.build();
 
-		// Users 생성 및 연관관계 설정
+		// Users 객체 먼저 생성 (userProfile 연결 X)
 		Users user = Users.builder()
 			.username(req.getUsername())
 			.email(req.getEmail())
 			.phone_number(req.getPhoneNum())
-			.addresses(addressList)
+			.address(address)
 			.password(passwordEncoder.encode(req.getPassword()))
 			.nickname(req.getNickname())
 			.role(mapToRole(req.getRole()))
 			.gender(mapToGender(req.getGender()))
 			.authRole(AuthRole.ROLE_USER)
 			.profileImageUrl(req.getProfileImageUrl())
-			.oauthId(URLDecoder.decode(req.getOauthId(), StandardCharsets.UTF_8)) // 디코딩 해서 db 저장
-			.oauthProvider(URLDecoder.decode(req.getOauthProvider(), StandardCharsets.UTF_8)) // 디코딩 해서 db 저장
-			.userProfile(userPrprofile)  // 연관관계 연결
+			.oauthId(URLDecoder.decode(req.getOauthId(), StandardCharsets.UTF_8))
+			.oauthProvider(URLDecoder.decode(req.getOauthProvider(), StandardCharsets.UTF_8))
 			.build();
 
-		userPrprofile.setUser(user);
+		Users savedUser = userRepository.save(user); // 먼저 저장 (PK 생성됨)
 
-		userRepository.save(user);
+		// UserProfile 생성 후 사용자와 연관 설정
+		UserProfile userProfile = UserProfile.builder()
+			.categories(categoryList)
+			.user(savedUser) // 연관관계 설정
+			.build();
 
-		createTokenAndSetCookie(user, response);
+		savedUser.setUserProfile(userProfile); // 양방향 설정
+		userRepository.save(savedUser); // 다시 저장 (cascade가 없다면 userProfile도 별도 repository로 저장해도 됨)
+
+		createTokenAndSetCookie(savedUser, response);
 	}
 
 	public void registerPro(SignupRequest.ProSignupRequestDto req, HttpServletResponse response) {
 
-		// 카테고리 ID 리스트 → 엔티티 리스트
+		// 1. 카테고리 조회
 		Category proCategory = categoryRepository.findById(req.getCategoryId())
 			.orElseThrow(() -> new CategoryHandler(ErrorStatus.CATEGORY_NOT_FOUND));
 
-		// address 리스트 매핑
-		List<Address> addressList = req.getAddress().stream()
-			.map(addr -> Address.builder()
-				.city(addr.getCity())
-				.district(addr.getDistrict())
-				.street(addr.getStreet())
-				.zipcode(addr.getZipcode())
-				.build())
-			.collect(Collectors.toList());
+		// 2. Address 생성
+		Address address = Address.builder()
+			.city(req.getAddress().get(0).getCity())
+			.district(req.getAddress().get(0).getDistrict())
+			.street(req.getAddress().get(0).getStreet())
+			.zipcode(req.getAddress().get(0).getZipcode())
+			.build();
 
-		//  ProProfile 생성 및 Users 연관 설정
+		// 5. ProProfile 생성 및 저장
 		ProProfile proProfile = ProProfile.builder()
 			.center(req.getCenter())
 			.career(req.getCareer())
@@ -110,12 +105,12 @@ public class AuthService {
 			.category(proCategory)
 			.build();
 
-		// Users 생성 및 연관관계 설정
+		// 3. Users 생성
 		Users user = Users.builder()
 			.username(req.getUsername())
 			.email(req.getEmail())
 			.phone_number(req.getPhoneNum())
-			.addresses(addressList)
+			.address(address)
 			.password(passwordEncoder.encode(req.getPassword()))
 			.nickname(req.getNickname())
 			.role(mapToRole(req.getRole())) // Role.PRO
@@ -128,8 +123,7 @@ public class AuthService {
 			.build();
 
 		proProfile.setUser(user);
-
-		userRepository.save(user);
+		user.setAddress(address);
 
 		createTokenAndSetCookie(user, response);
 	}

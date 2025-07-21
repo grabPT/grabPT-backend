@@ -15,7 +15,7 @@ public interface ProProfileRepository extends JpaRepository<ProProfile, Long> {
     FROM ProProfile p
     JOIN p.category cat
     JOIN FETCH p.user u
-    JOIN u.addresses addr
+    JOIN u.address addr
     WHERE cat.code = :categoryCode
     AND addr.street LIKE %:region%
 	""")

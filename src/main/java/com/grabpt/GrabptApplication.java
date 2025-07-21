@@ -7,7 +7,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class GrabptApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(GrabptApplication.class, args);
+		try {
+			SpringApplication.run(GrabptApplication.class, args);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 }

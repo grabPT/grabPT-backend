@@ -1,14 +1,14 @@
 package com.grabpt.repository.RequestionRepository;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-
-import com.grabpt.domain.entity.Requestions;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.util.List;
+import com.grabpt.domain.entity.Requestions;
 
 public interface RequestionRepository extends JpaRepository<Requestions, Long> {
 	Page<Requestions> findAllByUserId(Long userId, Pageable pageable);
@@ -21,4 +21,10 @@ public interface RequestionRepository extends JpaRepository<Requestions, Long> {
 			ORDER BY r.createdAt DESC
 		""")
 	List<Requestions> findTop6RequestionsByCategory(@Param("categoryCode") String categoryCode, Pageable pageable);
+
+	// 최신순
+	Page<Requestions> findByLocationOrderByCreatedAtDesc(String location, Pageable pageable);
+
+	// 가격 높은 순
+	Page<Requestions> findByLocationOrderByPriceDesc(String location, Pageable pageable);
 }

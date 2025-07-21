@@ -2,8 +2,6 @@ package com.grabpt.dto.request;
 
 import java.util.List;
 
-import com.grabpt.domain.entity.Center;
-
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -18,9 +16,9 @@ public class ProProfileUpdateRequestDTO {
 
 	private String residence;
 
-	private Center center;
+	private String center;
 
-	private String career;
+	private Integer career;
 
 	@Size(max = 3, message = "운동 희망 지역은 최대 3개까지 선택 가능합니다.")
 	private List<String> preferredAreas;
@@ -31,10 +29,9 @@ public class ProProfileUpdateRequestDTO {
 	@Valid
 	private List<PhotoRequestDTO> photos; // 소개 사진
 
-	private Integer price;
-
-	@Valid
-	private List<ProgramRequestDTO> programs;
+	private String programDescription;
+	private Integer pricePerSession;
+	private Integer totalSessions;
 
 	@Valid
 	private List<CertificationRequestDTO> certifications;

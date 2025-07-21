@@ -1,5 +1,5 @@
 package com.grabpt.domain.enums;
 
 public enum Role {
-	USER, PRO
+	USER, PRO, DELETED
 }

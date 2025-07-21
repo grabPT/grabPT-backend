@@ -3,6 +3,7 @@ package com.grabpt.domain.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.persistence.*;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
@@ -10,14 +11,12 @@ import com.grabpt.domain.common.BaseEntity;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import lombok.AccessLevel;
@@ -42,25 +41,21 @@ public class ProProfile extends BaseEntity {
 	@Column(name = "pro_profile_id")
 	private Long id;
 
-	private String residence; // 거주지역
+	private String center;
 
-	@ElementCollection
-	private List<String> activityAreas; // 위치
-
-	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-	@JoinColumn(name = "center_id") // FK
-	private Center center;
-
-	private String career;
+	private Integer career; // 연차
 
 	private String description; // 소개
 
-	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-	@JoinColumn(name = "pro_profile_id") // Category 테이블에 외래키로 생성
-	private List<Category> categories = new ArrayList<>();
+	private String programDescription; // 프로그램 상세 설명
+	private Integer pricePerSession; // 1회당 가격
+	private Integer totalSessions; // 총 세션 수
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "category_id")
+	private Category category;
 
 	@OneToOne
-	@MapsId
 	@JoinColumn(name = "user_id")
 	private Users user;
 
@@ -75,10 +70,6 @@ public class ProProfile extends BaseEntity {
 	// 소개 사진
 	@OneToMany(mappedBy = "proProfile", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<ProPhoto> photos = new ArrayList<>();
-
-	// 프로그램
-	@OneToMany(mappedBy = "proProfile", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<ProProgram> programs = new ArrayList<>();
 
 	// 리뷰
 	@OneToMany(mappedBy = "proProfile", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -96,6 +87,13 @@ public class ProProfile extends BaseEntity {
 		if (suggestion.getProProfile() == this) {
 			suggestion.setProProfile(null);
 		}
+	}
+
+	public double getAverageRating() {
+		return reviews.stream()
+			.mapToDouble(Review::getRating)
+			.average()
+			.orElse(0.0);  // 리뷰 없으면 0.0 반환
 	}
 
 	// 편의 메서드

@@ -2,8 +2,6 @@ package com.grabpt.dto.request;
 
 import java.util.List;
 
-import com.grabpt.domain.entity.Center;
-
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -35,7 +33,7 @@ public class SignupRequest {
 		private String password;
 
 		@Schema(description = "주소 객체")
-		private List<AddressRequest> address;
+		private AddressRequest address;
 
 		@Schema(description = "카테고리 리스트", example = "[1, 2, 3]")
 		private List<Long> categories;
@@ -89,10 +87,10 @@ public class SignupRequest {
 		private String password;
 
 		@Schema(description = "주소 객체")
-		private List<UserSignupRequestDto.AddressRequest> address;
+		private AddressRequest address;
 
-		@Schema(description = "카테고리 리스트", example = "[1, 2, 3]")
-		private List<Long> categories;
+		@Schema(description = "카테고리(프로는 하나)", example = "1")
+		private Long categoryId;
 
 		@Schema(description = "사용자가 입력한 프로필 이미지", example = "eoiaIOQJ2414kldsfPOVMIasd.png")
 		private String profileImageUrl;
@@ -106,7 +104,7 @@ public class SignupRequest {
 		@Schema(description = "사용자가 입력한 성별, 1:남성/2:여성", example = "1")
 		private Integer gender;
 
-		@Schema(description = "일반 사용자, 트레이너 입력, 1:일반(USER)/2:트레이너(PRO)", example = "1")
+		@Schema(description = "일반 사용자, 트레이너 입력, 1:일반(USER)/2:트레이너(PRO)", example = "2")
 		private Integer role;
 
 		@Data
@@ -125,10 +123,10 @@ public class SignupRequest {
 		private List<String> activityAreas;
 
 		@Schema(description = "센터")
-		private Center center;
+		private String center;
 
-		@Schema(description = "커리어", example = "부산외대 스포츠재활학 석사, 한국재활기능운동학회 정회원, ...")
-		private String career;
+		@Schema(description = "연차", example = "3")
+		private Integer career;
 
 		@Schema(description = "소개", example = "안녕하세요. 트레이너 홍길동입니다.")
 		private String description;

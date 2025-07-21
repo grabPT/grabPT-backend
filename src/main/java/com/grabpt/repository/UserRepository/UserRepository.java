@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.grabpt.domain.entity.Users;
 
 public interface UserRepository extends JpaRepository<Users, Long> {
-	Page<Users> findAllByProProfile_Categories_Code(String categoryCode, Pageable pageable);
+	Page<Users> findAllByProProfile_Category_Code(String categoryCode, Pageable pageable);
 
 	// SELECT * FROM user WHERE username = ?1
 	Optional<Users> findByNickname(String nickname);

@@ -1,16 +1,15 @@
 package com.grabpt.dto.response;
 
-import lombok.Builder;
-import lombok.Getter;
-
 import java.time.LocalDateTime;
 import java.util.List;
 
 import com.grabpt.domain.entity.ProCertification;
 import com.grabpt.domain.entity.ProPhoto;
-import com.grabpt.domain.entity.ProProgram;
 import com.grabpt.domain.entity.Review;
 import com.grabpt.domain.entity.Users;
+
+import lombok.Builder;
+import lombok.Getter;
 
 /**
  * 프로필 관련 응답 DTO들을 모아놓은 클래스입니다.
@@ -26,10 +25,9 @@ public class ProfileResponseDTO {
 	@Builder
 	public static class MyProfileDTO {
 		private Long userId;
+		private String name;
 		private String nickname;
-		private String residence;
-		private List<String> preferredAreas;
-		private List<String> categories;
+		private String email;
 	}
 
 	/**
@@ -42,20 +40,20 @@ public class ProfileResponseDTO {
 		private Long proId;
 		private String nickname;
 		private String description;
-		private String residence;
+		private String center;
 
 		// 소개 이미지
 		private List<MyProProfileDTO.PhotoDTO> photos;
 
-		// 자격 사항
-		private List<MyProProfileDTO.CertificationDTO> certifications;
-
-		// PT 프로그램 과정
-		private List<MyProProfileDTO.ProgramDTO> programs;
-
-		// 이용자 후기
 		private List<MyProProfileDTO.ReviewDTO> reviews;
 
+		private List<MyProProfileDTO.CertificationDTO> certifications;
+		// PT 프로그램 과정
+		private String programDescription;
+		private Integer pricePerSession;
+		private Integer totalSessions;
+
+		// location
 
 		@Getter
 		@Builder
@@ -69,24 +67,6 @@ public class ProfileResponseDTO {
 					.name(certification.getName())
 					.issuer(certification.getIssuer())
 					.issuedDate(certification.getIssuedDate())
-					.build();
-			}
-		}
-
-		@Getter
-		@Builder
-		public static class ProgramDTO {
-			private String title;
-			private String description;
-			private Integer pricePerSession;
-			private Integer totalSessions;
-
-			public static ProgramDTO from(ProProgram program) {
-				return ProgramDTO.builder()
-					.title(program.getTitle())
-					.description(program.getDescription())
-					.pricePerSession(program.getPricePerSession())
-					.totalSessions(program.getTotalSessions())
 					.build();
 			}
 		}
@@ -114,7 +94,7 @@ public class ProfileResponseDTO {
 			private String imageUrl;
 			private String description;
 
-			public static PhotoDTO from(ProPhoto photo){
+			public static PhotoDTO from(ProPhoto photo) {
 				return PhotoDTO.builder()
 					.imageUrl(photo.getImageUrl())
 					.description(photo.getDescription())

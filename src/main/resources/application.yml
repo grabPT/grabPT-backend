@@ -1,11 +1,23 @@
+server:
+  port: 8080
+
+springdoc:
+  default-produces-media-type: application/json
+  default-consumes-media-type: application/json
+  show-actuator: false
+  api-docs:
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+
 spring:
   config:
     import: optional:file:.env.properties
 
   datasource:
-    url: jdbc:mysql://grabdb.cx08oc6c8i7a.ap-northeast-2.rds.amazonaws.com:3306/grabdb
+    url: jdbc:mysql://grabptdb.ch2a0waci17a.ap-southeast-2.rds.amazonaws.com:3306/grabptdb
     username: root
-    password: grabpt2025
+    password: ${GRABPTDB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
@@ -28,7 +40,7 @@ spring:
     oauth2:
       client:
         registration:
-          google:
+          google: # /oauth2/authorization/google 이 주소를 동작하게 한다.
             client-id: ${GOOGLE_CLIENT_ID}
             client-secret: ${GOOGLE_CLIENT_SECRET}
             scope:
@@ -36,6 +48,7 @@ spring:
               - profile
             authorization-grant-type: authorization_code
             redirect-uri: http://localhost:8080/login/oauth2/code/google
+
           kakao:
             client-id: ${KAKAO_CLIENT_ID}
             client-secret: ${KAKAO_CLIENT_SECRET}
@@ -45,6 +58,7 @@ spring:
               - profile_image
             authorization-grant-type: authorization_code
             redirect-uri: http://localhost:8080/login/oauth2/code/kakao
+
           naver:
             client-id: ${NAVER_CLIENT_ID}
             client-secret: ${NAVER_CLIENT_SECRET}
@@ -55,27 +69,20 @@ spring:
             client-name: Naver
             authorization-grant-type: authorization_code
             redirect-uri: http://localhost:8080/login/oauth2/code/naver
+
         provider:
           naver:
             authorization-uri: https://nid.naver.com/oauth2.0/authorize
             token-uri: https://nid.naver.com/oauth2.0/token
             user-info-uri: https://openapi.naver.com/v1/nid/me
             user-name-attribute: response
+
           kakao:
             authorization-uri: https://kauth.kakao.com/oauth/authorize
             token-uri: https://kauth.kakao.com/oauth/token
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-info-authentication-method: header
             user-name-attribute: id
-
-springdoc:
-  default-produces-media-type: application/json
-  default-consumes-media-type: application/json
-  show-actuator: false
-  api-docs:
-    enabled: true
-  swagger-ui:
-    path: /swagger-ui.html
 
 jwt:
   token:
@@ -91,11 +98,13 @@ coolsms:
 cloud:
   aws:
     s3:
-      bucket: grabpt
+      bucket: grabpt-image-bucket
       path:
         proPhoto: proPhoto
+        userPhoto: userPhoto
+        test: test
     region:
-      static: ap-northeast-2
+      static: ap-southeast-2
     stack:
       auto: false
     credentials:

@@ -30,6 +30,7 @@ public class ProfileConverter {
 
 		return ProfileResponseDTO.MyProfileDTO.builder()
 			.userId(user.getId())
+			.profileImageUrl(user.getProfileImageUrl())
 			.name(user.getUsername())
 			.nickname(user.getNickname())
 			.email(user.getEmail())

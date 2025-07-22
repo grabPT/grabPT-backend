@@ -183,13 +183,19 @@ public class ProfileServiceImpl implements ProfileService {
 	@Override
 	@Transactional
 	public void updateUserProfileImage(Long userId, MultipartFile profileImage) {
+		// 1. 사용자 조회
 		Users user = findUserById(userId);
-		String newImageUrl = photoService.uploadProfileImage(profileImage);
-		if (newImageUrl != null) {
-			user.setProfileImageUrl(newImageUrl);
-		}
-		user.setProfileImageUrl(newImageUrl);
 
+		// 2. S3에 이미지 업로드 시도
+		String newImageUrl = photoService.uploadProfileImage(profileImage);
+
+		if (newImageUrl != null) {
+			// 3-1. 사용자의 profileImageUrl을 업데이트하고,
+			user.setProfileImageUrl(newImageUrl);
+
+			// 3-2. ✅ 변경된 사용자 정보를 명시적으로 저장합니다.
+			userRepository.save(user);
+		}
 	}
 
 	@Override

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 PROJECT_ROOT="/home/ubuntu/app"
-JAR_FILE="$PROJECT_ROOT/spring-webapp.jar"
+JAR_FILE="$PROJECT_ROOT/app.jar"
 ENV_FILE="$PROJECT_ROOT/.env.properties"  # 추가
 
 APP_LOG="$PROJECT_ROOT/application.log"

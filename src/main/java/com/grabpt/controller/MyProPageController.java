@@ -20,6 +20,7 @@ import com.grabpt.apiPayload.ApiResponse;
 import com.grabpt.dto.request.CenterUpdateRequestDTO;
 import com.grabpt.dto.request.CertificationUpdateRequestDTO;
 import com.grabpt.dto.request.DescriptionUpdateRequestDTO;
+import com.grabpt.dto.request.ProLocationUpdateRequestDTO;
 import com.grabpt.dto.request.PtPriceUpdateRequestDTO;
 import com.grabpt.dto.request.PtProgramUpdateRequestDTO;
 import com.grabpt.dto.response.CertificationResponseDTO;
@@ -120,6 +121,14 @@ public class MyProPageController {
 		return ApiResponse.onSuccess("PT 프로그램 정보가 수정되었습니다.");
 	}
 
-	//@PatchMapping("/location")
+	@PatchMapping("/location")
+	@Operation(summary = "전문가 위치 정보 수정 API", description = "전문가의 센터 및 대표 주소 정보를 수정합니다.")
+	public ApiResponse<String> updateProLocation(
+		@RequestParam(name = "userId") Long userId,
+		@RequestBody @Valid ProLocationUpdateRequestDTO request) {
+
+		profileService.updateProLocation(userId, request);
+		return ApiResponse.onSuccess("위치 정보가 성공적으로 수정되었습니다.");
+	}
 }
 

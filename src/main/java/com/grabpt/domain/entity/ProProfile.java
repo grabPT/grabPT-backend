@@ -44,7 +44,9 @@ public class ProProfile extends BaseEntity {
 	private Long id;
 
 	@Embedded
-	private Center center;
+	private String center;
+	private String centerDescription;
+
 
 	private String career;
 

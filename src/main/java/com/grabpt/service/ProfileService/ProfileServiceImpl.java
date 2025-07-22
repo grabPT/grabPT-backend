@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.grabpt.apiPayload.code.status.ErrorStatus;
 import com.grabpt.apiPayload.exception.GeneralException;
 import com.grabpt.converter.ProfileConverter;
+import com.grabpt.domain.entity.Address;
 import com.grabpt.domain.entity.Center;
 import com.grabpt.domain.entity.ProProfile;
 import com.grabpt.domain.entity.Requestions;
@@ -22,6 +23,7 @@ import com.grabpt.dto.request.CenterUpdateRequestDTO;
 import com.grabpt.dto.request.CertificationRequestDTO;
 import com.grabpt.dto.request.CertificationUpdateRequestDTO;
 import com.grabpt.dto.request.DescriptionUpdateRequestDTO;
+import com.grabpt.dto.request.ProLocationUpdateRequestDTO;
 import com.grabpt.dto.request.ProProfileUpdateRequestDTO;
 import com.grabpt.dto.request.PtPriceUpdateRequestDTO;
 import com.grabpt.dto.request.PtProgramUpdateRequestDTO;
@@ -128,11 +130,10 @@ public class ProfileServiceImpl implements ProfileService {
 			throw new GeneralException(ErrorStatus.MEMBER_NOT_FOUND);
 		}
 
-		Center center = proProfile.getCenter();
-
-		center.setCenterName(request.getCenterName());
-		center.setCenterAddress(request.getCenterAddress());
+		String center = request.getCenter();
+		String centerDescription = request.getCenterDescription();
 		proProfile.setCenter(center);
+		proProfile.setCenterDescription(centerDescription);
 	}
 
 	@Override
@@ -195,5 +196,33 @@ public class ProfileServiceImpl implements ProfileService {
 	public void deleteUser(Long userId) {
 		Users user = findUserById(userId);
 		user.withdraw(); // Users 엔티티에 추가한 탈퇴 메서드 호출
+	}
+
+	@Override
+	@Transactional
+	public void updateProLocation(Long userId, ProLocationUpdateRequestDTO request) {
+		Users user = findUserById(userId);
+		ProProfile proProfile = user.getProProfile();
+		if (proProfile == null) {
+			throw new GeneralException(ErrorStatus.MEMBER_NOT_FOUND);
+		}
+
+		// 1. 센터 정보 업데이트
+		proProfile.setCenter(request.getCenter());
+		proProfile.setCenterDescription(request.getCenterDescription());
+
+		// 2. 대표 주소 업데이트
+		Address address;
+		if (user.getAddresses() == null || user.getAddresses().isEmpty()) {
+			address = new Address();
+			user.addAddress(address);
+		} else {
+			address = user.getAddresses().get(0);
+		}
+
+		address.setCity(request.getCity());
+		address.setDistrict(request.getDistrict());
+		address.setStreet(request.getStreet());
+		address.setZipcode(request.getZipcode());
 	}
 }

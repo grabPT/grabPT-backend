@@ -50,7 +50,7 @@ public class ProfileConverter {
 				.proId(user.getId())
 				.profileImageUrl(user.getProfileImageUrl())
 				.proName(user.getUsername())
-				.centerName(proProfile.getCenter().getCenterName())
+				.center(proProfile.getCenter())
 				.categoryName(user.getProProfile().getCategory().getName())
 				.averageRating(averageRating)
 				.description(null)
@@ -58,6 +58,7 @@ public class ProfileConverter {
 				.programDescription(proProfile.getProgramDescription())
 				.pricePerSession(proProfile.getPricePerSession())
 				.totalSessions(proProfile.getTotalSessions())
+				.address(Collections.emptyList())
 				.center(proProfile.getCenter())
 				.build();
 		}
@@ -69,12 +70,16 @@ public class ProfileConverter {
 				.build())
 			.collect(Collectors.toList());
 
+		List<ProfileResponseDTO.MyProProfileDTO.AddressDTO> addressDTOS = user.getAddresses().stream()
+			.map(ProfileResponseDTO.MyProProfileDTO.AddressDTO::from)
+			.collect(Collectors.toList());
+
 
 		return ProfileResponseDTO.MyProProfileDTO.builder()
 			.proId(user.getId())
 			.profileImageUrl(user.getProfileImageUrl())
 			.proName(user.getUsername())
-			.centerName(proProfile.getCenter().getCenterName())
+			.center(proProfile.getCenter())
 			.categoryName(user.getProProfile().getCategory().getName())
 			.averageRating(averageRating)
 			.description(proProfile.getDescription())
@@ -82,6 +87,7 @@ public class ProfileConverter {
 			.programDescription(proProfile.getProgramDescription())
 			.pricePerSession(proProfile.getPricePerSession())
 			.totalSessions(proProfile.getTotalSessions())
+			.address(addressDTOS)
 			.center(proProfile.getCenter())
 			.build();
 	}
@@ -99,6 +105,10 @@ public class ProfileConverter {
 			.map(ProProfileResponseDTO.PhotoDTO::from)
 			.collect(Collectors.toList());
 
+		List<ProfileResponseDTO.MyProProfileDTO.AddressDTO> addressDTOS = user.getAddresses().stream()
+			.map(ProfileResponseDTO.MyProProfileDTO.AddressDTO::from)
+			.collect(Collectors.toList());
+
 		return ProProfileResponseDTO.builder()
 			.name(user.getNickname())
 			.photos(photoDTOS)
@@ -107,6 +117,8 @@ public class ProfileConverter {
 			.programDescription(proProfile.getProgramDescription())
 			.pricePerSession(proProfile.getPricePerSession())
 			.totalSessions(proProfile.getTotalSessions())
+			.center(proProfile.getCenter())
+			.address(addressDTOS)
 			.build();
 	}
 }

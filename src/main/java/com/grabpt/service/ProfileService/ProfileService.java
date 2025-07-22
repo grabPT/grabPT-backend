@@ -7,10 +7,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.grabpt.dto.request.CenterUpdateRequestDTO;
-import com.grabpt.dto.request.CertificationRequestDTO;
 import com.grabpt.dto.request.CertificationUpdateRequestDTO;
 import com.grabpt.dto.request.DescriptionUpdateRequestDTO;
 
+import com.grabpt.dto.request.ProLocationUpdateRequestDTO;
 import com.grabpt.dto.request.PtPriceUpdateRequestDTO;
 import com.grabpt.dto.request.PtProgramUpdateRequestDTO;
 import com.grabpt.dto.request.UserProfileUpdateRequestDTO;
@@ -48,4 +48,6 @@ public interface ProfileService {
 	void updateProCertifications(Long userId, CertificationUpdateRequestDTO request, List<MultipartFile> images);
 
 	void deleteUser(Long userId); // 회원 탈퇴 메서드 선언
+
+	void updateProLocation(Long userId, ProLocationUpdateRequestDTO request);
 }

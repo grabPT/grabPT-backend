@@ -15,7 +15,7 @@ spring:
     import: optional:file:.env.properties
 
   datasource:
-    url: jdbc:mysql://grabptdb.ch2a0waci17a.ap-southeast-2.rds.amazonaws.com:3306/grabptdb
+    url: jdbc:mysql://grabptdb.cl4e0asq8fu0.ap-northeast-2.rds.amazonaws.com:3306/grabpt
     username: root
     password: ${GRABPTDB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver

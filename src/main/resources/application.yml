@@ -98,13 +98,13 @@ coolsms:
 cloud:
   aws:
     s3:
-      bucket: grabpt-image-bucket
+      bucket: grabpt-image-bucket-2
       path:
         proPhoto: proPhoto
         userPhoto: userPhoto
         test: test
     region:
-      static: ap-southeast-2
+      static: ap-northeast-2
     stack:
       auto: false
     credentials:

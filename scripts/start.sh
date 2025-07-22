@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-PROJECT_ROOT="/home/ubuntu/app"
+PROJECT_ROOT="/home/ubuntu"
 JAR_FILE="$PROJECT_ROOT/app.jar"
 ENV_FILE="$PROJECT_ROOT/.env.properties"  # 추가
 

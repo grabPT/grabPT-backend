@@ -51,24 +51,17 @@ public class PhotoServiceImpl implements PhotoService {
 
 	@Override
 	@Transactional
-	public String updateUserProfileImage(Users user, MultipartFile profileImage) {
+	public String uploadProfileImage(MultipartFile profileImage) {
 		if (profileImage == null || profileImage.isEmpty()) {
-			// 기존 이미지를 삭제하는 로직을 추가하거나, 그냥 반환할 수 있습니다.
-			// 여기서는 기존 URL을 유지하도록 null을 반환합니다.
-			return user.getProfileImageUrl();
+			return null; // 이미지가 없으면 null 반환
 		}
 
-		// 1. UUID를 생성하여 S3에 저장될 파일의 고유 키를 만듭니다.
+		// S3에 저장될 고유한 파일 키 생성
 		Uuid uuid = Uuid.builder().uuid(java.util.UUID.randomUUID().toString()).build();
 		uuidRepository.save(uuid);
-		String keyName = amazonS3Manager.generateReviewKeyName(uuid); // proPhoto 경로를 재사용하거나 새 경로 생성
+		String keyName = amazonS3Manager.generateReviewKeyName(uuid); // 이 메소드 이름은 나중에 변경하시는 것을 추천합니다.
 
-		// 2. S3에 파일을 업로드하고 URL을 받습니다.
-		String fileUrl = amazonS3Manager.uploadFile(keyName, profileImage);
-
-		// 3. Users 엔티티의 profileImageUrl 필드를 업데이트합니다.
-		user.setProfileImageUrl(fileUrl);
-
-		return fileUrl;
+		// S3에 파일 업로드 후 URL 반환
+		return amazonS3Manager.uploadFile(keyName, profileImage);
 	}
 }

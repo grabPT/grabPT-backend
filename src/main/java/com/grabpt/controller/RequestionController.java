@@ -1,10 +1,14 @@
 package com.grabpt.controller;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.grabpt.apiPayload.ApiResponse;
@@ -53,6 +57,21 @@ public class RequestionController {
 		@PathVariable Long requestionId
 	) {
 		RequestionResponseDto.RequestionDetailResponseDto response = requestionService.getDetail(requestionId);
+		return ApiResponse.onSuccess(response);
+	}
+
+	@GetMapping("/nearby")
+	@Operation(
+		summary = "요청서 조회 api",
+		description = "트레이너 기준 일반 유저의 요청서를 조회합니다."
+	)
+	public ApiResponse<Page<RequestionResponseDto.RequestionResponsePagingDto>> getRequestionsNearby(
+		@RequestParam(defaultValue = "latest") String sortBy, // 'latest' 또는 'price'
+		@PageableDefault(size = 4) Pageable pageable,
+		HttpServletRequest request
+	) throws IllegalAccessException {
+		Page<RequestionResponseDto.RequestionResponsePagingDto> response = requestionService.getNearbyRequestions(
+			request, sortBy, pageable);
 		return ApiResponse.onSuccess(response);
 	}
 }

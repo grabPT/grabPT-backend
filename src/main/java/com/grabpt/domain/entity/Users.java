@@ -81,8 +81,8 @@ public class Users extends BaseEntity {
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<UserChatRoom> userChatRooms = new ArrayList<>();
 
-	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<Address> addresses = new ArrayList<>();
+	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+	private Address address;
 
 	// 양방향 연관관계 매핑
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -94,9 +94,11 @@ public class Users extends BaseEntity {
 	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
 	private ProProfile proProfile;
 
-	public void addAddress(Address address) {
-		addresses.add(address);
-		address.setUser(this);  // 연관관계 편의 메서드
+	public void setAddress(Address address) {
+		this.address = address;
+		if (address != null && address.getUser() != this) {
+			address.setUser(this);  // 연관관계 편의 메서드
+		}
 	}
 
 	// 편의 메서드

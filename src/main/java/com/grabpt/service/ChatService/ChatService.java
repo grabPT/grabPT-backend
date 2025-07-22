@@ -12,7 +12,7 @@ public interface ChatService {
 	public Messages createChatMessage(ChatRequest.MessageRequestDto request);
 	public List<ChatResponse.MessageResponseDto> getMessagesByChatRoom(Long roomId);
 	public List<ChatResponse.ChatRoomPreviewDto> getChatRoomList(Long userId);
-	public Long getLastUnReadMessageId(Long roomId, Long userId);
+	public Long getLastReadMessageId(Long roomId, Long userId);
 	public Long getUnreadMessageCount(Long roomId, Long userId);
 	public void updateLastReadMessage(Long roomId, Long userId);
 }

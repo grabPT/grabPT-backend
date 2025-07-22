@@ -1,8 +1,5 @@
 package com.grabpt.service.ProfileService;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -11,16 +8,15 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.grabpt.apiPayload.code.status.ErrorStatus;
 import com.grabpt.apiPayload.exception.GeneralException;
+import com.grabpt.converter.CategoryConverter;
 import com.grabpt.converter.ProfileConverter;
 import com.grabpt.domain.entity.Address;
-import com.grabpt.domain.entity.Center;
 import com.grabpt.domain.entity.ProProfile;
 import com.grabpt.domain.entity.Requestions;
 import com.grabpt.domain.entity.Review;
 import com.grabpt.domain.entity.UserProfile;
 import com.grabpt.domain.entity.Users;
 import com.grabpt.dto.request.CenterUpdateRequestDTO;
-import com.grabpt.dto.request.CertificationRequestDTO;
 import com.grabpt.dto.request.CertificationUpdateRequestDTO;
 import com.grabpt.dto.request.DescriptionUpdateRequestDTO;
 import com.grabpt.dto.request.ProLocationUpdateRequestDTO;
@@ -28,18 +24,24 @@ import com.grabpt.dto.request.ProProfileUpdateRequestDTO;
 import com.grabpt.dto.request.PtPriceUpdateRequestDTO;
 import com.grabpt.dto.request.PtProgramUpdateRequestDTO;
 import com.grabpt.dto.request.UserProfileUpdateRequestDTO;
+import com.grabpt.dto.response.CategoryResponse;
 import com.grabpt.dto.response.CertificationResponseDTO;
 import com.grabpt.dto.response.MyRequestListDTO;
 import com.grabpt.dto.response.MyReviewListDTO;
 import com.grabpt.dto.response.ProProfileResponseDTO;
 import com.grabpt.dto.response.ProfileResponseDTO;
+import com.grabpt.repository.ProProfileRepository.ProProfileRepository;
 import com.grabpt.repository.RequestionRepository.RequestionRepository;
 import com.grabpt.repository.ReviewRepository.reviewRepository;
 import com.grabpt.repository.UserRepository.UserRepository;
 import com.grabpt.service.CertificationService.CertificationService;
 import com.grabpt.service.PhotoService.PhotoService;
 
+
 import lombok.RequiredArgsConstructor;
+
+import java.util.Collections;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -51,6 +53,7 @@ public class ProfileServiceImpl implements ProfileService {
 	private final reviewRepository reviewRepository;
 
 	private final PhotoService photoService;
+	private final ProProfileRepository proProfileRepository;
 	private final CertificationService certificationService;
 
 	@Override
@@ -97,7 +100,7 @@ public class ProfileServiceImpl implements ProfileService {
 		if (user.getProProfile() == null) {
 			throw new GeneralException(ErrorStatus.MEMBER_NOT_FOUND);
 		}
-		Page<Review> reviews = reviewRepository.findAllByProProfile_Id(user.getId(), pageable);
+		Page<Review> reviews = reviewRepository.findAllByProProfile_Id(user.getProProfile().getId(), pageable);
 		return reviews.map(MyReviewListDTO::from);
 	}
 
@@ -111,9 +114,17 @@ public class ProfileServiceImpl implements ProfileService {
 	}
 
 	@Override
+	@Transactional(readOnly = true) // 데이터를 조회만 하므로 readOnly = true 추가 권장
 	public Page<ProProfileResponseDTO> findProProfilesByCategory(String categoryCode, Pageable pageable) {
-		Page<Users> users = userRepository.findAllByProProfile_Category_Code(categoryCode, pageable);
-		return users.map(ProfileConverter::toProProfileDetailDTO);
+		Page<ProProfile> proProfiles = proProfileRepository.findByCategory_Code(categoryCode, pageable);
+
+		return proProfiles.map(ProfileConverter::toProProfileDetailDTO);
+	}
+
+	@Override
+	public List<CategoryResponse.ProListDto> findAllProByCategoryCodeAndRegion(String categoryCode, String region){
+		return CategoryConverter.toProListDto(proProfileRepository.
+			findAllProByCategoryCodeAndRegion(categoryCode, region));
 	}
 
 	private Users findUserById(Long userId) {
@@ -153,6 +164,7 @@ public class ProfileServiceImpl implements ProfileService {
 		photoService.updatePhotos(proProfile, photoFiles);
 	}
 
+
 	@Override
 	@Transactional
 	public void updateProPtPrice(Long userId, PtPriceUpdateRequestDTO request) {
@@ -172,7 +184,12 @@ public class ProfileServiceImpl implements ProfileService {
 	@Transactional
 	public void updateUserProfileImage(Long userId, MultipartFile profileImage) {
 		Users user = findUserById(userId);
-		photoService.updateUserProfileImage(user, profileImage);
+		String newImageUrl = photoService.uploadProfileImage(profileImage);
+		if (newImageUrl != null) {
+			user.setProfileImageUrl(newImageUrl);
+		}
+		user.setProfileImageUrl(newImageUrl);
+
 	}
 
 	@Override
@@ -212,12 +229,11 @@ public class ProfileServiceImpl implements ProfileService {
 		proProfile.setCenterDescription(request.getCenterDescription());
 
 		// 2. 대표 주소 업데이트
-		Address address;
-		if (user.getAddresses() == null || user.getAddresses().isEmpty()) {
+		Address address = user.getAddress(); // 기존 주소 가져오기
+		if (address == null) {
 			address = new Address();
-			user.addAddress(address);
-		} else {
-			address = user.getAddresses().get(0);
+			address.setUser(user); // 새로 생성된 Address 객체에 Users 설정
+			user.setAddress(address); // Users 객체에 새로 생성된 Address 설정
 		}
 
 		address.setCity(request.getCity());
@@ -225,4 +241,5 @@ public class ProfileServiceImpl implements ProfileService {
 		address.setStreet(request.getStreet());
 		address.setZipcode(request.getZipcode());
 	}
+
 }

@@ -14,6 +14,7 @@ import com.grabpt.dto.request.ProLocationUpdateRequestDTO;
 import com.grabpt.dto.request.PtPriceUpdateRequestDTO;
 import com.grabpt.dto.request.PtProgramUpdateRequestDTO;
 import com.grabpt.dto.request.UserProfileUpdateRequestDTO;
+import com.grabpt.dto.response.CategoryResponse;
 import com.grabpt.dto.response.CertificationResponseDTO;
 import com.grabpt.dto.response.MyRequestListDTO;
 import com.grabpt.dto.response.MyReviewListDTO;
@@ -37,6 +38,7 @@ public interface ProfileService {
 
 	Page<ProProfileResponseDTO> findProProfilesByCategory(String categoryCode, Pageable pageable);
 
+	List<CategoryResponse.ProListDto> findAllProByCategoryCodeAndRegion(String categoryCode, String region);
 	void updateProCenter(Long userId, CenterUpdateRequestDTO request);
 
 	void updateProDescription(Long userId, DescriptionUpdateRequestDTO request);

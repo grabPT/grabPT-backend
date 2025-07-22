@@ -17,7 +17,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
-import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -42,7 +41,6 @@ public class UserProfile extends BaseEntity {
 	private Long id;
 
 	@OneToOne
-	@MapsId // 외래 키를 기본 키로 사용
 	@JoinColumn(name = "user_id")
 	private Users user;
 

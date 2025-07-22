@@ -70,9 +70,9 @@ public class ProfileConverter {
 				.build())
 			.collect(Collectors.toList());
 
-		List<ProfileResponseDTO.MyProProfileDTO.AddressDTO> addressDTOS = user.getAddresses().stream()
-			.map(ProfileResponseDTO.MyProProfileDTO.AddressDTO::from)
-			.collect(Collectors.toList());
+		List<ProfileResponseDTO.MyProProfileDTO.AddressDTO> addressDTOS = (user.getAddress() != null)
+			? Collections.singletonList(ProfileResponseDTO.MyProProfileDTO.AddressDTO.from(user.getAddress()))
+			: Collections.emptyList();
 
 
 		return ProfileResponseDTO.MyProProfileDTO.builder()
@@ -105,12 +105,40 @@ public class ProfileConverter {
 			.map(ProProfileResponseDTO.PhotoDTO::from)
 			.collect(Collectors.toList());
 
-		List<ProfileResponseDTO.MyProProfileDTO.AddressDTO> addressDTOS = user.getAddresses().stream()
-			.map(ProfileResponseDTO.MyProProfileDTO.AddressDTO::from)
-			.collect(Collectors.toList());
+		List<ProfileResponseDTO.MyProProfileDTO.AddressDTO> addressDTOS = (user.getAddress() != null)
+			? Collections.singletonList(ProfileResponseDTO.MyProProfileDTO.AddressDTO.from(user.getAddress()))
+			: Collections.emptyList();
 
 		return ProProfileResponseDTO.builder()
 			.name(user.getNickname())
+			.photos(photoDTOS)
+			.introduction(proProfile.getDescription())
+			.certifications(certificationDTOS)
+			.programDescription(proProfile.getProgramDescription())
+			.pricePerSession(proProfile.getPricePerSession())
+			.totalSessions(proProfile.getTotalSessions())
+			.center(proProfile.getCenter())
+			.address(addressDTOS)
+			.build();
+	}
+
+	public static ProProfileResponseDTO toProProfileDetailDTO(ProProfile proProfile) {
+		Users user = proProfile.getUser();
+
+		List<ProProfileResponseDTO.CertificationDTO> certificationDTOS = proProfile.getCertifications().stream()
+			.map(ProProfileResponseDTO.CertificationDTO::from)
+			.collect(Collectors.toList());
+
+		List<ProProfileResponseDTO.PhotoDTO> photoDTOS = proProfile.getPhotos().stream()
+			.map(ProProfileResponseDTO.PhotoDTO::from)
+			.collect(Collectors.toList());
+
+		List<ProfileResponseDTO.MyProProfileDTO.AddressDTO> addressDTOS = (user.getAddress() != null)
+			? Collections.singletonList(ProfileResponseDTO.MyProProfileDTO.AddressDTO.from(user.getAddress()))
+			: Collections.emptyList();
+
+		return ProProfileResponseDTO.builder()
+			.name(user.getNickname()) // User 객체에서 닉네임 가져오기
 			.photos(photoDTOS)
 			.introduction(proProfile.getDescription())
 			.certifications(certificationDTOS)

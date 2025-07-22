@@ -41,6 +41,15 @@ public class ChatController {
 		//return ChatConverter.toMessageResponseDto(newMessage);
 	}
 
+	@PostMapping("/chatRoom/{roomId}/read")
+	@ResponseBody
+	public ApiResponse<String> updateLastReadMessage(@PathVariable Long roomId, HttpServletRequest request) throws IllegalAccessException {
+		Long userId = userQueryService.getUserId(request);
+		chatService.updateLastReadMessage(roomId,userId);
+		log.info("마지막으로 읽은 메시지 업데이트");
+		return ApiResponse.onSuccess("채팅방을 나갑니다. 마지막으로 읽은 메시지 업데이트");
+	}
+
 	@PostMapping("/chatRoom/request")
 	@ResponseBody
 	public ApiResponse<ChatResponse.CreateChatRoomResponseDto> createChatRoom(@RequestBody ChatRequest.CreateChatRoomRequestDto request){

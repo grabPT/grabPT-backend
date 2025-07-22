@@ -1,20 +1,18 @@
 package com.grabpt.dto.response;
 
-import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 
 
 import java.util.List;
 
 import com.grabpt.domain.entity.Address;
-import com.grabpt.domain.entity.Center;
 import com.grabpt.domain.entity.ProPhoto;
 import com.grabpt.domain.entity.Review;
 import com.grabpt.domain.entity.Users;
-import com.grabpt.dto.request.SignupRequest;
+
+import lombok.Builder;
+import lombok.Getter;
 
 /**
  * 프로필 관련 응답 DTO들을 모아놓은 클래스입니다.
@@ -52,6 +50,8 @@ public class ProfileResponseDTO {
 
 
 		private String description;
+		private String centerName;
+
 		// 소개 이미지
 		private List<MyProProfileDTO.PhotoDTO> photos;
 
@@ -106,7 +106,7 @@ public class ProfileResponseDTO {
 			private String imageUrl;
 			private String description;
 
-			public static PhotoDTO from(ProPhoto photo){
+			public static PhotoDTO from(ProPhoto photo) {
 				return PhotoDTO.builder()
 					.imageUrl(photo.getImageUrl())
 					.description(photo.getDescription())

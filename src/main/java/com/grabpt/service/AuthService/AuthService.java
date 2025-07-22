@@ -2,6 +2,7 @@ package com.grabpt.service.AuthService;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -41,25 +42,23 @@ public class AuthService {
 
 	public void registerUser(SignupRequest.UserSignupRequestDto req, HttpServletResponse response) {
 
-		// 카테고리 ID 리스트 → 엔티티 리스트
 		List<Category> categoryList = req.getCategories().stream()
 			.map(id -> categoryRepository.findById(id)
 				.orElseThrow(() -> new CategoryHandler(ErrorStatus.CATEGORY_NOT_FOUND)))
 			.collect(Collectors.toList());
 
-		// address 리스트 매핑
-		List<Address> addressList = req.getAddress().stream()
-			.map(addr -> Address.builder()
-				.city(addr.getCity())
-				.district(addr.getDistrict())
-				.street(addr.getStreet())
-				.zipcode(addr.getZipcode())
-				.build())
-			.collect(Collectors.toList());
 
-		// UserProfile 생성
+    // UserProfile 생성
 		UserProfile userPrprofile = UserProfile.builder()
 			.categories(categoryList)
+			.build();
+
+		SignupRequest.UserSignupRequestDto.AddressRequest addressDto = req.getAddress();
+		Address address = Address.builder()
+			.city(addressDto.getCity())
+			.district(addressDto.getDistrict())
+			.street(addressDto.getStreet())
+			.zipcode(addressDto.getZipcode())
 			.build();
 
 		// Users 생성 및 연관관계 설정
@@ -67,7 +66,7 @@ public class AuthService {
 			.username(req.getUsername())
 			.email(req.getEmail())
 			.phone_number(req.getPhoneNum())
-			.addresses(addressList)
+			.address(address)
 			.password(passwordEncoder.encode(req.getPassword()))
 			.nickname(req.getNickname())
 			.role(mapToRole(req.getRole()))
@@ -80,34 +79,32 @@ public class AuthService {
 			.build();
 
 		userPrprofile.setUser(user);
+		address.setUser(user);
+		Users savedUser = userRepository.save(user);
 
-		userRepository.save(user);
-
-		createTokenAndSetCookie(user, response);
+		createTokenAndSetCookie(savedUser, response);
 	}
 
 	public void registerPro(SignupRequest.ProSignupRequestDto req, HttpServletResponse response) {
 
-		// 카테고리 ID 리스트 → 엔티티 리스트
+		// 카테고리 조회
 		Category proCategory = categoryRepository.findById(req.getCategoryId())
 			.orElseThrow(() -> new CategoryHandler(ErrorStatus.CATEGORY_NOT_FOUND));
 
-		// address 리스트 매핑
-		List<Address> addressList = req.getAddress().stream()
-			.map(addr -> Address.builder()
-				.city(addr.getCity())
-				.district(addr.getDistrict())
-				.street(addr.getStreet())
-				.zipcode(addr.getZipcode())
-				.build())
-			.collect(Collectors.toList());
-
 		//  ProProfile 생성 및 Users 연관 설정
 		ProProfile proProfile = ProProfile.builder()
-			.center(req.getCenter().getCenterName())
+			.center(req.getCenter())
 			.career(req.getCareer())
 			.description(req.getDescription())
 			.category(proCategory)
+			.build();
+
+		SignupRequest.ProSignupRequestDto.AddressRequest addressDto = req.getAddress();
+		Address address = Address.builder()
+			.city(addressDto.getCity())
+			.district(addressDto.getDistrict())
+			.street(addressDto.getStreet())
+			.zipcode(addressDto.getZipcode())
 			.build();
 
 		// Users 생성 및 연관관계 설정
@@ -115,7 +112,7 @@ public class AuthService {
 			.username(req.getUsername())
 			.email(req.getEmail())
 			.phone_number(req.getPhoneNum())
-			.addresses(addressList)
+			.address(address)
 			.password(passwordEncoder.encode(req.getPassword()))
 			.nickname(req.getNickname())
 			.role(mapToRole(req.getRole())) // Role.PRO
@@ -128,10 +125,10 @@ public class AuthService {
 			.build();
 
 		proProfile.setUser(user);
+    	address.setUser(user);
+		Users savedUser = userRepository.save(user);
 
-		userRepository.save(user);
-
-		createTokenAndSetCookie(user, response);
+		createTokenAndSetCookie(savedUser, response);
 	}
 
 	private Gender mapToGender(int genderCode) {

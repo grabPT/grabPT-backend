@@ -24,33 +24,16 @@ public class CategoryResponse {
 	@Builder
 	@Getter
 	@AllArgsConstructor
-	public static class TrainerPreviewListDto {
-		List<CategoryResponse.TrainerListDto> trainerList;
-		Integer listSize;
-		Integer totalPage;
-		Long totalElements;
-		Boolean isFirst;
-		Boolean isLast;
-	}
-
-	@Builder
-	@Getter
-	@AllArgsConstructor
-	public static class TrainerListDto {
+	public static class ProListDto {
 		Long id;  //ProProfile.id
 		String name; //ProProfile.User.name
-		double rating;  //ProProfile.reviews.getAverageReview
-		CenterDto centerDto; //
-		int pricePerSession; //Proprofile.Suggestions.price
+		Double rating;  //ProProfile.reviews.getAverageReview
+		String centerName;
+		@Builder.Default
+		int pricePerSession = 0; //Proprofile.Suggestions.price
+		@Builder.Default
+		int totalSessions = 0;
 		String profileImageUrl;
-	}
-
-	@Builder
-	@Getter
-	@AllArgsConstructor
-	public static class CenterDto {
-		String name;
-		String address; //center가 없음
 	}
 
 	//요청서 목록을 위한 Dto

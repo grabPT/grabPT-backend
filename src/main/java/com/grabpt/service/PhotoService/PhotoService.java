@@ -15,5 +15,5 @@ public interface PhotoService {
 	 */
 	void updatePhotos(ProProfile proProfile, List<MultipartFile> photoFiles);
 
-	String updateUserProfileImage(Users user, MultipartFile profileImage);
+	String uploadProfileImage(MultipartFile profileImage);
 }

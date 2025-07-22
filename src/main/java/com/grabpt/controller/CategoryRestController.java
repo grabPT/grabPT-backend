@@ -2,6 +2,7 @@ package com.grabpt.controller;
 
 import java.util.List;
 
+import com.grabpt.service.ProfileService.ProfileService;
 import com.grabpt.service.RequestionService.RequestionService;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -36,6 +37,7 @@ public class CategoryRestController {
 
 	private final CategoryQueryService categoryQueryService;
 	private final RequestionService requestionService;
+	private final ProfileService profileService;
 
 	@Operation(
 		summary = "카테고리 목록 조회 API",
@@ -54,31 +56,28 @@ public class CategoryRestController {
 
 	@Operation(
 		summary = "카테고리 상세 페이지 조회(전문가 목록 조회)",
-		description = "카테고리 상세 페이지 중 전문가 목록을 조회하는 API(페이징 포함), 로그아웃 상태일 때 region을 쿼리파라미터로 전달"
+		description = "카테고리 상세 페이지 중 전문가 목록을 조회하는 API, 로그아웃 상태일 때 region을 쿼리파라미터로 전달"
 	)
 	@Parameters({
 		@Parameter(name = "code", description = "카테고리 코드 (예: box)", required = true, in = ParameterIn.PATH, example = "box"),
-		@Parameter(name = "region", description = "지역명 (예: 화곡3동)", required = false, example = "화곡3동"),
-		@Parameter(name = "page", description = "페이지 번호 1부터 시작)", required = false, example = "1")
+		@Parameter(name = "region", description = "지역명 (예: 화곡3동)", required = false, example = "화곡3동")
 	})
 	@ApiResponses({
 		@io.swagger.v3.oas.annotations.responses.ApiResponse(
 			responseCode = "200",
 			description = "전문가 목록 조회 성공",
 			content = @Content(mediaType = "application/json",
-				schema = @Schema(implementation = CategoryResponse.TrainerPreviewListDto.class))
+				schema = @Schema(implementation = CategoryResponse.ProListDto.class))
 		),
 		@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 요청 파라미터"),
 		@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 내부 오류")
 	})
 	@GetMapping("/category/{code}/trainers")
-	public ApiResponse<CategoryResponse.TrainerPreviewListDto> getTrainerList(
+	public ApiResponse<List<CategoryResponse.ProListDto>> getTrainerList(
 		@PathVariable(name = "code") String code,
-		@RequestParam(name = "region", required = false) String region,
-		@RequestParam(defaultValue = "1") int page) {
-
-		Pageable pageable = PageRequest.of(page - 1, 4, Sort.by("rating").descending());
-		return ApiResponse.onSuccess(new CategoryResponse.TrainerPreviewListDto(null, 0, 0, 0L, true, true));
+		@RequestParam(name = "region", required = false) String region) {
+		profileService.findAllProByCategoryCodeAndRegion(code, region);
+		return ApiResponse.onSuccess(profileService.findAllProByCategoryCodeAndRegion(code, region));
 	}
 
 	@Operation(

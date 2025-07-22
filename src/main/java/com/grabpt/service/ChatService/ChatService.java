@@ -11,7 +11,7 @@ public interface ChatService {
 	public ChatResponse.CreateChatRoomResponseDto getOrcreateChatRoom(ChatRequest.CreateChatRoomRequestDto request);
 	public Messages createChatMessage(ChatRequest.MessageRequestDto request);
 	public List<ChatResponse.MessageResponseDto> getMessagesByChatRoom(Long roomId);
-	public List<ChatResponse.ChatRoomPreviewDto> getChatRoomList(Long userId);
+	public List<ChatResponse.ChatRoomPreviewDto> getChatRoomList(Long userId, String keyword);
 	public Long getLastReadMessageId(Long roomId, Long userId);
 	public Long getUnreadMessageCount(Long roomId, Long userId);
 	public void updateLastReadMessage(Long roomId, Long userId);

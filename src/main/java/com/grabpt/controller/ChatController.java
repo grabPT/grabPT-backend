@@ -65,16 +65,15 @@ public class ChatController {
 
 	@GetMapping("/chatRoom/list") //로그인 유저 정보
 	@ResponseBody
-	public ApiResponse<List<ChatResponse.ChatRoomPreviewDto>> getChatRoomList(HttpServletRequest request) throws IllegalAccessException { //임
+	public ApiResponse<List<ChatResponse.ChatRoomPreviewDto>> getChatRoomList(@RequestParam(name = "keyword", required = false) String keyword,
+																			  HttpServletRequest request) throws IllegalAccessException {
 		Long userId = userQueryService.getUserId(request);
-		log.info("로그인 유저 id:{}",userId);
-		return ApiResponse.onSuccess(chatService.getChatRoomList(userId));
+		return ApiResponse.onSuccess(chatService.getChatRoomList(userId, keyword));
 	}
 
 	@GetMapping("/chat-test")
 	public String chatTest(HttpServletRequest request) throws IllegalAccessException {
 		String email = userQueryService.getUserInfo(request).getEmail();
-		log.info("로그인 유저 email:{}",email);
 		return "chat-test";
 	}
 }

@@ -1,28 +1,13 @@
 package com.grabpt.service.ProfileService;
 
-import java.util.List;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.grabpt.apiPayload.code.status.ErrorStatus;
 import com.grabpt.apiPayload.exception.GeneralException;
 import com.grabpt.converter.CategoryConverter;
 import com.grabpt.converter.ProfileConverter;
-import com.grabpt.domain.entity.ProProfile;
-import com.grabpt.domain.entity.Requestions;
-import com.grabpt.domain.entity.Review;
-import com.grabpt.domain.entity.UserProfile;
-import com.grabpt.domain.entity.Users;
+import com.grabpt.domain.entity.*;
 import com.grabpt.dto.request.ProProfileUpdateRequestDTO;
 import com.grabpt.dto.request.UserProfileUpdateRequestDTO;
-import com.grabpt.dto.response.CategoryResponse;
-import com.grabpt.dto.response.MyRequestListDTO;
-import com.grabpt.dto.response.MyReviewListDTO;
-import com.grabpt.dto.response.ProProfileResponseDTO;
-import com.grabpt.dto.response.ProfileResponseDTO;
+import com.grabpt.dto.response.*;
 import com.grabpt.repository.ProProfileRepository.ProProfileRepository;
 import com.grabpt.repository.RequestionRepository.RequestionRepository;
 import com.grabpt.repository.ReviewRepository.reviewRepository;
@@ -30,7 +15,14 @@ import com.grabpt.repository.UserRepository.UserRepository;
 import com.grabpt.service.CertificationService.CertificationService;
 import com.grabpt.service.PhotoService.PhotoService;
 
+import com.grabpt.service.ProgramService.ProgramService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -129,7 +121,7 @@ public class ProfileServiceImpl implements ProfileService {
 	}
 
 	@Override
-	public List<CategoryResponse.ProListDto> findAllProByCategoryCodeAndRegion(String categoryCode, String region) {
+	public List<CategoryResponse.ProListDto> findAllProByCategoryCodeAndRegion(String categoryCode, String region){
 		return CategoryConverter.toProListDto(proProfileRepository.
 			findAllProByCategoryCodeAndRegion(categoryCode, region));
 	}

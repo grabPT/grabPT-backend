@@ -18,7 +18,7 @@ public interface UserChatRoomRepository extends JpaRepository<UserChatRoom, Long
     JOIN FETCH ucr.user u
     JOIN FETCH ucr.otherUser ou
     WHERE u.id = :userId
-    AND ucr.roomName LIKE %:keyword%
+    AND (:keyword IS NULL OR :keyword = '' OR ucr.roomName LIKE %:keyword%)
     ORDER BY cr.lastMessageTime DESC
 	""") //N+1문제 방지
 	List<UserChatRoom> findByUserId(Long userId, String keyword);

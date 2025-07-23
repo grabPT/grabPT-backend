@@ -1,11 +1,11 @@
 package com.grabpt.service.ProfileService;
 
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
 import com.grabpt.apiPayload.code.status.ErrorStatus;
 import com.grabpt.apiPayload.exception.GeneralException;
 import com.grabpt.converter.CategoryConverter;
@@ -36,12 +36,9 @@ import com.grabpt.repository.ReviewRepository.reviewRepository;
 import com.grabpt.repository.UserRepository.UserRepository;
 import com.grabpt.service.CertificationService.CertificationService;
 import com.grabpt.service.PhotoService.PhotoService;
-
-
 import lombok.RequiredArgsConstructor;
-
 import java.util.Collections;
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -122,7 +119,7 @@ public class ProfileServiceImpl implements ProfileService {
 	}
 
 	@Override
-	public List<CategoryResponse.ProListDto> findAllProByCategoryCodeAndRegion(String categoryCode, String region){
+	public List<CategoryResponse.ProListDto> findAllProByCategoryCodeAndRegion(String categoryCode, String region) {
 		return CategoryConverter.toProListDto(proProfileRepository.
 			findAllProByCategoryCodeAndRegion(categoryCode, region));
 	}

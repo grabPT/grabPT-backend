@@ -16,25 +16,35 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class AmazonS3Manager{
+public class AmazonS3Manager {
 
 	private final AmazonS3 amazonS3;
 
 	private final AmazonConfig amazonConfig;
 
-	public String uploadFile(String keyName, MultipartFile file){
+	public String uploadFile(String keyName, MultipartFile file) {
 		ObjectMetadata metadata = new ObjectMetadata();
 		metadata.setContentLength(file.getSize());
 		try {
-			amazonS3.putObject(new PutObjectRequest(amazonConfig.getBucket(), keyName, file.getInputStream(), metadata));
-		} catch (IOException e){
-			log.error("error at AmazonS3Manager uploadFile : {}", (Object) e.getStackTrace());
+			amazonS3.putObject(
+				new PutObjectRequest(amazonConfig.getBucket(), keyName, file.getInputStream(), metadata));
+		} catch (IOException e) {
+			log.error("error at AmazonS3Manager uploadFile : {}", (Object)e.getStackTrace());
 		}
 
 		return amazonS3.getUrl(amazonConfig.getBucket(), keyName).toString();
 	}
 
-	public String generateReviewKeyName(Uuid uuid) {
+	public String generateProPhotoKeyName(Uuid uuid) {
 		return amazonConfig.getProPhoto() + '/' + uuid.getUuid();
 	}
+
+	public String generateUserPhotoKeyName(Uuid uuid) {
+		return amazonConfig.getUserPhoto() + '/' + uuid.getUuid();
+	}
+
+	public String generateTestKeyName(Uuid uuid) {
+		return amazonConfig.getUserPhoto() + '/' + uuid.getUuid();
+	}
+
 }

@@ -13,6 +13,8 @@ DEPLOY_LOG="$PROJECT_ROOT/deploy.log"
 TIME_NOW=$(date "+%Y-%m-%d %H:%M:%S")
 
 echo "$TIME_NOW > JAR 파일 복사: $JAR_SOURCE → $JAR_FILE" >> $DEPLOY_LOG
+echo "$TIME_NOW > build/libs 내부 확인" >> $DEPLOY_LOG
+ls -al $JAR_SOURCE >> $DEPLOY_LOG
 cp $JAR_SOURCE/*.jar $JAR_FILE
 
 # jar 파일 실행 (환경설정 포함)

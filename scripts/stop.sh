@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 PROJECT_ROOT="/home/ubuntu/app"
-JAR_FILE="$PROJECT_ROOT/spring-webapp.jar"
+JAR_FILE="$PROJECT_ROOT/app.jar"
 
 DEPLOY_LOG="$PROJECT_ROOT/deploy.log"
 
@@ -16,4 +16,12 @@ if [ -z $CURRENT_PID ]; then
 else
   echo "$TIME_NOW > 실행중인 $CURRENT_PID 애플리케이션 종료 " >> $DEPLOY_LOG
   kill -15 $CURRENT_PID
+  sleep 5
+
+  # 아직 살아 있으면 강제 종료
+  CURRENT_PID=$(pgrep -f $JAR_FILE)
+  if [ -n "$CURRENT_PID" ]; then
+    echo "$TIME_NOW > 애플리케이션이 종료되지 않아 강제 종료합니다." >> $DEPLOY_LOG
+    kill -9 $CURRENT_PID
+  fi
 fi

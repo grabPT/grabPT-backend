@@ -68,7 +68,7 @@ public class RequestionController {
 		description = "트레이너 기준 일반 유저의 요청서를 조회합니다."
 	)
 	public ApiResponse<Page<RequestionResponseDto.RequestionResponsePagingDto>> getRequestionsNearby(
-		@RequestParam(defaultValue = "latest or price") String sortBy,
+		@RequestParam(defaultValue = "latest") String sortBy,
 		@RequestParam(defaultValue = "1") int page,
 		@RequestParam(defaultValue = "4") int size,
 		HttpServletRequest request

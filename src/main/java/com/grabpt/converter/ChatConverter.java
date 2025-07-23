@@ -31,7 +31,7 @@ public class ChatConverter {
 		return ChatResponse.MessageResponseDto.builder()
 			.roomId(messages.getChatRoom().getId())
 			.senderId(messages.getSender().getId())
-			.type(messages.getType().toString())
+			.messageType(messages.getType().toString())
 			.content(messages.getContent())
 			.sendAt(messages.getSentAt())
 			.build();

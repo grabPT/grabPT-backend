@@ -29,7 +29,7 @@ public class AmazonConfig {
 	@Value("${cloud.aws.region.static}")
 	private String region;
 
-	@Value(("{cloud.aws.s3.bucket}"))
+	@Value(("${cloud.aws.s3.bucket}"))
 	private String bucket;
 
 	@Value("${cloud.aws.s3.path.proPhoto}")

@@ -16,7 +16,7 @@ public class ChatResponse {
 		Long roomId;
 		Long senderId;
 		String content;
-		String type;
+		String messageType;
 		LocalDateTime sendAt;
 	}
 

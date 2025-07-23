@@ -29,7 +29,6 @@ import com.grabpt.repository.ReviewRepository.reviewRepository;
 import com.grabpt.repository.UserRepository.UserRepository;
 import com.grabpt.service.CertificationService.CertificationService;
 import com.grabpt.service.PhotoService.PhotoService;
-
 import lombok.RequiredArgsConstructor;
 
 @Service

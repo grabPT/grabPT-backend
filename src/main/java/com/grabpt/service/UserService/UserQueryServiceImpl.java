@@ -65,5 +65,4 @@ public class UserQueryServiceImpl implements UserQueryService {
 	public boolean existsByNickname(String nickname) {
 		return userRepository.existsByNickname(nickname);
 	}
-
 }

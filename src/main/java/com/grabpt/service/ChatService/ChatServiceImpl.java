@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -102,11 +103,11 @@ public class ChatServiceImpl implements ChatService{
 	}
 
 	@Override //fetch join고려
-	public List<ChatResponse.ChatRoomPreviewDto> getChatRoomList(Long userId) {
+	public List<ChatResponse.ChatRoomPreviewDto> getChatRoomList(Long userId, String keyword) {
 		Users user = userRepository.findById(userId)
 			.orElseThrow(() -> new UserHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
-		List<UserChatRoom> chatRooms = userChatRoomRepository.findByUserId(userId);
+		List<UserChatRoom> chatRooms = userChatRoomRepository.findByUserId(userId, keyword);
 
 		return chatRooms.stream()
 			.map(chatRoom -> {
@@ -149,4 +150,5 @@ public class ChatServiceImpl implements ChatService{
 		chatRoom.setLastReadAt(LocalDateTime.now());
 		userChatRoomRepository.save(chatRoom);
 	}
+
 }

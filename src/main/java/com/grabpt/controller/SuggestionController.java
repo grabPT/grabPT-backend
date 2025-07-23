@@ -58,11 +58,11 @@ public class SuggestionController {
 		return ApiResponse.onSuccess(response);
 	}
 
+	@GetMapping("/requestionList/{requestionId}")
 	@Operation(
 		summary = "요청서에 대한 제안서 목록 조회 API",
 		description = "요청서 ID에 해당하는 제안서들을 6개씩 페이징하여 조회합니다."
 	)
-	@GetMapping("/requestionList/{requestionId}")
 	public ApiResponse<Page<SuggestionResponseDto.SuggestionResponsePagingDto>> getSuggestionsByRequestion(
 		@PathVariable Long requestionId,
 		@RequestParam(defaultValue = "1") int page

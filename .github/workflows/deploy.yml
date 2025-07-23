@@ -29,29 +29,20 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-        # secrets의 env 파일 빌드
       - name: Create .env file from secret
-        run: echo "${{ secrets.ENV_PROPERTIES }}" > .env
-
-      - name: Check .env file content (safe debug)
-        run: |
-          echo "First 5 lines of .env file:"
-          head -n 5 .env
+        run: echo "${{ secrets.ENV_PROPERTIES }}" > .env.properties
 
       - name: Build with Gradle (skip tests)
         uses: gradle/gradle-build-action@0d13054264b0bb894ded474f08ebb30921341cee
         with:
           arguments: clean build -x test
 
-      - name: Upload artifact for transfer
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-artifact
-          path: |
-            build/libs/*.jar
-            scripts/**
-            appspec.yml
-            .env.properties
+      - name: Prepare deploy folder  # jar 파일 전송 추가
+        run: |
+          mkdir -p deploy
+          cp build/libs/*.jar deploy/
+          cp -r scripts deploy/
+          cp appspec.yml .env.properties deploy/
 
   transfer:
     name: Transfer
@@ -59,12 +50,6 @@ jobs:
     needs: build
 
     steps:
-      - name: Download build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: build-artifact
-          path: deploy
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:

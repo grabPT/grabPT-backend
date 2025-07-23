@@ -37,12 +37,21 @@ jobs:
         with:
           arguments: clean build -x test
 
-      - name: Prepare deploy folder  # jar 파일 전송 추가
+      # 디버깅 로그 1: 빌드 결과 jar 확인
+      - name: Print jar list for debug
+        run: |
+          echo "=== JAR files in build/libs ==="
+          ls -al build/libs
+
+      # 복사 + 디버깅 로그 2: deploy 폴더 내용 확인
+      - name: Prepare deploy folder
         run: |
           mkdir -p deploy
           cp build/libs/*.jar deploy/
           cp -r scripts deploy/
           cp appspec.yml .env.properties deploy/
+          echo "=== deploy folder contents ==="
+          ls -al deploy
 
   transfer:
     name: Transfer

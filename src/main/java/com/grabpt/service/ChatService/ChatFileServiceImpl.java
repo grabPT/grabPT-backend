@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 
 @Slf4j
 @Service
@@ -33,8 +34,7 @@ public class ChatFileServiceImpl implements ChatFileService{
 		}
 		log.info("bucket name: {}", amazonConfig.getBucket());
 
-		Uuid uuid = Uuid.builder().uuid(java.util.UUID.randomUUID().toString()).build();
-		String keyName = amazonS3Manager.generateReviewKeyName(uuid);
+		String keyName = file.getOriginalFilename() +"/" + LocalDateTime.now().toString(); //임시
 		String fileUrl = amazonS3Manager.uploadFile(keyName, file);
 		String messageType = file.getContentType() != null && file.getContentType()
 				.startsWith("image/") ? "IMAGE" : "FILE";

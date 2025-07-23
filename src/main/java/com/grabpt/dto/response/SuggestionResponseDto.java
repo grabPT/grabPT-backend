@@ -10,6 +10,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Data
 public class SuggestionResponseDto {
@@ -46,4 +47,18 @@ public class SuggestionResponseDto {
 				.build();
 		}
 	}
+
+	@Getter
+	@Setter
+	@Builder
+	@AllArgsConstructor
+	@NoArgsConstructor
+	public static class SuggestionResponsePagingDto {
+		private String nickname;
+		private String center;
+		private String address;
+		private Integer price;
+		private Double averageRate; // 평점 추가
+	}
+
 }

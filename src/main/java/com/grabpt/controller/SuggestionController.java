@@ -1,10 +1,12 @@
 package com.grabpt.controller;
 
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.grabpt.apiPayload.ApiResponse;
@@ -55,6 +57,20 @@ public class SuggestionController {
 	) {
 		SuggestionResponseDto.SuggestionDetailResponseDto response = suggestionService.getDetail(suggestionId);
 		return ApiResponse.onSuccess(response);
+	}
+
+	@Operation(
+		summary = "요청서에 대한 제안서 목록 조회 API",
+		description = "요청서 ID에 해당하는 제안서들을 6개씩 페이징하여 조회합니다."
+	)
+	@GetMapping("/requestion/{requestionId}")
+	public ApiResponse<Page<SuggestionResponseDto.SuggestionResponsePagingDto>> getSuggestionsByRequestion(
+		@PathVariable Long requestionId,
+		@RequestParam(defaultValue = "0") int page
+	) {
+		Page<SuggestionResponseDto.SuggestionResponsePagingDto> result = suggestionService.getSuggestionsByRequestionId(
+			requestionId, page);
+		return ApiResponse.onSuccess(result);
 	}
 
 }

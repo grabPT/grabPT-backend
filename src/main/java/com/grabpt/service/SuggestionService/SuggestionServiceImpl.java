@@ -2,6 +2,9 @@ package com.grabpt.service.SuggestionService;
 
 import java.time.LocalDateTime;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.grabpt.apiPayload.code.status.ErrorStatus;
@@ -9,6 +12,7 @@ import com.grabpt.apiPayload.exception.handler.ProHandler;
 import com.grabpt.apiPayload.exception.handler.RequestionHandler;
 import com.grabpt.apiPayload.exception.handler.SuggestionHandler;
 import com.grabpt.apiPayload.exception.handler.UserHandler;
+import com.grabpt.converter.SuggestionConverter;
 import com.grabpt.domain.entity.ProProfile;
 import com.grabpt.domain.entity.Requestions;
 import com.grabpt.domain.entity.Suggestions;
@@ -61,5 +65,14 @@ public class SuggestionServiceImpl implements SuggestionService {
 		Suggestions suggestion = suggestionRepository.findById(suggestionId)
 			.orElseThrow(() -> new SuggestionHandler(ErrorStatus.SUGGESTION_NOT_FOUND));
 		return SuggestionResponseDto.SuggestionDetailResponseDto.from(suggestion);
+	}
+	
+	@Override
+	public Page<SuggestionResponseDto.SuggestionResponsePagingDto> getSuggestionsByRequestionId(Long requestionId,
+		int page) {
+		Pageable pageable = PageRequest.of(page, 6); // 6개씩 페이징
+		Page<Suggestions> suggestionsPage = suggestionRepository.findByRequestionId(requestionId, pageable);
+
+		return SuggestionConverter.toSuggestionResponsePageDto(suggestionsPage);
 	}
 }

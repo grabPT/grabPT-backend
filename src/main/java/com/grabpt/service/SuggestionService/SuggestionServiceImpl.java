@@ -1,11 +1,13 @@
 package com.grabpt.service.SuggestionService;
 
 import java.time.LocalDateTime;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.grabpt.apiPayload.code.status.ErrorStatus;
 import com.grabpt.apiPayload.exception.handler.ProHandler;
@@ -13,6 +15,7 @@ import com.grabpt.apiPayload.exception.handler.RequestionHandler;
 import com.grabpt.apiPayload.exception.handler.SuggestionHandler;
 import com.grabpt.apiPayload.exception.handler.UserHandler;
 import com.grabpt.converter.SuggestionConverter;
+import com.grabpt.domain.entity.ProPhoto;
 import com.grabpt.domain.entity.ProProfile;
 import com.grabpt.domain.entity.Requestions;
 import com.grabpt.domain.entity.Suggestions;
@@ -61,12 +64,36 @@ public class SuggestionServiceImpl implements SuggestionService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public SuggestionResponseDto.SuggestionDetailResponseDto getDetail(Long suggestionId) {
 		Suggestions suggestion = suggestionRepository.findById(suggestionId)
 			.orElseThrow(() -> new SuggestionHandler(ErrorStatus.SUGGESTION_NOT_FOUND));
-		return SuggestionResponseDto.SuggestionDetailResponseDto.from(suggestion);
+
+		ProProfile pro = suggestion.getProProfile();
+		Users user = pro.getUser();
+		Requestions requestion = suggestion.getRequestion();
+
+		// 가격 비교 로직
+		int originalPrice = requestion.getPrice();
+		int suggestedPrice = suggestion.getPrice();
+		int discount = originalPrice - suggestedPrice;
+
+		return SuggestionResponseDto.SuggestionDetailResponseDto.builder()
+			.nickname(user.getNickname())
+			.center(pro.getCenter())
+			.profileImageUrl(user.getProfileImageUrl())
+			.suggestedPrice(suggestedPrice)
+			.originalPrice(originalPrice)
+			.discountAmount(discount > 0 ? discount : 0)
+			.isDiscounted(discount > 0)
+			.message(suggestion.getMessage())
+			.location(suggestion.getLocation())
+			.photoUrls(pro.getPhotos().stream()
+				.map(ProPhoto::getImageUrl)
+				.collect(Collectors.toList()))
+			.build();
 	}
-	
+
 	@Override
 	public Page<SuggestionResponseDto.SuggestionResponsePagingDto> getSuggestionsByRequestionId(Long requestionId,
 		int page) {

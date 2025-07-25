@@ -65,8 +65,10 @@ public class Requestions extends BaseEntity {
 	@Column(nullable = false)
 	private Integer sessionCount; // 추가
 
-	@Column(nullable = false)
-	private List<String> purpose;
+	@ElementCollection
+	@CollectionTable(name = "requestion_purposes", joinColumns = @JoinColumn(name = "requestion_id"))
+	@Column(name = "purpose")
+	private List<String> purpose = new ArrayList<>();
 
 	@Column(nullable = false)
 	private String ageGroup;

@@ -1,6 +1,6 @@
 package com.grabpt.service.SuggestionService;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -57,7 +57,7 @@ public class SuggestionServiceImpl implements SuggestionService {
 			.price(dto.getPrice())
 			.message(dto.getMessage())
 			.location(dto.getLocation())
-			.sentAt(dto.getSentAt() != null ? dto.getSentAt() : LocalDateTime.now())
+			.sentAt(dto.getSentAt() != null ? dto.getSentAt() : LocalDate.now())
 			.isAgreed(dto.getIsAgreed() != null ? dto.getIsAgreed() : false)
 			.build();
 

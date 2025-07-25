@@ -104,7 +104,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 			response.addCookie(accessCookie);
 			response.addCookie(refreshCookie);
 
-			response.sendRedirect("http://localhost:8080/join"); // 환경에 맞게 수정\
+			response.sendRedirect("http://43.203.91.190:8080/"); // 환경에 맞게 수정\
 
 			return;
 		}
@@ -131,7 +131,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 		}
 
 		// redirect to frontend join page
-		response.sendRedirect("http://localhost:8080/join"); // 수정 예정
+		response.sendRedirect("http://43.203.91.190:8080/join"); // 수정 예정
 
 		log.info("소셜 로그인 성공 - provider: {}, email: {}, name: {}", oauthProvider, email, name);
 	}

@@ -78,6 +78,9 @@ public class Users extends BaseEntity {
 	@Column(length = 500)
 	private String refreshToken;
 
+	@Column(length = 500)
+	private String accessToken;
+
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<UserChatRoom> userChatRooms = new ArrayList<>();
 

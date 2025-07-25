@@ -58,7 +58,7 @@ spring:
               - profile_nickname
               - profile_image
             authorization-grant-type: authorization_code
-            redirect-uri: http://43.203.91.190/login/oauth2/code/kakao
+            redirect-uri: http://43.203.91.190:8080/login/oauth2/code/kakao
 
           naver:
             client-id: ${NAVER_CLIENT_ID}

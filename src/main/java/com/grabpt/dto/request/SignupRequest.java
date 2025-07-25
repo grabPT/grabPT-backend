@@ -63,6 +63,10 @@ public class SignupRequest {
 			private String street;
 			@Schema(description = "우편번호", example = "12345")
 			private String zipcode;
+			@Schema(description = "도로명 주소", example = "상암로 123")
+			private String streetCode; // 도로명주소
+			@Schema(description = "상세 주소", example = "123동 456호")
+			private String specAddress; // 상세주소
 		}
 	}
 
@@ -117,6 +121,10 @@ public class SignupRequest {
 			private String street;
 			@Schema(description = "우편번호", example = "12345")
 			private String zipcode;
+			@Schema(description = "도로명 주소", example = "상암로 123")
+			private String streetCode; // 도로명주소
+			@Schema(description = "상세 주소", example = "123동 456호")
+			private String specAddress; // 상세주소
 		}
 
 		@Schema(description = "활동지역")

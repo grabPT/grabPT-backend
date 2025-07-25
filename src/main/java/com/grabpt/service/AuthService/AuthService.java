@@ -2,7 +2,6 @@ package com.grabpt.service.AuthService;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -47,8 +46,7 @@ public class AuthService {
 				.orElseThrow(() -> new CategoryHandler(ErrorStatus.CATEGORY_NOT_FOUND)))
 			.collect(Collectors.toList());
 
-
-    // UserProfile 생성
+		// UserProfile 생성
 		UserProfile userPrprofile = UserProfile.builder()
 			.categories(categoryList)
 			.build();
@@ -59,6 +57,8 @@ public class AuthService {
 			.district(addressDto.getDistrict())
 			.street(addressDto.getStreet())
 			.zipcode(addressDto.getZipcode())
+			.streetCode(addressDto.getStreetCode())
+			.specAddress(addressDto.getSpecAddress())
 			.build();
 
 		// Users 생성 및 연관관계 설정
@@ -105,6 +105,8 @@ public class AuthService {
 			.district(addressDto.getDistrict())
 			.street(addressDto.getStreet())
 			.zipcode(addressDto.getZipcode())
+			.streetCode(addressDto.getStreetCode())
+			.specAddress(addressDto.getSpecAddress())
 			.build();
 
 		// Users 생성 및 연관관계 설정
@@ -125,7 +127,7 @@ public class AuthService {
 			.build();
 
 		proProfile.setUser(user);
-    	address.setUser(user);
+		address.setUser(user);
 		Users savedUser = userRepository.save(user);
 
 		createTokenAndSetCookie(savedUser, response);

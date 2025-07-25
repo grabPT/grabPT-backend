@@ -1,5 +1,6 @@
 package com.grabpt.dto.response;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import com.grabpt.domain.entity.Requestions;
@@ -22,13 +23,13 @@ public class RequestionResponseDto {
 	@AllArgsConstructor
 	public static class RequestionDetailResponseDto {
 		private Long requestionId;
-		private String purpose;
+		private List<String> purpose;
 		private String ageGroup;
 		private Gender userGender;
 		private Integer price;
 		private Integer sessionCount;
 		private String location;
-		private String startPreference;
+		private LocalDateTime startPreference;
 		private List<String> availableDays;
 		private List<String> availableTimes;
 		private Gender trainerGender;

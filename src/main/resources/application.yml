@@ -48,7 +48,7 @@ spring:
               - email
               - profile
             authorization-grant-type: authorization_code
-            redirect-uri: http://localhost:8080/login/oauth2/code/google
+            redirect-uri: http://43.203.91.190:8080/login/oauth2/code/google
 
           kakao:
             client-id: ${KAKAO_CLIENT_ID}
@@ -58,7 +58,7 @@ spring:
               - profile_nickname
               - profile_image
             authorization-grant-type: authorization_code
-            redirect-uri: http://localhost:8080/login/oauth2/code/kakao
+            redirect-uri: http://43.203.91.190:8080/login/oauth2/code/kakao
 
           naver:
             client-id: ${NAVER_CLIENT_ID}
@@ -69,7 +69,7 @@ spring:
               - profile_image
             client-name: Naver
             authorization-grant-type: authorization_code
-            redirect-uri: http://localhost:8080/login/oauth2/code/naver
+            redirect-uri: http://43.203.91.190:8080/login/oauth2/code/naver
 
         provider:
           naver:

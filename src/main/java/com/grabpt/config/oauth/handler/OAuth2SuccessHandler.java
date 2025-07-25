@@ -131,7 +131,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 		}
 
 		// redirect to frontend join page
-		response.sendRedirect("http://localhost:5173/join"); // 수정 예정
+		response.sendRedirect("http://localhost:5173/signup"); // 수정 예정
 
 		log.info("소셜 로그인 성공 - provider: {}, email: {}, name: {}", oauthProvider, email, name);
 	}

@@ -22,11 +22,14 @@ import com.grabpt.domain.entity.Suggestions;
 import com.grabpt.domain.entity.Users;
 import com.grabpt.dto.request.SuggestionRequestDto;
 import com.grabpt.dto.response.SuggestionResponseDto;
+import com.grabpt.dto.response.UserResponseDto;
 import com.grabpt.repository.ProProfileRepository.ProProfileRepository;
 import com.grabpt.repository.RequestionRepository.RequestionRepository;
 import com.grabpt.repository.SuggestionRepository.SuggestionRepository;
 import com.grabpt.repository.UserRepository.UserRepository;
+import com.grabpt.service.UserService.UserQueryService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -37,6 +40,7 @@ public class SuggestionServiceImpl implements SuggestionService {
 	private final UserRepository userRepository;
 	private final ProProfileRepository proProfileRepository;
 	private final RequestionRepository requestionRepository;
+	private final UserQueryService userQueryService;
 
 	@Override
 	public Suggestions save(SuggestionRequestDto dto, String email) {
@@ -101,5 +105,23 @@ public class SuggestionServiceImpl implements SuggestionService {
 		Page<Suggestions> suggestionsPage = suggestionRepository.findByRequestionId(requestionId, pageable);
 
 		return SuggestionConverter.toSuggestionResponsePageDto(suggestionsPage);
+	}
+
+	@Transactional(readOnly = true)
+	public Page<SuggestionResponseDto.MySuggestionPagingDto> getMySuggestions(HttpServletRequest request,
+		int page) throws
+		IllegalAccessException {
+		UserResponseDto.UserInfoDTO userInfo = userQueryService.getUserInfo(request);
+		String email = userInfo.getEmail();
+
+		PageRequest pageable = PageRequest.of(Math.max(page - 1, 0), 8); // 1부터 시작, 8개씩 페이징
+		Page<Suggestions> suggestionsPage = suggestionRepository.findByProProfile_User_Email(email, pageable);
+
+		return suggestionsPage.map(s -> SuggestionResponseDto.MySuggestionPagingDto.builder()
+			.requestionNickname(s.getRequestion().getUser().getNickname())
+			.price(s.getRequestion().getPrice())
+			.sessionCount(s.getRequestion().getSessionCount())
+			.status(s.getRequestion().getStatus())
+			.build());
 	}
 }

@@ -33,7 +33,7 @@ public class RequestionRequestDto {
 	private Integer sessionCount;
 
 	@NotNull
-	@Schema(description = "목적", example = "운동")
+	@Schema(description = "목적")
 	private List<String> purpose;
 
 	@NotNull
@@ -52,7 +52,7 @@ public class RequestionRequestDto {
 	@Schema(description = "트레이너 성별", example = "MALE")
 	private Gender trainerGender;
 
-	@Schema(description = "선호 시작", example = "2025.7.20")
+	@Schema(description = "선호 시작")
 	private LocalDateTime startPreference;
 
 	@NotNull

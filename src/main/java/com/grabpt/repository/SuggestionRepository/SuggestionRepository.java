@@ -8,4 +8,6 @@ import com.grabpt.domain.entity.Suggestions;
 
 public interface SuggestionRepository extends JpaRepository<Suggestions, Long> {
 	Page<Suggestions> findByRequestionId(Long requestionId, Pageable pageable);
+
+	Page<Suggestions> findByProProfile_User_Email(String email, Pageable pageable);
 }

@@ -2,6 +2,8 @@ package com.grabpt.dto.response;
 
 import java.util.List;
 
+import com.grabpt.domain.enums.RequestStatus;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -42,6 +44,18 @@ public class SuggestionResponseDto {
 		private String address;
 		private Integer price;
 		private Double averageRate; // 평점 추가
+	}
+
+	@Getter
+	@Setter
+	@Builder
+	@NoArgsConstructor
+	@AllArgsConstructor
+	public static class MySuggestionPagingDto {
+		private String requestionNickname;
+		private Integer price;
+		private Integer sessionCount;
+		private RequestStatus status;
 	}
 
 }

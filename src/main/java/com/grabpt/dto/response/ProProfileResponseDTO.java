@@ -1,10 +1,13 @@
 package com.grabpt.dto.response;
 
+import com.grabpt.domain.entity.Address;
 import com.grabpt.domain.entity.ProCertification;
 import com.grabpt.domain.entity.ProPhoto;
 import com.grabpt.domain.entity.Review;
 import com.grabpt.domain.entity.Users;
+import com.grabpt.domain.enums.CertificationType;
 
+import jakarta.persistence.Column;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -37,19 +40,41 @@ public class ProProfileResponseDTO {
 	// 이용자 후기
 	private List<ReviewDTO> reviews;
 
+	// location
+	private List<ProfileResponseDTO.MyProProfileDTO.AddressDTO> address;
+
+	@Getter
+	@Builder
+	public static class AddressDTO {
+		private String city;
+		private String district;
+		private String street;
+		private String zipcode;
+
+		public static ProfileResponseDTO.MyProProfileDTO.AddressDTO from(Address address) {
+			return ProfileResponseDTO.MyProProfileDTO.AddressDTO.builder()
+				.city(address.getCity())
+				.district(address.getDistrict())
+				.street(address.getStreet())
+				.zipcode(address.getZipcode())
+				.build();
+		}
+	}
 
 	@Getter
 	@Builder
 	public static class CertificationDTO {
-		private String name;
-		private String issuer;
-		private LocalDateTime issuedDate;
+		private CertificationType certificationType; // 자격증 이름
+
+		private String description;
+
+		private String imageUrl;
 
 		public static CertificationDTO from(ProCertification certification) {
 			return CertificationDTO.builder()
-				.name(certification.getName())
-				.issuer(certification.getIssuer())
-				.issuedDate(certification.getIssuedDate())
+				.certificationType(certification.getCertificationType())
+				.description(certification.getDescription())
+				.imageUrl(certification.getImageUrl())
 				.build();
 		}
 	}

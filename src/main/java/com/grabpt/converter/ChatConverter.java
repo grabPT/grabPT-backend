@@ -24,16 +24,19 @@ public class ChatConverter {
 			.type(MessageType.fromString(request.getMessageType()))
 			.content(request.getContent())
 			.sentAt(LocalDateTime.now())
+			.readCount(1)
 			.build();
 	}
 
 	public static ChatResponse.MessageResponseDto toMessageResponseDto(Messages messages){
 		return ChatResponse.MessageResponseDto.builder()
+			.messageId(messages.getId())
 			.roomId(messages.getChatRoom().getId())
 			.senderId(messages.getSender().getId())
 			.messageType(messages.getType().toString())
 			.content(messages.getContent())
 			.sendAt(messages.getSentAt())
+			.readCount(messages.getReadCount())
 			.build();
 	}
 

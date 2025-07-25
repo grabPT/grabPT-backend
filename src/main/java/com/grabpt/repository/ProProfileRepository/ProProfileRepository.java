@@ -2,6 +2,9 @@ package com.grabpt.repository.ProProfileRepository;
 
 import com.grabpt.domain.entity.ProProfile;
 import com.grabpt.domain.entity.Users;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -21,5 +24,5 @@ public interface ProProfileRepository extends JpaRepository<ProProfile, Long> {
 	""")
 	List<ProProfile> findAllProByCategoryCodeAndRegion(String categoryCode, String region);
 
-
+	Page<ProProfile> findByCategory_Code(String categoryCode, Pageable pageable);
 }

@@ -2,6 +2,7 @@ package com.grabpt.dto.request;
 
 import java.util.List;
 
+import org.springframework.web.multipart.MultipartFile;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -27,7 +28,7 @@ public class ProProfileUpdateRequestDTO {
 	private String description; // 전문가 소개
 
 	@Valid
-	private List<PhotoRequestDTO> photos; // 소개 사진
+	private List<MultipartFile> photos; // 소개 사진
 
 	private String programDescription;
 	private Integer pricePerSession;

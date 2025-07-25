@@ -42,7 +42,7 @@ public class ProProfile extends BaseEntity {
 	private Long id;
 
 	private String center;
-
+	private String centerDescription;
 	private Integer career; // 연차
 
 	private String description; // 소개

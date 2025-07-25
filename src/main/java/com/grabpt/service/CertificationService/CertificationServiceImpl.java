@@ -38,7 +38,7 @@ public class CertificationServiceImpl implements CertificationService {
 				if (image != null && !image.isEmpty()) {
 					Uuid uuid = Uuid.builder().uuid(java.util.UUID.randomUUID().toString()).build();
 					uuidRepository.save(uuid);
-					String keyName = s3Manager.generateReviewKeyName(uuid);
+					String keyName = s3Manager.generateProPhotoKeyName(uuid);
 					imageUrl = s3Manager.uploadFile(keyName, image);
 				}
 

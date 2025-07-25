@@ -18,6 +18,14 @@ repositories {
     mavenCentral()
 }
 
+jar {
+    enabled = false
+}
+
+bootJar {
+    archiveFileName = 'grabpt-1.0.0.jar'
+}
+
 compileJava.options.encoding = "UTF-8"
 compileTestJava.options.encoding = "UTF-8"
 

@@ -31,12 +31,17 @@ public class AmazonConfig {
 	@Value("${cloud.aws.region.static}")
 	private String region;
 
-	@Value("${cloud.aws.s3.bucket}")
+	@Value(("{cloud.aws.s3.bucket}"))
 	private String bucket;
 
 	@Value("${cloud.aws.s3.path.proPhoto}")
 	private String proPhoto;
 
+	@Value("${cloud.aws.s3.path.userPhoto}")
+	private String userPhoto;
+
+	@Value("${cloud.aws.s3.path.test}")
+	private String test;
 
 	@PostConstruct
 	public void init() {
@@ -47,7 +52,7 @@ public class AmazonConfig {
 
 	@Bean
 	public AmazonS3 amazonS3() {
-		AWSCredentials awsCredentials = new BasicAWSCredentials(accessKey,secretKey);
+		AWSCredentials awsCredentials = new BasicAWSCredentials(accessKey, secretKey);
 
 		return AmazonS3ClientBuilder.standard()
 			.withRegion(region)
@@ -56,5 +61,7 @@ public class AmazonConfig {
 	}
 
 	@Bean
-	public AWSCredentialsProvider awsCredentialsProvider() {return new AWSStaticCredentialsProvider(awsCredentials);}
+	public AWSCredentialsProvider awsCredentialsProvider() {
+		return new AWSStaticCredentialsProvider(awsCredentials);
+	}
 }

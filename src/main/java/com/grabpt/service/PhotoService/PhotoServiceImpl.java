@@ -23,16 +23,14 @@ public class PhotoServiceImpl implements PhotoService {
 
 	@Override
 	@Transactional
-	public void updatePhotos(ProProfile proProfile, List<MultipartFile> photoFiles) {
-		// 기존 사진 정보 모두 삭제
-		proProfile.getPhotos().clear();
+	public void updateProPhotos(ProProfile proProfile, List<MultipartFile> photoFiles) {
 
 		if (photoFiles != null && !photoFiles.isEmpty()) {
 			photoFiles.forEach(file -> {
 				// 1. UUID 생성 및 S3 키 이름 생성
 				Uuid uuid = Uuid.builder().uuid(java.util.UUID.randomUUID().toString()).build();
 				uuidRepository.save(uuid);
-				String keyName = amazonS3Manager.generateReviewKeyName(uuid);
+				String keyName = amazonS3Manager.generateProPhotoKeyName(uuid);
 
 				// 2. S3에 파일 업로드 후 URL 받기
 				String fileUrl = amazonS3Manager.uploadFile(keyName, file);
@@ -59,7 +57,7 @@ public class PhotoServiceImpl implements PhotoService {
 		// S3에 저장될 고유한 파일 키 생성
 		Uuid uuid = Uuid.builder().uuid(java.util.UUID.randomUUID().toString()).build();
 		uuidRepository.save(uuid);
-		String keyName = amazonS3Manager.generateReviewKeyName(uuid); // 이 메소드 이름은 나중에 변경하시는 것을 추천합니다.
+		String keyName = amazonS3Manager.generateUserPhotoKeyName(uuid); // 이 메소드 이름은 나중에 변경하시는 것을 추천합니다.
 
 		// S3에 파일 업로드 후 URL 반환
 		return amazonS3Manager.uploadFile(keyName, profileImage);

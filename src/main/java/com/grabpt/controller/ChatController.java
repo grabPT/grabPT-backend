@@ -19,6 +19,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
 import java.util.List;
@@ -41,13 +42,21 @@ public class ChatController {
 		//return ChatConverter.toMessageResponseDto(newMessage);
 	}
 
-	@PostMapping("/chatRoom/{roomId}/read")
+	@PostMapping("/chatRoom/{roomId}/readWhenExist")
 	@ResponseBody
-	public ApiResponse<String> updateLastReadMessage(@PathVariable Long roomId, HttpServletRequest request) throws IllegalAccessException {
+	public ApiResponse<String> updateLastReadMessageWhenExist(@PathVariable Long roomId, HttpServletRequest request) throws IllegalAccessException {
 		Long userId = userQueryService.getUserId(request);
-		chatService.updateLastReadMessage(roomId,userId);
+		chatService.updateLastReadMessageWhenExist(roomId,userId);
 		log.info("마지막으로 읽은 메시지 업데이트");
 		return ApiResponse.onSuccess("채팅방을 나갑니다. 마지막으로 읽은 메시지 업데이트");
+	}
+
+	@PostMapping("/chatRoom/{roomId}/readWhenEnter")
+	@ResponseBody
+	public ApiResponse<String> updateLastReadMessageWhenEnter(@PathVariable Long roomId, HttpServletRequest request) throws IllegalAccessException {
+		Long userId = userQueryService.getUserId(request);
+		chatService.updateLastReadMessageWhenEnter(roomId, userId);  // 한명만 있을 때 처리 서비스 호출
+		return ApiResponse.onSuccess("한 명만 접속 상태 읽음 처리 완료");
 	}
 
 	@PostMapping("/chatRoom/request")
@@ -64,16 +73,15 @@ public class ChatController {
 
 	@GetMapping("/chatRoom/list") //로그인 유저 정보
 	@ResponseBody
-	public ApiResponse<List<ChatResponse.ChatRoomPreviewDto>> getChatRoomList(HttpServletRequest request) throws IllegalAccessException { //임
+	public ApiResponse<List<ChatResponse.ChatRoomPreviewDto>> getChatRoomList(@RequestParam(name = "keyword", required = false) String keyword,
+																			  HttpServletRequest request) throws IllegalAccessException {
 		Long userId = userQueryService.getUserId(request);
-		log.info("로그인 유저 id:{}",userId);
-		return ApiResponse.onSuccess(chatService.getChatRoomList(userId));
+		return ApiResponse.onSuccess(chatService.getChatRoomList(userId, keyword));
 	}
 
 	@GetMapping("/chat-test")
 	public String chatTest(HttpServletRequest request) throws IllegalAccessException {
 		String email = userQueryService.getUserInfo(request).getEmail();
-		log.info("로그인 유저 email:{}",email);
 		return "chat-test";
 	}
 }

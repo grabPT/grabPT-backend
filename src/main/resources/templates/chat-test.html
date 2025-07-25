@@ -3,158 +3,546 @@
 <head>
     <meta charset="UTF-8">
     <title>GrabPT 실시간 채팅</title>
+    <!-- SockJS & StompJS CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; padding: 20px; }
-        #chat-room-list button { display: block; margin: 5px 0; padding: 10px; width: 100%; }
-        #chat-log { background: #f9f9f9; border: 1px solid #ccc; padding: 10px; height: 250px; overflow-y: scroll; margin-top: 10px; }
-        .mine { text-align: right; color: green; }
-        .other { text-align: left; color: black; }
+        body {
+            font-family: 'Segoe UI', 'Apple SD Gothic Neo', sans-serif;
+            background: #f4f7fb;
+            padding: 30px;
+            margin: 0;
+        }
+        h2 {
+            margin-top: 0;
+            font-weight: bold;
+            letter-spacing: -1px;
+        }
+
+        /* 채팅방 리스트 */
+        #chat-room-list {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 3px 16px 0 rgba(148,152,162,0.08);
+            padding: 0;
+            margin-top: 10px;
+            max-width: 420px;
+            min-width: 300px;
+            margin-bottom: 12px;
+        }
+        #chat-room-list > h3 {
+            padding: 18px 23px 2px 23px;
+            margin: 0;
+            font-size: 1.04em;
+            color: #7B8596;
+            letter-spacing: 0;
+        }
+        .chat-room-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 19px 12px 19px;
+            border-bottom: 1px solid #f1f2f4;
+            background: transparent;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .chat-room-item:hover {
+            background: #f7faff;
+        }
+        .chat-profile {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            margin-right: 13px;
+            background: #f0f2f5;
+            object-fit: cover;
+        }
+        .chat-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .chat-room-title {
+            font-weight: 600;
+            font-size: 15px;
+            margin-bottom: 2px;
+            color: #23272f;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .chat-last-message {
+            font-size: 13px;
+            color: #868C98;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .chat-meta {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            margin-left: 12px;
+            min-width: 40px;
+        }
+        .chat-time {
+            font-size: 11px;
+            color: #bbc3cf;
+            margin-bottom: 5px;
+        }
+        .unread-badge {
+            background: #ff365d;
+            color: #fff;
+            border-radius: 13px;
+            padding: 0 8px;
+            min-width: 17px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 11px;
+            display: inline-block;
+            line-height: 18px;
+        }
+
+        /* 채팅방 내부 */
+        #chat-room {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 1.5px 10px 0 rgba(171,178,207,0.10);
+            max-width: 520px;
+            margin-top: 20px;
+            padding: 18px 18px 13px 18px;
+        }
+        #chat-title {
+            margin: 0 0 8px 0;
+            font-size: 18px;
+        }
+        #chat-log {
+            background: #f5f8fc;
+            border: none;
+            border-radius: 8px;
+            padding: 16px 10px;
+            height: 340px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+        }
+        .mine {
+            display: flex;
+            flex-direction: row-reverse;
+            margin-bottom: 7px;
+        }
+        .mine .bubble {
+            background: #296cfb;
+            color: #fff;
+            border-radius: 21px 21px 3px 21px;
+            padding: 8px 14px 8px 15px;
+            font-size: 15px;
+            max-width: 70%;
+            word-break: break-all;
+        }
+        .other {
+            display: flex;
+            margin-bottom: 7px;
+        }
+        .other .bubble {
+            background: #f2f5fa;
+            color: #222;
+            border-radius: 21px 21px 21px 2.5px;
+            padding: 8px 14px 8px 15px;
+            font-size: 15px;
+            max-width: 70%;
+            word-break: break-all;
+        }
+        .msg-time {
+            font-size: 11px;
+            color: #adb7be;
+            margin-top: 5px;
+            margin-left: 5px;
+            margin-right: 5px;
+            align-self: flex-end;
+        }
+
+        /* 메시지 입력창, 버튼 */
+        #msg-input {
+            width: 74%;
+            font-size: 16px;
+            border: 1px solid #e3e7ef;
+            border-radius: 7px;
+            padding: 8px 14px;
+            margin-right: 6px;
+            outline: none;
+            background: #fafcff;
+            transition: border 0.16s;
+            box-sizing: border-box;
+        }
+        #msg-input:focus {
+            border: 1.5px solid #5890ff;
+        }
+        #send-btn {
+            background: #2e6bff;
+            color: #fff;
+            border: none;
+            border-radius: 7px;
+            padding: 9px 19px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.15s;
+            outline: none;
+        }
+        #send-btn:active {
+            background: #1742aa;
+        }
+
+        @media (max-width: 600px) {
+            #chat-room-list, #chat-room {
+                max-width: 98vw;
+                min-width: 0;
+            }
+        }
     </style>
 </head>
 <body>
 
 <h2>🙋 채팅방 리스트</h2>
-<div>
-    <label>사용자 ID:
-        <input type="number" id="senderId" value="1" />
-    </label>
-    <button onclick="loadChatRooms()">채팅방 불러오기</button>
-</div>
 
 <div id="chat-room-list"></div>
 
-<hr>
+<hr style="margin:25px 0 20px 0; border:0;border-top:1px solid #eee;max-width:530px;">
 
 <div id="chat-room" style="display: none;">
     <h3 id="chat-title">채팅방</h3>
     <div id="chat-log"></div>
-
-    <input type="text" id="msg-input" placeholder="메시지를 입력하세요" />
-    <button onclick="sendMsg()">전송</button>
+    <div style="display: flex; gap: 6px; align-items: center;">
+        <button id="file-btn" onclick="document.getElementById('file-input').click();"
+                style="font-size:22px;padding:3px 11px;border-radius:8px;border:1px solid #e0e2ed;background:#f3f6ff;color:#3a4e99;cursor:pointer;"
+                title="파일 첨부">+</button>
+        <input type="file" id="file-input" style="display:none" onchange="uploadAndSendFile(this)">
+        <input type="text" id="msg-input" placeholder="메시지를 입력하세요" onkeydown="if(event.key==='Enter'){sendMsg();}" style="flex:1;">
+        <button id="send-btn" onclick="sendMsg()">전송</button>
+    </div>
 </div>
 
 <script>
     let stompClient = null;
+    let subscription = null;       // 현재 채팅방 구독 객체
     let currentRoomId = null;
-    let senderId = null;
+    let senderId = null;           // 내 유저 아이디
+    let readStatusSubscription = null;
 
-    // 채팅방 목록 가져오기
+// 읽음 상태 업데이트 전달 받음
+    async function subscribeReadStatus(roomId){
+        if(readStatusSubscription){
+            readStatusSubscription.unsubscribe();
+            readStatusSubscription = null;
+        }
+        // 메시지 변경사항을 업데이트 받는 함수 (메시지id와 readCount를 받음)
+        readStatusSubscription = stompClient.subscribe(`/subscribe/chat/${roomId}/read-status`, msg => {
+            const body = JSON.parse(msg.body);
+            updateMessageReadCountUI(body.messageId, body.readCount);
+        });
+    }
+
+// 메시지 표현할 때 수정해서 표시
+     function updateMessageReadCountUI(messageId, newReadCount){
+    // 예: 메시지마다 DOM 요소에 data-message-id 속성 부여
+    const messageEl = document.querySelector(`[data-message-id="${messageId}"]`);
+        if(!messageEl) return;
+
+        const readCountEl = messageEl.querySelector(".msg-read-count");
+        if(readCountEl){
+            if(newReadCount === 0){
+                readCountEl.textContent = "✔ 모두 읽음";
+                readCountEl.style.color = "#4CAF50";
+            } else {
+                readCountEl.textContent = `👁️ ${newReadCount}명 미확인`;
+                readCountEl.style.color = "#d33";
+            }
+        }
+    }
+
+    //채팅방 목록 불러오기
     async function loadChatRooms() {
-    senderId = Number(document.getElementById("senderId").value);
-    if (!senderId) {
-    return alert("사용자 ID를 입력하세요!");
+        const res = await fetch(`/chatRoom/list`);
+        const result = await res.json();
+
+        const list = document.getElementById("chat-room-list");
+        list.innerHTML = '<h3>내 채팅방</h3>';
+
+        if (result.isSuccess) {
+            const rooms = result.result;
+
+            if (rooms.length === 0) {
+                list.innerHTML += "<p style='padding:20px 24px;color:#889;'>채팅방이 없습니다.</p>";
+                return;
+            }
+
+            senderId = rooms[0].userId; // 첫 방 기준 유저id 세팅 (실제 API에 맞게 필요 시 조정)
+
+            rooms.forEach(room => {
+                const item = document.createElement("div");
+                item.className = "chat-room-item";
+                item.onclick = () => enterRoom(room.chatRoomId);
+
+                const img = document.createElement("img");
+                img.className = "chat-profile";
+                img.src = room.otherUserProfile || "https://via.placeholder.com/38?text=U";
+
+                const info = document.createElement("div");
+                info.className = "chat-info";
+                info.innerHTML = `
+                    <div class="chat-room-title">${room.roomName}</div>
+                    <div class="chat-last-message">${room.lastMessage ? room.lastMessage : "(대화 없음)"}</div>
+                `;
+
+                const meta = document.createElement("div");
+                meta.className = "chat-meta";
+
+                let lastTime = "";
+                if (room.lastMessageTime) {
+                    const dt = new Date(room.lastMessageTime);
+                    const now = new Date();
+                    if(dt.toDateString() === now.toDateString())
+                        lastTime = dt.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+                    else
+                        lastTime = (dt.getMonth()+1)+"/"+dt.getDate();
+                }
+                meta.innerHTML = `
+                    <span class="chat-time">${lastTime}</span>
+                    ${room.unreadCount && room.unreadCount > 0 ? `<span class="unread-badge">${room.unreadCount}</span>` : ""}
+                `;
+
+                item.appendChild(img);
+                item.appendChild(info);
+                item.appendChild(meta);
+                list.appendChild(item);
+            });
+
+        } else {
+            alert("채팅방 목록을 불러오지 못했습니다.");
+        }
     }
 
-    const res = await fetch(`/chatRoom/list?userId=${senderId}`);
-    const result = await res.json();
 
-    const list = document.getElementById("chat-room-list");
-    list.innerHTML = "<h3>내 채팅방</h3>";
+    //파일 업로드 후 메시지 발송
+    async function uploadAndSendFile(input) {
+        const file = input.files[0];
+        if (!file || !currentRoomId) return;
+        const formData = new FormData();
+        formData.append("file", file);
 
-    // ✅ 응답 구조가 { isSuccess: true, result: [...] } 인 경우
-    if (result.isSuccess) {
-    const rooms = result.result;
-
-    rooms.forEach(room => {
-    const btn = document.createElement("button");
-
-    let label = `👤 ${room.roomName}`;
-    if (room.unreadCount && room.unreadCount > 0) {
-    label += ` 🔴 ${room.unreadCount}`;
-    }
-    label += `\n💬 ${room.lastMessage || '(대화 없음)'}`;
-
-    btn.textContent = label;
-
-    btn.onclick = () => enterRoom(room.chatRoomId);
-
-    list.appendChild(btn);
-    });
-
-    } else {
-    alert("채팅방 목록을 불러오지 못했습니다.");
-    }
+        const res = await fetch(`/chatRoom/${currentRoomId}/upload`, {
+            method: "POST",
+            body: formData
+        });
+        const result = await res.json();
+        if(result.isSuccess){
+            const dto = result.result;
+            if(stompClient && stompClient.connected) {
+                stompClient.send(`/publish/chat/${currentRoomId}`, {}, JSON.stringify(dto));
+            }
+        } else {
+            alert("파일 업로드 실패");
+        }
+        input.value = ""; // 초기화
     }
 
-    // 채팅방 들어가기
+    // 3) 웹소켓 연결 (최초 한 번만)
+    function connectWebSocket() {
+        return new Promise((resolve, reject) => {
+            if (stompClient && stompClient.connected) {
+                resolve();
+                return;
+            }
+            const socket = new SockJS("/ws-connect");
+            stompClient = Stomp.over(socket);
+            stompClient.connect({}, () => resolve(), err => reject(err));
+        });
+    }
+
+    // 4) 신규 채팅방 구독 처리
+    async function subscribeChatRoom(roomId) {
+        if (subscription) {
+            subscription.unsubscribe();
+            subscription = null;
+        }
+        subscription = stompClient.subscribe(`/subscribe/chat/${roomId}`, (msg) => {
+            const body = JSON.parse(msg.body);
+            appendMessage(body.senderId, body.content, body.sendAt, body.messageType, body.readCount, body.messageId);
+
+            // 내가 보낸 메시지가 아니고 현재 보고 있는 방이라면 실시간 단건 읽음 처리
+            if (body.senderId !== senderId && currentRoomId === roomId) {
+                markLastReadWhen2(roomId);
+            }
+        });
+    }
+    // 한 명만 있을 때 (이전 안읽은 메시지 일괄 처리)
+    async function markLastReadWhen1(roomId) {
+        try {
+            await fetch(`/chatRoom/${roomId}/readWhenEnter`, { method: "POST" });
+        } catch (e) {
+            console.error("읽음 상태 일괄 갱신 실패 (1명):", e);
+        }
+    }
+
+    // 두 명 다 있을 때 (실시간 메시지 단건 처리)
+    async function markLastReadWhen2(roomId) {
+        try {
+            await fetch(`/chatRoom/${roomId}/readWhenExist`, { method: "POST" });
+        } catch (e) {
+            console.error("읽음 상태 단건 갱신 실패 (2명):", e);
+        }
+    }
+
+    // 5) 채팅방 입장 함수
     async function enterRoom(roomId) {
+    if (currentRoomId === roomId) return;
+
+    // 이전 방 읽음 처리, 구독 해제
+    if (currentRoomId !== null) {
+        await markLastReadWhen1(currentRoomId);
+        if (subscription) {
+            subscription.unsubscribe();
+            subscription = null;
+        }
+        if (readStatusSubscription) {
+            readStatusSubscription.unsubscribe();
+            readStatusSubscription = null;
+        }
+    }
+
     currentRoomId = roomId;
 
-    // 초기화
     document.getElementById("chat-title").textContent = `채팅방 #${roomId}`;
     document.getElementById("chat-log").innerHTML = "";
     document.getElementById("chat-room").style.display = "block";
 
-    // 이전 메시지 불러오기
+    // 입장 시 이전 메시지 일괄 읽음 처리
+    await markLastReadWhen1(roomId);
+
+    // 메시지 로드
     const res = await fetch(`/chatRoom/${roomId}/messages`);
     const result = await res.json();
-
     if (result.isSuccess) {
-    const messages = result.result;
-    messages.forEach(msg => {
-    appendMessage(msg.senderId, msg.content, msg.sendAt);
-    });
+        const messages = result.result;
+        messages.forEach(msg => appendMessage(msg.senderId, msg.content, msg.sendAt, msg.messageType, msg.readCount, msg.id));
+    } else {
+        alert("메시지를 불러오지 못했습니다.");
+        return;
     }
 
-    // 웹소켓 연결
-    connectSocket(roomId);
-    }
+    // 웹소켓 연결 및 구독 시작
+    await connectWebSocket();
+    await subscribeChatRoom(roomId);
+    await subscribeReadStatus(roomId);
+}
 
-    // 웹소켓 연결 및 구독
-    function connectSocket(roomId) {
-    if (stompClient && stompClient.connected) {
-    stompClient.disconnect(() => console.log("기존 WebSocket 연결 해제됨"));
-    }
 
-    const socket = new SockJS("/ws-connect");
-    stompClient = Stomp.over(socket);
-
-    stompClient.connect({}, () => {
-    stompClient.subscribe(`/subscribe/chat/${roomId}`, function (msg) {
-    const body = JSON.parse(msg.body);
-    appendMessage(body.senderId, body.content);
-    });
-    });
-    }
-
-    // 메시지 전송
+    // 7) 메시지 전송함수
     function sendMsg() {
-    const input = document.getElementById("msg-input");
-    const content = input.value.trim();
-    if (!content) return;
+        const input = document.getElementById("msg-input");
+        const content = input.value.trim();
+        if (!content || !currentRoomId || !stompClient || !stompClient.connected) {
+            return;
+        }
 
-    const message = {
-    roomId: currentRoomId,
-    senderId: senderId,
-    content: content,
-    messageType: "TEXT"
-    };
+        const message = {
+            roomId: currentRoomId,
+            senderId: senderId,
+            content: content,
+            messageType: "TEXT"
+        };
 
-    stompClient.send(`/publish/chat/${currentRoomId}`, {}, JSON.stringify(message));
-    <!-- appendMessage(senderId, content); // 내 메시지 즉시 표시-->
-    input.value = '';
+        stompClient.send(`/publish/chat/${currentRoomId}`, {}, JSON.stringify(message));
+        input.value = '';
     }
 
-    // 메시지 화면 표시
-    function appendMessage(sender, content, sendAt) {
+  function appendMessage(sender, content, sendAt, messageType = "TEXT", readCount = null, messageId) {
     const log = document.getElementById("chat-log");
     const div = document.createElement("div");
-    const isMine = sender === senderId;
 
-    // 🕒 시간 포맷 변환: (선택 사항)
-    const time = sendAt ? new Date(sendAt).toLocaleTimeString() : "";
-
-    div.textContent = `${isMine ? "🟢 나" : `🔵 ${sender}`}: ${content} ${time}`;
-    div.className = isMine ? "mine" : "other";
-
-    log.appendChild(div);
-    log.scrollTop = log.scrollHeight;
+    if(messageId){
+        div.setAttribute("data-message-id", messageId);
     }
 
-</script>
+    const isMine = sender === senderId;
+    const time = sendAt ? formatMsgTime(sendAt) : "";
 
+    div.className = isMine ? "mine" : "other";
+    const bubble = document.createElement("span");
+    bubble.className = "bubble";
+
+    if (messageType === "IMAGE" && content) {
+        bubble.innerHTML = `<img src="${content}" style="max-width:170px;max-height:128px;border-radius:7px;">`;
+    } else if (messageType === "FILE" && content) {
+        bubble.innerHTML = `파일을 보냈습니다. <a href="${content}" target="_blank" download>다운로드</a>`;
+    } else {
+        bubble.textContent = content || "";
+    }
+
+    const timeEl = document.createElement("span");
+    timeEl.className = "msg-time";
+    timeEl.textContent = time;
+
+    const readCountEl = document.createElement("span");
+    readCountEl.className = "msg-read-count";
+    readCountEl.style.marginLeft = "8px";
+    readCountEl.style.fontSize = "11px";
+
+    if (isMine) {
+        if (readCount !== null) {
+            if (readCount === 0) {
+                readCountEl.textContent = "✔ 모두 읽음";
+                readCountEl.style.color = "#4CAF50";
+            } else {
+                readCountEl.textContent = `👁️ ${readCount}명 미확인`;
+                readCountEl.style.color = "#d33";
+            }
+        }
+    } else {
+        readCountEl.textContent = "";
+    }
+
+    if (isMine) {
+        div.appendChild(timeEl);
+        div.appendChild(readCountEl);
+        div.appendChild(bubble);
+    } else {
+        div.appendChild(bubble);
+        div.appendChild(timeEl);
+    }
+    log.appendChild(div);
+    log.scrollTop = log.scrollHeight;
+}
+
+
+    // 9) 시간 포맷 함수 (기존 그대로)
+    function formatMsgTime(sendAt) {
+        const dt = new Date(sendAt);
+        const now = new Date();
+        if(dt.toDateString() === now.toDateString()){
+            let h = dt.getHours();
+            let m = dt.getMinutes();
+            let ap = h < 12 ? "오전" : "오후";
+            h = h % 12;
+            if(h === 0) h = 12;
+            return `${ap} ${h}:${m < 10 ? "0"+m : m}`;
+        } else {
+            return `${dt.getMonth()+1}/${dt.getDate()}`;
+        }
+    }
+
+    // 10) 페이지 나가기 전 읽음 처리
+    window.addEventListener("beforeunload", async () => {
+        if(currentRoomId !== null) {
+            await markLastReadWhen2(currentRoomId);
+        }
+    });
+
+    // 11) 초기 로드 시 채팅방 목록 불러오기
+    window.addEventListener("DOMContentLoaded", () => {
+        loadChatRooms();
+    });
+
+</script>
 
 </body>
 </html>

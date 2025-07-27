@@ -7,10 +7,10 @@ import com.grabpt.domain.common.BaseEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,27 +20,23 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-@Builder
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
 @AllArgsConstructor
-public class UserChatRoom extends BaseEntity {
+@Builder
+public class UserTermsAgreement extends BaseEntity {
+
 	@Id
-	@GeneratedValue
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_id", nullable = false)
+	@JoinColumn(name = "user_id")
 	private Users user;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "chat_room_id", nullable = false)
-	private ChatRooms chatRoom;
+	@JoinColumn(name = "terms_id")
+	private Terms terms; // 여러 개 가짐, 하나하나 정의
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "other_user_id", nullable = false)
-	private Users otherUser;
-
-	private String roomName;
-	private Long lastReadMessageId; // 마지막으로 읽은 메시지 ID 저장
-	private LocalDateTime lastReadAt;
+	private Boolean agreed;
+	private LocalDateTime agreedAt;
 }

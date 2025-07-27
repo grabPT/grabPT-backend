@@ -50,6 +50,8 @@ public class Users extends BaseEntity {
 	@Column(nullable = false, length = 50)
 	private String username;
 
+	private String password;
+
 	private String profileImageUrl;
 
 	@Enumerated(EnumType.STRING)
@@ -69,9 +71,6 @@ public class Users extends BaseEntity {
 
 	@Column(nullable = false, unique = true)
 	private String email;
-
-	@Column(nullable = true)
-	private String password;
 
 	@Enumerated(EnumType.STRING)
 	private AuthRole authRole;
@@ -144,15 +143,10 @@ public class Users extends BaseEntity {
 		userChatRoom.setUser(this);
 	}
 
-	public void encodePassword(String password) {
-		this.password = password;
-	}
-
 	public void withdraw() {
 		this.username = "탈퇴한 회원";
 		this.nickname = "탈퇴한 회원";
 		this.email = "deleted@" + this.id; // 이메일은 고유해야 하므로 ID를 포함
-		this.password = "";
 		this.phone_number = "";
 		this.profileImageUrl = null;
 		this.refreshToken = null;

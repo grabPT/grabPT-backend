@@ -4,7 +4,6 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -48,14 +47,12 @@ public class AuthService {
 
 	public void registerUser(SignupRequest.UserSignupRequestDto req, HttpServletResponse response) {
 
-		List<Category> categoryList = req.getCategories().stream()
-			.map(id -> categoryRepository.findById(id)
-				.orElseThrow(() -> new CategoryHandler(ErrorStatus.CATEGORY_NOT_FOUND)))
-			.collect(Collectors.toList());
+		Category userCategory = categoryRepository.findById(req.getCategoryId())
+			.orElseThrow(() -> new CategoryHandler(ErrorStatus.CATEGORY_NOT_FOUND));
 
 		// UserProfile 생성
 		UserProfile userPrprofile = UserProfile.builder()
-			.categories(categoryList)
+			.category(userCategory)
 			.build();
 
 		SignupRequest.UserSignupRequestDto.AddressRequest addressDto = req.getAddress();
@@ -74,10 +71,8 @@ public class AuthService {
 			.email(req.getEmail())
 			.phone_number(req.getPhoneNum())
 			.address(address)
-			.password(passwordEncoder.encode(req.getPassword()))
 			.nickname(req.getNickname())
 			.role(mapToRole(req.getRole()))
-			.gender(mapToGender(req.getGender()))
 			.authRole(AuthRole.ROLE_USER)
 			.profileImageUrl(req.getProfileImageUrl())
 			.agreeMarketing(req.getAgreeMarketing())
@@ -107,8 +102,8 @@ public class AuthService {
 		ProProfile proProfile = ProProfile.builder()
 			.center(req.getCenter())
 			.career(req.getCareer())
-			.description(req.getDescription())
 			.category(proCategory)
+			.age(req.getAge())
 			.build();
 
 		SignupRequest.ProSignupRequestDto.AddressRequest addressDto = req.getAddress();
@@ -127,7 +122,6 @@ public class AuthService {
 			.email(req.getEmail())
 			.phone_number(req.getPhoneNum())
 			.address(address)
-			.password(passwordEncoder.encode(req.getPassword()))
 			.nickname(req.getNickname())
 			.role(mapToRole(req.getRole())) // Role.PRO
 			.gender(mapToGender(req.getGender()))

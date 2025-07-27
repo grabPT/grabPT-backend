@@ -29,7 +29,7 @@ public class SignupRequest {
 		@Schema(description = "사용자가 지정한 이름", example = "동이")
 		private String nickname;
 
-		@Schema(description = "사용자가 입력한 비밇번호", example = "expasswd")
+		@Schema(description = "사용자가 입력한 비밀번호", example = "expasswd")
 		private String password;
 
 		@Schema(description = "주소 객체")
@@ -53,6 +53,13 @@ public class SignupRequest {
 		@Schema(description = "일반 사용자, 트레이너 입력, 1:일반(USER)/2:트레이너(PRO)", example = "1")
 		private Integer role;
 
+		/** 추가된 약관 동의 필드 **/
+		@Schema(description = "동의한 필수 약관 ID 리스트", example = "[1,2,3,4]")
+		private List<Long> agreedTermsIds;
+
+		@Schema(description = "마케팅 정보 수신 동의 여부", example = "true")
+		private Boolean agreeMarketing;
+
 		@Data
 		public static class AddressRequest {
 			@Schema(description = "도/특별시/광역시", example = "서울시")
@@ -64,9 +71,9 @@ public class SignupRequest {
 			@Schema(description = "우편번호", example = "12345")
 			private String zipcode;
 			@Schema(description = "도로명 주소", example = "상암로 123")
-			private String streetCode; // 도로명주소
+			private String streetCode;
 			@Schema(description = "상세 주소", example = "123동 456호")
-			private String specAddress; // 상세주소
+			private String specAddress;
 		}
 	}
 
@@ -126,6 +133,13 @@ public class SignupRequest {
 			@Schema(description = "상세 주소", example = "123동 456호")
 			private String specAddress; // 상세주소
 		}
+
+		/** 추가된 약관 동의 필드 **/
+		@Schema(description = "동의한 필수 약관 ID 리스트", example = "[1,2,3,4]")
+		private List<Long> agreedTermsIds;
+
+		@Schema(description = "마케팅 정보 수신 동의 여부", example = "true")
+		private Boolean agreeMarketing;
 
 		@Schema(description = "활동지역")
 		private List<String> activityAreas;

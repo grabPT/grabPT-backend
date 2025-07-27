@@ -1,5 +1,6 @@
 package com.grabpt.domain.entity;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -80,6 +81,13 @@ public class Users extends BaseEntity {
 
 	@Column(length = 500)
 	private String accessToken;
+
+	// 선택 약관 (마케팅 정보 수신 동의)
+	private Boolean agreeMarketing;
+	private LocalDateTime agreeMarketingAt;
+
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<UserTermsAgreement> agreements = new ArrayList<>();
 
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<UserChatRoom> userChatRooms = new ArrayList<>();

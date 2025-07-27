@@ -2,6 +2,8 @@ package com.grabpt.domain.entity;
 
 import java.time.LocalDateTime;
 
+import com.grabpt.domain.common.BaseEntity;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -21,7 +23,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserTermsAgreement {
+public class UserTermsAgreement extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

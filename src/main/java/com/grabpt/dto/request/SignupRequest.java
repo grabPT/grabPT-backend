@@ -29,14 +29,11 @@ public class SignupRequest {
 		@Schema(description = "사용자가 지정한 이름", example = "동이")
 		private String nickname;
 
-		@Schema(description = "사용자가 입력한 비밀번호", example = "expasswd")
-		private String password;
-
 		@Schema(description = "주소 객체")
 		private AddressRequest address;
 
-		@Schema(description = "카테고리 리스트", example = "[1, 2, 3]")
-		private List<Long> categories;
+		@Schema(description = "카테고리", example = "1")
+		private Long categoryId;
 
 		@Schema(description = "사용자가 입력한 프로필 이미지", example = "eoiaIOQJ2414kldsfPOVMIasd.png")
 		private String profileImageUrl;
@@ -46,9 +43,6 @@ public class SignupRequest {
 
 		@Schema(description = "oauth 인증 provider", example = "google")
 		private String oauthProvider;
-
-		@Schema(description = "사용자가 입력한 성별, 1:남성/2:여성", example = "1")
-		private Integer gender;
 
 		@Schema(description = "일반 사용자, 트레이너 입력, 1:일반(USER)/2:트레이너(PRO)", example = "1")
 		private Integer role;
@@ -94,8 +88,8 @@ public class SignupRequest {
 		@Schema(description = "사용자가 지정한 이름", example = "동이")
 		private String nickname;
 
-		@Schema(description = "사용자가 입력한 비밇번호", example = "expasswd")
-		private String password;
+		@Schema(description = "나이", example = "24")
+		private Integer age;
 
 		@Schema(description = "주소 객체")
 		private AddressRequest address;
@@ -141,17 +135,11 @@ public class SignupRequest {
 		@Schema(description = "마케팅 정보 수신 동의 여부", example = "true")
 		private Boolean agreeMarketing;
 
-		@Schema(description = "활동지역")
-		private List<String> activityAreas;
-
 		@Schema(description = "센터")
 		private String center;
 
 		@Schema(description = "연차", example = "3")
 		private Integer career;
-
-		@Schema(description = "소개", example = "안녕하세요. 트레이너 홍길동입니다.")
-		private String description;
 	}
 
 }

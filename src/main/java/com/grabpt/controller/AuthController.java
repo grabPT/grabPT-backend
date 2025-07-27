@@ -1,5 +1,8 @@
 package com.grabpt.controller;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -28,6 +31,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -160,6 +164,23 @@ public class AuthController {
 	public ApiResponse<Boolean> checkNickname(@RequestParam String nickname) {
 		boolean isDuplicate = userRepository.existsByNickname(nickname);
 		return ApiResponse.onSuccess(isDuplicate);
+	}
+
+	@GetMapping("/api/temp-info")
+	@Operation(
+		summary = "소셜 로그인 시 임시 정보 조회",
+		description = "소셜 로그인 시 기존 쿠키 방식이 아닌 세션 방식으로 반환"
+	)
+	public ApiResponse<Map<String, String>> getTempInfo(HttpSession session) {
+		Map<String, String> data = new HashMap<>();
+		data.put("email", (String)session.getAttribute("tempEmail"));
+		data.put("username", (String)session.getAttribute("tempName"));
+		data.put("oauthProvider", (String)session.getAttribute("tempOauthProvider"));
+		data.put("oauthId", (String)session.getAttribute("tempOauthId"));
+
+		log.info("임시 회원가입 데이터 반환: {}", data);
+
+		return ApiResponse.onSuccess(data);
 	}
 
 	private void addTokenCookies(String accessToken, String refreshToken, HttpServletResponse response) {

@@ -1,6 +1,5 @@
 package com.grabpt.domain.entity;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.hibernate.annotations.DynamicInsert;
@@ -11,12 +10,12 @@ import com.grabpt.domain.common.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -49,14 +48,9 @@ public class UserProfile extends BaseEntity {
 	@ElementCollection
 	private List<String> preferredAreas; // 운동희망지역
 
-	// 양방향 연관관계
-	@ManyToMany
-	@JoinTable(
-		name = "user_profile_preferred_category",
-		joinColumns = @JoinColumn(name = "user_profile_id"),
-		inverseJoinColumns = @JoinColumn(name = "category_id")
-	)
-	private List<Category> categories = new ArrayList<>();
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "category_id")
+	private Category category;
 
 	// 편의 메서드
 	public void setUser(Users user) {

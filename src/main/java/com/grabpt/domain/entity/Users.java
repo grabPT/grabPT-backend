@@ -137,4 +137,16 @@ public class Users extends BaseEntity {
 		this.password = password;
 	}
 
+	public void withdraw() {
+		this.username = "탈퇴한 회원";
+		this.nickname = "탈퇴한 회원";
+		this.email = "deleted@" + this.id; // 이메일은 고유해야 하므로 ID를 포함
+		this.password = "";
+		this.phone_number = "";
+		this.profileImageUrl = null;
+		this.refreshToken = null;
+		this.role = Role.DELETED; // 역할(Role)을 DELETED로 변경
+		this.userProfile = null; // 프로필 정보 연결 해제
+		this.proProfile = null;
+	}
 }

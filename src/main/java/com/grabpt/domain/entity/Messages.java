@@ -37,4 +37,8 @@ public class Messages {
 
 	@CreatedDate
 	private LocalDateTime sentAt;
+
+	@Column
+	private Integer readCount;
+
 }

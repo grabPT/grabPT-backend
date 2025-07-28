@@ -13,11 +13,13 @@ public class ChatResponse {
 	@Getter
 	@Builder
 	public static class MessageResponseDto{
+		Long messageId;
 		Long roomId;
 		Long senderId;
 		String content;
-		String type;
+		String messageType;
 		LocalDateTime sendAt;
+		Integer readCount;
 	}
 
 	@AllArgsConstructor
@@ -34,9 +36,20 @@ public class ChatResponse {
 	@Builder
 	public static class ChatRoomPreviewDto{
 		Long chatRoomId;
+		Long userId;
 		Long unreadCount; //추가
 		String roomName;
 		String lastMessage;
 		LocalDateTime lastMessageTime;
+		String otherUserProfile;
+	}
+
+	@AllArgsConstructor
+	@Setter
+	@Getter
+	@Builder
+	public static class ReadStatusUpdateDto{
+		Long messageId;
+		int readCount;
 	}
 }

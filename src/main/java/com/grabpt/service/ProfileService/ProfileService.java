@@ -1,14 +1,25 @@
 package com.grabpt.service.ProfileService;
 
-import com.grabpt.domain.entity.ProProfile;
-import com.grabpt.dto.response.*;
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.multipart.MultipartFile;
 
-import com.grabpt.dto.request.ProProfileUpdateRequestDTO;
+import com.grabpt.dto.request.CenterUpdateRequestDTO;
+import com.grabpt.dto.request.CertificationUpdateRequestDTO;
+import com.grabpt.dto.request.DescriptionUpdateRequestDTO;
+
+import com.grabpt.dto.request.ProLocationUpdateRequestDTO;
+import com.grabpt.dto.request.PtPriceUpdateRequestDTO;
+import com.grabpt.dto.request.PtProgramUpdateRequestDTO;
 import com.grabpt.dto.request.UserProfileUpdateRequestDTO;
-
-import java.util.List;
+import com.grabpt.dto.response.CategoryResponse;
+import com.grabpt.dto.response.CertificationResponseDTO;
+import com.grabpt.dto.response.MyRequestListDTO;
+import com.grabpt.dto.response.MyReviewListDTO;
+import com.grabpt.dto.response.ProProfileResponseDTO;
+import com.grabpt.dto.response.ProfileResponseDTO;
 
 public interface ProfileService {
 	ProfileResponseDTO.MyProfileDTO findMyUserProfile(Long userId);
@@ -21,8 +32,6 @@ public interface ProfileService {
 
 	void updateMyUserProfile(Long userId, UserProfileUpdateRequestDTO request);
 
-	void updateMyProUserProfile(Long userId, ProProfileUpdateRequestDTO request);
-
 	Page<MyReviewListDTO> findProReviews(Long userId, Pageable pageable);
 
 	ProProfileResponseDTO findProProfile(Long userId);
@@ -30,4 +39,17 @@ public interface ProfileService {
 	Page<ProProfileResponseDTO> findProProfilesByCategory(String categoryCode, Pageable pageable);
 
 	List<CategoryResponse.ProListDto> findAllProByCategoryCodeAndRegion(String categoryCode, String region);
+	void updateProCenter(Long userId, CenterUpdateRequestDTO request);
+
+	void updateProDescription(Long userId, DescriptionUpdateRequestDTO request);
+	void updateProPhotos(Long userId, List<MultipartFile> photoFiles);
+	void updateProPtPrice(Long userId, PtPriceUpdateRequestDTO request);
+	void updateProProgram(Long userId, PtProgramUpdateRequestDTO request);
+	void updateUserProfileImage(Long userId, MultipartFile profileImage);
+	CertificationResponseDTO findMyCertifications(Long userId);
+	void updateProCertifications(Long userId, CertificationUpdateRequestDTO request, List<MultipartFile> images);
+
+	void deleteUser(Long userId); // 회원 탈퇴 메서드 선언
+
+	void updateProLocation(Long userId, ProLocationUpdateRequestDTO request);
 }

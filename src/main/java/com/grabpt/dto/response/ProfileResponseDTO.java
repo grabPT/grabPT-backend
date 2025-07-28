@@ -1,9 +1,12 @@
 package com.grabpt.dto.response;
 
-import java.time.LocalDateTime;
+import lombok.Builder;
+import lombok.Getter;
+
+
 import java.util.List;
 
-import com.grabpt.domain.entity.ProCertification;
+import com.grabpt.domain.entity.Address;
 import com.grabpt.domain.entity.ProPhoto;
 import com.grabpt.domain.entity.Review;
 import com.grabpt.domain.entity.Users;
@@ -25,6 +28,7 @@ public class ProfileResponseDTO {
 	@Builder
 	public static class MyProfileDTO {
 		private Long userId;
+		private String profileImageUrl;
 		private String name;
 		private String nickname;
 		private String email;
@@ -38,35 +42,43 @@ public class ProfileResponseDTO {
 	public static class MyProProfileDTO {
 		// 프로필 카드
 		private Long proId;
-		private String nickname;
-		private String description;
+		private String profileImageUrl;
+		private String proName;
 		private String center;
+		private String categoryName; // 카테고리 이름 추가
+		private Double averageRating; // 리뷰 평점 추가
+
+
+		private String description;
+		private String centerName;
 
 		// 소개 이미지
 		private List<MyProProfileDTO.PhotoDTO> photos;
 
 		private List<MyProProfileDTO.ReviewDTO> reviews;
 
-		private List<MyProProfileDTO.CertificationDTO> certifications;
 		// PT 프로그램 과정
 		private String programDescription;
 		private Integer pricePerSession;
 		private Integer totalSessions;
 
 		// location
+		private List<AddressDTO> address;
 
 		@Getter
 		@Builder
-		public static class CertificationDTO {
-			private String name;
-			private String issuer;
-			private LocalDateTime issuedDate;
+		public static class AddressDTO {
+			private String city;
+			private String district;
+			private String street;
+			private String zipcode;
 
-			public static CertificationDTO from(ProCertification certification) {
-				return CertificationDTO.builder()
-					.name(certification.getName())
-					.issuer(certification.getIssuer())
-					.issuedDate(certification.getIssuedDate())
+			public static AddressDTO from(Address address) {
+				return AddressDTO.builder()
+					.city(address.getCity())
+					.district(address.getDistrict())
+					.street(address.getStreet())
+					.zipcode(address.getZipcode())
 					.build();
 			}
 		}

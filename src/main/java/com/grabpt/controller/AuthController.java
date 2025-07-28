@@ -104,6 +104,8 @@ public class AuthController {
 			userDetails, null, userDetails.getAuthorities());
 		String newAccessToken = jwtTokenProvider.generateToken(authentication);
 		String newRefreshToken = jwtTokenProvider.createRefreshToken(email);
+		log.info("재발급된 accessToken = " + newAccessToken);
+		log.info("재발급된 refreshToken = " + newRefreshToken);
 
 		user.setRefreshToken(newRefreshToken);
 		userRepository.save(user);

@@ -27,10 +27,12 @@ public class CategoryResponse {
 	public static class ProListDto {
 		Long id;  //ProProfile.id
 		String name; //ProProfile.User.name
-		double rating;  //ProProfile.reviews.getAverageReview
+		Double rating;  //ProProfile.reviews.getAverageReview
 		String centerName;
-		int pricePerSession; //Proprofile.Suggestions.price
-		int totalSessions;
+		@Builder.Default
+		int pricePerSession = 0; //Proprofile.Suggestions.price
+		@Builder.Default
+		int totalSessions = 0;
 		String profileImageUrl;
 	}
 

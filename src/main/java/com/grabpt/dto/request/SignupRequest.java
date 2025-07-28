@@ -33,7 +33,7 @@ public class SignupRequest {
 		private String password;
 
 		@Schema(description = "주소 객체")
-		private List<AddressRequest> address;
+		private AddressRequest address;
 
 		@Schema(description = "카테고리 리스트", example = "[1, 2, 3]")
 		private List<Long> categories;
@@ -87,7 +87,7 @@ public class SignupRequest {
 		private String password;
 
 		@Schema(description = "주소 객체")
-		private List<UserSignupRequestDto.AddressRequest> address;
+		private AddressRequest address;
 
 		@Schema(description = "카테고리(프로는 하나)", example = "1")
 		private Long categoryId;

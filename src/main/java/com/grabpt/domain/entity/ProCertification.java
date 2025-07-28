@@ -3,6 +3,7 @@ package com.grabpt.domain.entity;
 import java.time.LocalDateTime;
 
 import com.grabpt.domain.common.BaseEntity;
+import com.grabpt.domain.enums.CertificationType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -17,12 +18,14 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Getter
+@Setter
 public class ProCertification extends BaseEntity {
 
 	@Id
@@ -33,11 +36,10 @@ public class ProCertification extends BaseEntity {
 	@JoinColumn(name = "pro_profile_id")
 	private ProProfile proProfile;
 
-	@Column(nullable = false)
-	private String name; // 자격증 이름
+	private CertificationType certificationType; // 자격증 이름
+
+	private String description;
 
 	@Column(nullable = false)
-	private String issuer; // 발급 기관
-
-	private LocalDateTime issuedDate;
+	private String imageUrl;
 }

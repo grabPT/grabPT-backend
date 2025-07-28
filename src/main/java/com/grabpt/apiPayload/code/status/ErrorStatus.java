@@ -43,6 +43,8 @@ public enum ErrorStatus implements BaseErrorCode {
 
 	CHATROOM_NOT_FOUND(HttpStatus.BAD_REQUEST, "CHAT4001", "존재하지 않는 채팅입니다."),
 
+	MESSAGE_NOT_FOUND(HttpStatus.BAD_REQUEST, "CHAT4002", "존재하지 않는 메시지 입니다."),
+
 	PRO_NOT_FOUND(HttpStatus.BAD_REQUEST, "PRO4001", "존재하지 않는 트레이너입니다."),
 
 	REQUESTION_NOT_FOUND(HttpStatus.BAD_REQUEST, "REQ4001", "존재하지 않는 요청서입니다."),

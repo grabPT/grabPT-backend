@@ -1,8 +1,8 @@
 package com.grabpt.controller;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,6 +17,7 @@ import com.grabpt.dto.request.RequestionRequestDto;
 import com.grabpt.dto.response.RequestionResponseDto;
 import com.grabpt.dto.response.UserResponseDto;
 import com.grabpt.service.RequestionService.RequestionService;
+import com.grabpt.service.SuggestionService.SuggestionService;
 import com.grabpt.service.UserService.UserQueryService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,6 +33,7 @@ public class RequestionController {
 
 	private final RequestionService requestionService;
 	private final UserQueryService userQueryService;
+	private final SuggestionService suggestionService;
 
 	@Operation(
 		summary = "요청서 작성 저장 API",
@@ -66,12 +68,15 @@ public class RequestionController {
 		description = "트레이너 기준 일반 유저의 요청서를 조회합니다."
 	)
 	public ApiResponse<Page<RequestionResponseDto.RequestionResponsePagingDto>> getRequestionsNearby(
-		@RequestParam(defaultValue = "latest") String sortBy, // 'latest' 또는 'price'
-		@PageableDefault(size = 4) Pageable pageable,
+		@RequestParam(defaultValue = "latest") String sortBy,
+		@RequestParam(defaultValue = "1") int page,
+		@RequestParam(defaultValue = "4") int size,
 		HttpServletRequest request
 	) throws IllegalAccessException {
-		Page<RequestionResponseDto.RequestionResponsePagingDto> response = requestionService.getNearbyRequestions(
-			request, sortBy, pageable);
+		Pageable pageable = PageRequest.of(Math.max(page - 1, 0), size);
+		Page<RequestionResponseDto.RequestionResponsePagingDto> response =
+			requestionService.getNearbyRequestions(request, sortBy, pageable);
 		return ApiResponse.onSuccess(response);
 	}
+
 }

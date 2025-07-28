@@ -38,4 +38,23 @@ public class Address {
 	@OneToOne
 	@JoinColumn(name = "user_id", unique = true)
 	private Users user;
+
+	public String getFullAddress() {
+		StringBuilder fullAddress = new StringBuilder();
+
+		if (city != null && !city.isBlank()) {
+			fullAddress.append(city).append(" ");
+		}
+		if (district != null && !district.isBlank()) {
+			fullAddress.append(district).append(" ");
+		}
+		if (street != null && !street.isBlank()) {
+			fullAddress.append(street).append(" ");
+		}
+		if (specAddress != null && !specAddress.isBlank()) {
+			fullAddress.append(specAddress);
+		}
+
+		return fullAddress.toString().trim();
+	}
 }

@@ -1,7 +1,7 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.0.0'
-    id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+    id 'org.springframework.boot' version '3.2.5'
+    id 'io.spring.dependency-management' version '1.1.7'
 }
 
 group = 'com.grabpt'
@@ -16,6 +16,14 @@ configurations {
 
 repositories {
     mavenCentral()
+}
+
+jar {
+    enabled = false
+}
+
+bootJar {
+    archiveFileName = 'grabpt-1.0.0.jar'
 }
 
 compileJava.options.encoding = "UTF-8"
@@ -67,6 +75,9 @@ dependencies {
 
     // S3
     implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+
+    // 자바 8 날짜/시간(LocalDateTime) -> JSON 변환을 위한 라이브러리
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 }
 
 tasks.named('test') {

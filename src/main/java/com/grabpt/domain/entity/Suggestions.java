@@ -1,6 +1,6 @@
 package com.grabpt.domain.entity;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
@@ -54,7 +54,7 @@ public class Suggestions extends BaseEntity {
 	@Column(nullable = false)
 	private String location;
 
-	private LocalDateTime sentAt;
+	private LocalDate sentAt;
 
 	private Boolean isAgreed;
 

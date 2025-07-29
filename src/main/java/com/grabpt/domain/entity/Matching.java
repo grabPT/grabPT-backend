@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
+import com.grabpt.domain.common.BaseEntity;
 import com.grabpt.domain.enums.MatchingStatus;
 
 import lombok.AccessLevel;
@@ -23,7 +24,7 @@ import lombok.Setter;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-public class Matching {
+public class Matching extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

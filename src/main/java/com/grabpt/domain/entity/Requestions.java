@@ -1,5 +1,6 @@
 package com.grabpt.domain.entity;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,8 +65,10 @@ public class Requestions extends BaseEntity {
 	@Column(nullable = false)
 	private Integer sessionCount; // 추가
 
-	@Column(nullable = false)
-	private String purpose;
+	@ElementCollection
+	@CollectionTable(name = "requestion_purposes", joinColumns = @JoinColumn(name = "requestion_id"))
+	@Column(name = "purpose")
+	private List<String> purpose = new ArrayList<>();
 
 	@Column(nullable = false)
 	private String ageGroup;
@@ -86,7 +89,7 @@ public class Requestions extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	private Gender trainerGender;
 
-	private String startPreference;
+	private LocalDateTime startPreference;
 
 	@Column(nullable = false)
 	private String location;

@@ -3,7 +3,6 @@ package com.grabpt.domain.entity;
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.persistence.*;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
@@ -17,6 +16,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import lombok.AccessLevel;
@@ -44,6 +44,8 @@ public class ProProfile extends BaseEntity {
 	private String center;
 	private String centerDescription;
 	private Integer career; // 연차
+
+	private Integer age;
 
 	private String description; // 소개
 

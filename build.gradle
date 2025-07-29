@@ -16,6 +16,15 @@ configurations {
 
 repositories {
     mavenCentral()
+    maven { url 'https://jitpack.io' }
+}
+
+jar {
+    enabled = false
+}
+
+bootJar {
+    archiveFileName = 'grabpt-1.0.0.jar'
 }
 
 jar {
@@ -78,6 +87,9 @@ dependencies {
 
     // 자바 8 날짜/시간(LocalDateTime) -> JSON 변환을 위한 라이브러리
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+
+    // ImPort 의존성
+    implementation 'com.github.iamport:iamport-rest-client-java:0.2.21'
 }
 
 tasks.named('test') {

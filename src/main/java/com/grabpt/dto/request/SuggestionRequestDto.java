@@ -1,6 +1,8 @@
 package com.grabpt.dto.request;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
@@ -33,8 +35,9 @@ public class SuggestionRequestDto {
 	@Schema(description = "지역", example = "성북동")
 	private String location;
 
-	@Schema(description = "발송 시간", example = "2025-07-17T06:56:14.215")
-	private LocalDateTime sentAt;
+	@Schema(description = "발송 시간")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	private LocalDate sentAt;
 
 	@Schema(description = "수락됬는지, 대기중인지 판별하는 boolean", example = "false")
 	private Boolean isAgreed;

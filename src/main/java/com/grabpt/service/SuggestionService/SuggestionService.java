@@ -6,6 +6,8 @@ import com.grabpt.domain.entity.Suggestions;
 import com.grabpt.dto.request.SuggestionRequestDto;
 import com.grabpt.dto.response.SuggestionResponseDto;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 public interface SuggestionService {
 
 	Suggestions save(SuggestionRequestDto dto, String email);
@@ -13,4 +15,7 @@ public interface SuggestionService {
 	SuggestionResponseDto.SuggestionDetailResponseDto getDetail(Long suggestionId);
 
 	Page<SuggestionResponseDto.SuggestionResponsePagingDto> getSuggestionsByRequestionId(Long requestionId, int page);
+
+	Page<SuggestionResponseDto.MySuggestionPagingDto> getMySuggestions(HttpServletRequest request, int page) throws
+		IllegalAccessException;
 }

@@ -1,6 +1,6 @@
 package com.grabpt.domain.entity;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -89,7 +89,7 @@ public class Requestions extends BaseEntity {
 	@Enumerated(EnumType.STRING)
 	private Gender trainerGender;
 
-	private LocalDateTime startPreference;
+	private LocalDate startPreference;
 
 	@Column(nullable = false)
 	private String location;

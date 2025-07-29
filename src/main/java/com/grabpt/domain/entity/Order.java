@@ -24,12 +24,17 @@ public class Order extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
+
 	private Long price;
+
 	private String itemName;
+
 	private String orderUid; // 주문 번호
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "member_id")
 	private Users user;
+
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "payment_id")
 	private Payment payment;

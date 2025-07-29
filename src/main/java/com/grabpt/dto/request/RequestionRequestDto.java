@@ -1,6 +1,6 @@
 package com.grabpt.dto.request;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 import com.grabpt.domain.enums.Gender;
@@ -53,7 +53,7 @@ public class RequestionRequestDto {
 	private Gender trainerGender;
 
 	@Schema(description = "선호 시작")
-	private LocalDateTime startPreference;
+	private LocalDate startPreference;
 
 	@NotNull
 	@Schema(description = "지역", example = "성북동")

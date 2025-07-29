@@ -1,7 +1,10 @@
 package com.grabpt.dto.response;
 
+import java.time.LocalDate;
+
 import com.grabpt.domain.entity.ContractInfo;
 import com.grabpt.domain.enums.MatchingStatus;
+
 import lombok.Builder;
 import lombok.Getter;
 
@@ -14,7 +17,7 @@ public class ContractResponse {
 		ContractInfo proInfo;
 		Integer totalSession;
 		Integer price;
-		String startDate;
+		LocalDate startDate;
 		String ptAddress;
 		MatchingStatus status;
 	}

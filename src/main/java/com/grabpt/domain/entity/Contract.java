@@ -1,12 +1,25 @@
 package com.grabpt.domain.entity;
 
-import com.grabpt.domain.common.BaseEntity;
-import jakarta.persistence.*;
-import lombok.*;
-import org.hibernate.annotations.DynamicInsert;
-import org.hibernate.annotations.DynamicUpdate;
-
 import java.time.LocalDate;
+
+import com.grabpt.domain.common.BaseEntity;
+
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.AttributeOverrides;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Getter
@@ -16,7 +29,8 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class Contract extends BaseEntity {
 
-	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
 	@OneToOne
@@ -45,7 +59,7 @@ public class Contract extends BaseEntity {
 
 	private Integer totalSession;
 	private Integer price;
-	private String startDate;
+	private LocalDate startDate;
 	private String ptAddress;
 
 	private LocalDate contractDate;

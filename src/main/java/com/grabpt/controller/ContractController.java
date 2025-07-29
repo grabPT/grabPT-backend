@@ -1,16 +1,20 @@
 package com.grabpt.controller;
 
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.grabpt.apiPayload.ApiResponse;
 import com.grabpt.converter.ContractConverter;
 import com.grabpt.domain.entity.Contract;
-import com.grabpt.domain.entity.ContractInfo;
 import com.grabpt.dto.request.ContractRequest;
 import com.grabpt.dto.response.ContractResponse;
-import com.grabpt.repository.ContractRepository;
 import com.grabpt.service.ContractService.ContractService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -23,7 +27,7 @@ public class ContractController {
 		summary = "계약서 정보 조회 API"
 	)
 	@GetMapping("/contract/{contractId}")
-	public ApiResponse<ContractResponse.ContractResponseDto> getContract(@PathVariable(name = "contractId") Long id){
+	public ApiResponse<ContractResponse.ContractResponseDto> getContract(@PathVariable(name = "contractId") Long id) {
 		Contract contract = contractService.findById(id);
 		return ApiResponse.onSuccess(ContractConverter.toContractResponseDto(contract));
 	}
@@ -34,7 +38,7 @@ public class ContractController {
 	)
 	@PostMapping("/contract/{contractId}/user")
 	public ApiResponse<Long> writeUserInfo(@RequestBody ContractRequest.ContractInfoDto request,
-										   @PathVariable(name = "contractId") Long id){
+		@PathVariable(name = "contractId") Long id) {
 		Contract contract = contractService.writeUserInfo(id, request);
 		return ApiResponse.onSuccess(contract.getId());
 	}
@@ -45,14 +49,14 @@ public class ContractController {
 	)
 	@PostMapping("/contract/{contractId}/pro")
 	public ApiResponse<Long> writeProInfo(@RequestBody ContractRequest.ContractInfoDto request,
-										   @PathVariable(name = "contractId") Long id){
+		@PathVariable(name = "contractId") Long id) {
 		Contract contract = contractService.writeProInfo(id, request);
 		return ApiResponse.onSuccess(contract.getId());
 	}
 
 	@Operation(description = "계약서 제출 및 저장")
 	@PostMapping("/contract/{contractId}/submit")
-	public void submitContract(){
+	public void submitContract() {
 		//계약일 setting 및 pdf로 변환해서 s3저장
 	}
 }

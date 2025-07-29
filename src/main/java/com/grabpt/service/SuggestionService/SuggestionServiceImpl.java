@@ -1,14 +1,13 @@
 package com.grabpt.service.SuggestionService;
 
+import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.util.stream.Collectors;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import com.grabpt.apiPayload.code.status.ErrorStatus;
 import com.grabpt.apiPayload.exception.handler.ProHandler;
 import com.grabpt.apiPayload.exception.handler.RequestionHandler;
@@ -105,6 +104,7 @@ public class SuggestionServiceImpl implements SuggestionService {
 		Page<Suggestions> suggestionsPage = suggestionRepository.findByRequestionId(requestionId, pageable);
 
 		return SuggestionConverter.toSuggestionResponsePageDto(suggestionsPage);
+
 	}
 
 	@Transactional(readOnly = true)

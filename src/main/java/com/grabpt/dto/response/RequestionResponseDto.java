@@ -1,6 +1,6 @@
 package com.grabpt.dto.response;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 import com.grabpt.domain.entity.Requestions;
@@ -29,7 +29,7 @@ public class RequestionResponseDto {
 		private Integer price;
 		private Integer sessionCount;
 		private String location;
-		private LocalDateTime startPreference;
+		private LocalDate startPreference;
 		private List<String> availableDays;
 		private List<String> availableTimes;
 		private Gender trainerGender;

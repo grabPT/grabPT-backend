@@ -154,4 +154,5 @@ public class Users extends BaseEntity {
 		this.userProfile = null; // 프로필 정보 연결 해제
 		this.proProfile = null;
 	}
+
 }

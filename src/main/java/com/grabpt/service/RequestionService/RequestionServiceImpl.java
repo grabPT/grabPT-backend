@@ -98,7 +98,7 @@ public class RequestionServiceImpl implements RequestionService {
 
 		return requestionPage.map(req -> {
 			String username = req.getUser().getNickname();
-			String userStreet = req.getUser().getAddress().getStreet();
+			String userStreet = req.getLocation(); // Requestions 주소 기준으로 수정하였습니다
 
 			return RequestionResponseDto.RequestionResponsePagingDto.builder()
 				.username(username)

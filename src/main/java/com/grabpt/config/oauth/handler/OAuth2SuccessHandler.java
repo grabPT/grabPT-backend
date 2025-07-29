@@ -1,8 +1,6 @@
 package com.grabpt.config.oauth.handler;
 
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import org.springframework.security.core.Authentication;
@@ -21,6 +19,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -51,27 +50,20 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 			email = (String)attributes.get("email");
 			name = (String)attributes.get("name");
 			oauthId = oauthProvider + "-" + attributes.get("sub");
+			// Google은 gender 제공 안함 → null
 		} else if (oauthProvider.equals("kakao")) {
 			Map<String, Object> kakaoAccount = (Map<String, Object>)attributes.get("kakao_account");
 			Map<String, Object> profile = (Map<String, Object>)kakaoAccount.get("profile");
 
-			email = kakaoAccount.get("email") != null ? (String)kakaoAccount.get("email") : "no-email@kakao.com";
-			name = profile != null && profile.get("nickname") != null ? (String)profile.get("nickname") : "카카오유저";
+			email = kakaoAccount.get("email") != null ? (String)kakaoAccount.get("email") : null;
+			name = profile != null ? (String)profile.get("nickname") : null;
 			oauthId = oauthProvider + "-" + attributes.get("id");
-
-			if (kakaoAccount.get("email") == null) {
-				log.warn("카카오 로그인 사용자 이메일 미제공 - id: {}, name: {}", oauthId, name);
-			}
 		} else if (oauthProvider.equals("naver")) {
 			Map<String, Object> responseMap = (Map<String, Object>)attributes.get("response");
 
-			email = responseMap.get("email") != null ? (String)responseMap.get("email") : "no-email@naver.com";
-			name = responseMap.get("name") != null ? (String)responseMap.get("name") : "네이버유저";
+			email = responseMap.get("email") != null ? (String)responseMap.get("email") : null;
+			name = responseMap.get("name") != null ? (String)responseMap.get("name") : null;
 			oauthId = oauthProvider + "-" + responseMap.get("id");
-
-			if (responseMap.get("email") == null) {
-				log.warn("네이버 로그인 사용자 이메일 미제공 - id: {}, name: {}", oauthId, name);
-			}
 		}
 
 		/// 이미 존재하는 회원 검증
@@ -104,23 +96,16 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 			response.addCookie(accessCookie);
 			response.addCookie(refreshCookie);
 
-			response.sendRedirect("http://localhost:8080/join"); // 환경에 맞게 수정\
+			response.sendRedirect("http://localhost:5173/"); // 환경에 맞게 수정\
 
 			return;
 		}
 
-		// null-safe encode
-		String encodedEmail = URLEncoder.encode(email != null ? email : "unknown", StandardCharsets.UTF_8);
-		String encodedName = URLEncoder.encode(name != null ? name : "사용자", StandardCharsets.UTF_8);
-		String encodedOauthId = URLEncoder.encode(oauthId != null ? oauthId : "unknown-id", StandardCharsets.UTF_8);
-		String encodedProvider = URLEncoder.encode(oauthProvider != null ? oauthProvider : "unknown",
-			StandardCharsets.UTF_8);
-
 		// 쿠키 생성
-		Cookie emailCookie = new Cookie("oauthEmail", encodedEmail);
-		Cookie nameCookie = new Cookie("oauthName", encodedName);
-		Cookie oauthIdCookie = new Cookie("oauthId", encodedOauthId);
-		Cookie oauthProviderCookie = new Cookie("oauthProvider", encodedProvider);
+		Cookie emailCookie = new Cookie("oauthEmail", email);
+		Cookie nameCookie = new Cookie("oauthName", name);
+		Cookie oauthIdCookie = new Cookie("oauthId", oauthId);
+		Cookie oauthProviderCookie = new Cookie("oauthProvider", oauthProvider);
 
 		for (Cookie cookie : new Cookie[] {emailCookie, nameCookie, oauthIdCookie, oauthProviderCookie}) {
 			cookie.setHttpOnly(false);
@@ -130,9 +115,16 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 			response.addCookie(cookie);
 		}
 
-		// redirect to frontend join page
-		response.sendRedirect("http://localhost:8080/join"); // 수정 예정
+		// 신규 회원 → 세션에 임시 정보 저장 (null 허용)
+		HttpSession session = request.getSession();
+		session.setAttribute("tempEmail", email);
+		session.setAttribute("tempName", name);
+		session.setAttribute("tempOauthProvider", oauthProvider);
+		session.setAttribute("tempOauthId", oauthId);
 
-		log.info("소셜 로그인 성공 - provider: {}, email: {}, name: {}", oauthProvider, email, name);
+		log.info("신규 회원 소셜 로그인 - provider: {}, email: {}, name: {}",
+			oauthProvider, email, name);
+
+		response.sendRedirect("http://localhost:5173/signup");
 	}
 }

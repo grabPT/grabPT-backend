@@ -1,5 +1,7 @@
 package com.grabpt.domain.entity;
 
+import com.grabpt.domain.common.BaseEntity;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -21,7 +23,7 @@ import lombok.Setter;
 @Setter
 @Builder
 @Table(name = "address")
-public class Address {
+public class Address extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

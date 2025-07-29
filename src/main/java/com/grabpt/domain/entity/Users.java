@@ -1,5 +1,6 @@
 package com.grabpt.domain.entity;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,6 +50,8 @@ public class Users extends BaseEntity {
 	@Column(nullable = false, length = 50)
 	private String username;
 
+	private String password;
+
 	private String profileImageUrl;
 
 	@Enumerated(EnumType.STRING)
@@ -69,14 +72,21 @@ public class Users extends BaseEntity {
 	@Column(nullable = false, unique = true)
 	private String email;
 
-	@Column(nullable = true)
-	private String password;
-
 	@Enumerated(EnumType.STRING)
 	private AuthRole authRole;
 
 	@Column(length = 500)
 	private String refreshToken;
+
+	@Column(length = 500)
+	private String accessToken;
+
+	// 선택 약관 (마케팅 정보 수신 동의)
+	private Boolean agreeMarketing;
+	private LocalDateTime agreeMarketingAt;
+
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<UserTermsAgreement> agreements = new ArrayList<>();
 
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<UserChatRoom> userChatRooms = new ArrayList<>();
@@ -133,15 +143,10 @@ public class Users extends BaseEntity {
 		userChatRoom.setUser(this);
 	}
 
-	public void encodePassword(String password) {
-		this.password = password;
-	}
-
 	public void withdraw() {
 		this.username = "탈퇴한 회원";
 		this.nickname = "탈퇴한 회원";
 		this.email = "deleted@" + this.id; // 이메일은 고유해야 하므로 ID를 포함
-		this.password = "";
 		this.phone_number = "";
 		this.profileImageUrl = null;
 		this.refreshToken = null;
@@ -149,4 +154,5 @@ public class Users extends BaseEntity {
 		this.userProfile = null; // 프로필 정보 연결 해제
 		this.proProfile = null;
 	}
+
 }

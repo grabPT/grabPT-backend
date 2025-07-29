@@ -29,14 +29,11 @@ public class SignupRequest {
 		@Schema(description = "사용자가 지정한 이름", example = "동이")
 		private String nickname;
 
-		@Schema(description = "사용자가 입력한 비밇번호", example = "expasswd")
-		private String password;
-
 		@Schema(description = "주소 객체")
 		private AddressRequest address;
 
-		@Schema(description = "카테고리 리스트", example = "[1, 2, 3]")
-		private List<Long> categories;
+		@Schema(description = "카테고리", example = "1")
+		private Long categoryId;
 
 		@Schema(description = "사용자가 입력한 프로필 이미지", example = "eoiaIOQJ2414kldsfPOVMIasd.png")
 		private String profileImageUrl;
@@ -47,11 +44,15 @@ public class SignupRequest {
 		@Schema(description = "oauth 인증 provider", example = "google")
 		private String oauthProvider;
 
-		@Schema(description = "사용자가 입력한 성별, 1:남성/2:여성", example = "1")
-		private Integer gender;
-
 		@Schema(description = "일반 사용자, 트레이너 입력, 1:일반(USER)/2:트레이너(PRO)", example = "1")
 		private Integer role;
+
+		/** 추가된 약관 동의 필드 **/
+		@Schema(description = "동의한 필수 약관 ID 리스트", example = "[1,2,3,4]")
+		private List<Long> agreedTermsIds;
+
+		@Schema(description = "마케팅 정보 수신 동의 여부", example = "true")
+		private Boolean agreeMarketing;
 
 		@Data
 		public static class AddressRequest {
@@ -63,6 +64,10 @@ public class SignupRequest {
 			private String street;
 			@Schema(description = "우편번호", example = "12345")
 			private String zipcode;
+			@Schema(description = "도로명 주소", example = "상암로 123")
+			private String streetCode;
+			@Schema(description = "상세 주소", example = "123동 456호")
+			private String specAddress;
 		}
 	}
 
@@ -83,8 +88,8 @@ public class SignupRequest {
 		@Schema(description = "사용자가 지정한 이름", example = "동이")
 		private String nickname;
 
-		@Schema(description = "사용자가 입력한 비밇번호", example = "expasswd")
-		private String password;
+		@Schema(description = "나이", example = "24")
+		private Integer age;
 
 		@Schema(description = "주소 객체")
 		private AddressRequest address;
@@ -117,19 +122,24 @@ public class SignupRequest {
 			private String street;
 			@Schema(description = "우편번호", example = "12345")
 			private String zipcode;
+			@Schema(description = "도로명 주소", example = "상암로 123")
+			private String streetCode; // 도로명주소
+			@Schema(description = "상세 주소", example = "123동 456호")
+			private String specAddress; // 상세주소
 		}
 
-		@Schema(description = "활동지역")
-		private List<String> activityAreas;
+		/** 추가된 약관 동의 필드 **/
+		@Schema(description = "동의한 필수 약관 ID 리스트", example = "[1,2,3,4]")
+		private List<Long> agreedTermsIds;
+
+		@Schema(description = "마케팅 정보 수신 동의 여부", example = "true")
+		private Boolean agreeMarketing;
 
 		@Schema(description = "센터")
 		private String center;
 
 		@Schema(description = "연차", example = "3")
 		private Integer career;
-
-		@Schema(description = "소개", example = "안녕하세요. 트레이너 홍길동입니다.")
-		private String description;
 	}
 
 }

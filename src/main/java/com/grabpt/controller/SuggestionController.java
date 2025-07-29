@@ -72,4 +72,17 @@ public class SuggestionController {
 			suggestionService.getSuggestionsByRequestionId(requestionId, adjustedPage);
 		return ApiResponse.onSuccess(result);
 	}
+
+	@GetMapping("/mySuggestions")
+	@Operation(
+		summary = "트레이너 제안서 목록 조회 API",
+		description = "로그인한 트레이너가 작성한 제안서를 8개씩 페이징하여 조회합니다."
+	)
+	public ApiResponse<Page<SuggestionResponseDto.MySuggestionPagingDto>> getMySuggestions(
+		HttpServletRequest request,
+		@RequestParam(defaultValue = "1") int page
+	) throws IllegalAccessException {
+		Page<SuggestionResponseDto.MySuggestionPagingDto> response = suggestionService.getMySuggestions(request, page);
+		return ApiResponse.onSuccess(response);
+	}
 }

@@ -2,6 +2,8 @@ package com.grabpt.service.MatchingService;
 
 import java.time.LocalDateTime;
 
+import com.grabpt.domain.entity.Contract;
+import com.grabpt.service.ContractService.ContractService;
 import org.springframework.stereotype.Service;
 
 import com.grabpt.apiPayload.code.status.ErrorStatus;
@@ -25,6 +27,7 @@ public class MatchingServiceImpl implements MatchingService {
 	private final RequestionRepository requestionRepository;
 	private final SuggestionRepository suggestionRepository;
 	private final MatchingRepository matchingRepository;
+	private final ContractService contractService;
 
 	@Override
 	public Matching createMatching(Long requestionId, Long suggestionId) {
@@ -45,7 +48,7 @@ public class MatchingServiceImpl implements MatchingService {
 			.suggestion(suggestion)
 			.agreedPrice(suggestion.getPrice())
 			.matchedAt(LocalDateTime.now())
-			.status(MatchingStatus.MATCHED)
+			.status(MatchingStatus.WAITING)  //대기중으로 변경
 			.build();
 
 		// 요청서 상태 변경
@@ -53,6 +56,7 @@ public class MatchingServiceImpl implements MatchingService {
 
 		matchingRepository.save(matching);
 		requestionRepository.save(requestion); // 상태 저장 반영
+		contractService.createContract(matching,requestion,suggestion);
 
 		return matching;
 

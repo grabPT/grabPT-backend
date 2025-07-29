@@ -14,7 +14,7 @@ import java.io.IOException;
 import com.grabpt.service.PdfService.PdfGenerateService;
 
 @Controller
-public class ContractController {
+public class ContractPdfController {
 
 	@Autowired
 	private PdfGenerateService pdfGenerateService;

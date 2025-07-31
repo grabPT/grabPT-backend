@@ -1,14 +1,13 @@
 package com.grabpt.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 public class ChatResponse {
 	@AllArgsConstructor
+	@NoArgsConstructor
 	@Setter
 	@Getter
 	@Builder
@@ -18,11 +17,13 @@ public class ChatResponse {
 		Long senderId;
 		String content;
 		String messageType;
+		@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
 		LocalDateTime sendAt;
 		Integer readCount;
 	}
 
 	@AllArgsConstructor
+	@NoArgsConstructor
 	@Setter
 	@Getter
 	@Builder
@@ -31,6 +32,7 @@ public class ChatResponse {
 	}
 
 	@AllArgsConstructor
+	@NoArgsConstructor
 	@Setter
 	@Getter
 	@Builder
@@ -40,11 +42,13 @@ public class ChatResponse {
 		Long unreadCount; //추가
 		String roomName;
 		String lastMessage;
+		@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
 		LocalDateTime lastMessageTime;
 		String otherUserProfile;
 	}
 
 	@AllArgsConstructor
+	@NoArgsConstructor
 	@Setter
 	@Getter
 	@Builder

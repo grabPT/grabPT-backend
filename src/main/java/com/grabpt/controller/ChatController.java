@@ -8,6 +8,7 @@ import com.grabpt.dto.request.ChatRequest;
 import com.grabpt.dto.response.ChatResponse;
 import com.grabpt.service.ChatService.ChatService;
 import com.grabpt.service.UserService.UserQueryService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,38 +40,56 @@ public class ChatController {
 		ChatResponse.MessageResponseDto response = ChatConverter.toMessageResponseDto(newMessage);
 		log.info("채팅 메시지 브로드캐스트", response.getContent());
 		messagingTemplate.convertAndSend("/subscribe/chat/"+roomId, response);
-		//return ChatConverter.toMessageResponseDto(newMessage);
 	}
 
+	@Operation(
+		description = "유저가 채팅방에 접속 상태일 경우 실시간으로 메시지를 읽음 처리합니다(토큰을 통해 userId를 받고, roomId는 pathVariable",
+		summary = "채팅방 접속 상태일 시 메시지 읽음 처리"
+	)
 	@PostMapping("/chatRoom/{roomId}/readWhenExist")
 	@ResponseBody
 	public ApiResponse<String> updateLastReadMessageWhenExist(@PathVariable Long roomId, HttpServletRequest request) throws IllegalAccessException {
 		Long userId = userQueryService.getUserId(request);
 		chatService.updateLastReadMessageWhenExist(roomId,userId);
-		log.info("마지막으로 읽은 메시지 업데이트");
-		return ApiResponse.onSuccess("채팅방을 나갑니다. 마지막으로 읽은 메시지 업데이트");
+		return ApiResponse.onSuccess("채팅방 접속 상태일 때 메시지 읽음 처리");
 	}
 
+	@Operation(
+		description = "유저가 채팅방에 입장 시 읽지 않은 메시지들을 읽음 처리합니다(토큰을 통해 userId를 받고, roomId는 pathVariable",
+		summary = "채팅방 입장 시 메시지 읽음 처리"
+	)
 	@PostMapping("/chatRoom/{roomId}/readWhenEnter")
 	@ResponseBody
 	public ApiResponse<String> updateLastReadMessageWhenEnter(@PathVariable Long roomId, HttpServletRequest request) throws IllegalAccessException {
 		Long userId = userQueryService.getUserId(request);
-		chatService.updateLastReadMessageWhenEnter(roomId, userId);  // 한명만 있을 때 처리 서비스 호출
-		return ApiResponse.onSuccess("한 명만 접속 상태 읽음 처리 완료");
+		chatService.updateLastReadMessageWhenEnter(roomId, userId);
+		return ApiResponse.onSuccess("채팅방 입장 시 메시지 읽음 처리");
 	}
 
+	@Operation(
+		description = "request로 userId와 proId를 받아 존재하는 채팅방을 가져오거나 채팅방을 생성합니다",
+		summary = "채팅방 생성 API"
+	)
 	@PostMapping("/chatRoom/request")
 	@ResponseBody
 	public ApiResponse<ChatResponse.CreateChatRoomResponseDto> createChatRoom(@RequestBody ChatRequest.CreateChatRoomRequestDto request){
 		return ApiResponse.onSuccess(chatService.getOrcreateChatRoom(request));
 	}
 
+	@Operation(
+		description = "채팅방의 모든 메시지를 조회합니다. roomId를 pathVariable로 전달받습니다",
+		summary = "채팅방의 모든 메시지 조회 API"
+	)
 	@GetMapping("/chatRoom/{roomId}/messages")
 	@ResponseBody
 	public ApiResponse<List<ChatResponse.MessageResponseDto>> getMessagesByChatRoom(@PathVariable(name = "roomId") Long roomId){
 		return ApiResponse.onSuccess(chatService.getMessagesByChatRoom(roomId));
 	}
 
+	@Operation(
+		description = "QueryParameter로 keyword를 넘기면 방 이름을 기준으로 채팅방을 가져오며 keyword가 없을 시 모두 가져옵니다",
+		summary = "유저가 참여하는 채팅방 리스트를 가져옵니다(필터기능 존재)"
+	)
 	@GetMapping("/chatRoom/list") //로그인 유저 정보
 	@ResponseBody
 	public ApiResponse<List<ChatResponse.ChatRoomPreviewDto>> getChatRoomList(@RequestParam(name = "keyword", required = false) String keyword,

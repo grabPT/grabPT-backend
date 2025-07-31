@@ -530,13 +530,6 @@
         }
     }
 
-    // 10) 페이지 나가기 전 읽음 처리
-    window.addEventListener("beforeunload", async () => {
-        if(currentRoomId !== null) {
-            await markLastReadWhen2(currentRoomId);
-        }
-    });
-
     // 11) 초기 로드 시 채팅방 목록 불러오기
     window.addEventListener("DOMContentLoaded", () => {
         loadChatRooms();

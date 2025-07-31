@@ -12,6 +12,7 @@ import com.grabpt.repository.ChatRepository.MessageRepository;
 import com.grabpt.repository.ChatRepository.UserChatRoomRepository;
 import com.grabpt.repository.UserRepository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 @Transactional(readOnly = false)
 public class ChatServiceImpl implements ChatService{
 
@@ -145,6 +147,7 @@ public class ChatServiceImpl implements ChatService{
 		if (currentReadCount > 0) {
 			messages.setReadCount(currentReadCount - 1);
 		}
+		log.info("메시지 읽음 처리 when exist");
 		UserChatRoom chatRoom = userChatRoomRepository.findByRoomIdAndUserId(roomId, userId).orElseThrow(
 			() -> new ChatHandler(ErrorStatus.CHATROOM_NOT_FOUND));
 
@@ -167,6 +170,7 @@ public class ChatServiceImpl implements ChatService{
 		for (Messages msg : unreadMessages) {
 			msg.setReadCount(0);
 		}
+		log.info("메시지 읽음 처리 when enter");
 		messageRepository.saveAll(unreadMessages);
 
 		for (Messages msg : unreadMessages) {

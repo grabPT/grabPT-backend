@@ -3,9 +3,11 @@ package com.grabpt.dto.request;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 public class ChatRequest {
 	@AllArgsConstructor
+	@NoArgsConstructor
 	@Getter
 	@Builder
 	public static class MessageRequestDto{
@@ -16,6 +18,7 @@ public class ChatRequest {
 	}
 
 	@AllArgsConstructor
+	@NoArgsConstructor
 	@Getter
 	public static class CreateChatRoomRequestDto{
 		Long userId;

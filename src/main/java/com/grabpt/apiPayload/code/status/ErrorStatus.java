@@ -1,4 +1,3 @@
-
 package com.grabpt.apiPayload.code.status;
 
 import org.springframework.http.HttpStatus;
@@ -57,9 +56,9 @@ public enum ErrorStatus implements BaseErrorCode {
 
 	MATCHING_ALREADY_CANCLED(HttpStatus.BAD_REQUEST, "REQ4002", "매칭이 이미 취소되었습니다."),
 
-	CONTRACT_NOT_FOUND(HttpStatus.BAD_REQUEST, "CONT4001", "계약이 존재하지 않습니다")
+	CONTRACT_NOT_FOUND(HttpStatus.BAD_REQUEST, "CONT4001", "계약이 존재하지 않습니다"),
 
-	;
+	PROFILE_NOT_FOUND(HttpStatus.BAD_REQUEST, "PROF4001", "프로필이 존재하지 않습니다");
 
 	private final HttpStatus httpStatus;
 	private final String code;

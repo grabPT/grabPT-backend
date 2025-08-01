@@ -48,4 +48,7 @@ public class AmazonS3Manager {
 		return amazonConfig.getUserPhoto() + '/' + uuid.getUuid();
 	}
 
+	public String generateProfilePhotoKeyName(Uuid uuid) {
+		return amazonConfig.getProfilePhoto() + '/' + uuid.getUuid();
+	}
 }

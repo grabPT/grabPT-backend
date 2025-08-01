@@ -58,7 +58,10 @@ public enum ErrorStatus implements BaseErrorCode {
 
 	CONTRACT_NOT_FOUND(HttpStatus.BAD_REQUEST, "CONT4001", "계약이 존재하지 않습니다"),
 
-	PROFILE_NOT_FOUND(HttpStatus.BAD_REQUEST, "PROF4001", "프로필이 존재하지 않습니다");
+	PROFILE_NOT_FOUND(HttpStatus.BAD_REQUEST, "PROF4001", "프로필이 존재하지 않습니다"),
+
+	DUPLICATE_USER_EMAIL(HttpStatus.BAD_REQUEST, "AUTH4003", "이미 가입된 이메일입니다."),
+	;
 
 	private final HttpStatus httpStatus;
 	private final String code;

@@ -13,7 +13,7 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
-import lombok.extern.slf4j.Slf4j; // Slf4j import 추가
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j // Slf4j 어노테이션 추가
 @Configuration
@@ -39,6 +39,9 @@ public class AmazonConfig {
 
 	@Value("${cloud.aws.s3.path.userPhoto}")
 	private String userPhoto;
+
+	@Value("${cloud.aws.s3.path.profilePhoto}")
+	private String profilePhoto;
 
 	@Value("${cloud.aws.s3.path.test}")
 	private String test;

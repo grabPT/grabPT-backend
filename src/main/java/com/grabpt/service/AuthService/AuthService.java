@@ -4,19 +4,18 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.grabpt.apiPayload.code.status.ErrorStatus;
-import com.grabpt.apiPayload.exception.handler.CategoryHandler;
 import com.grabpt.apiPayload.exception.handler.UserHandler;
+import com.grabpt.aws.s3.AmazonS3Manager;
+import com.grabpt.aws.s3.Uuid;
 import com.grabpt.config.jwt.JwtTokenProvider;
-import com.grabpt.domain.entity.Address;
-import com.grabpt.domain.entity.Category;
-import com.grabpt.domain.entity.ProProfile;
 import com.grabpt.domain.entity.Terms;
-import com.grabpt.domain.entity.UserProfile;
 import com.grabpt.domain.entity.UserTermsAgreement;
 import com.grabpt.domain.entity.Users;
 import com.grabpt.domain.enums.AuthRole;
@@ -44,105 +43,106 @@ public class AuthService {
 	private final CategoryRepository categoryRepository;
 	private final TermsRepository termsRepository;
 	private final UserTermsAgreementRepository userTermsAgreementRepository;
+	private final AmazonS3Manager amazonS3Manager;
 
-	public void registerUser(SignupRequest.UserSignupRequestDto req, HttpServletResponse response) {
-
-		Category userCategory = categoryRepository.findById(req.getCategoryId())
-			.orElseThrow(() -> new CategoryHandler(ErrorStatus.CATEGORY_NOT_FOUND));
-
-		// UserProfile 생성
-		UserProfile userPrprofile = UserProfile.builder()
-			.category(userCategory)
-			.build();
-
-		SignupRequest.UserSignupRequestDto.AddressRequest addressDto = req.getAddress();
-		Address address = Address.builder()
-			.city(addressDto.getCity())
-			.district(addressDto.getDistrict())
-			.street(addressDto.getStreet())
-			.zipcode(addressDto.getZipcode())
-			.streetCode(addressDto.getStreetCode())
-			.specAddress(addressDto.getSpecAddress())
-			.build();
-
-		// Users 생성 및 연관관계 설정
-		Users user = Users.builder()
-			.username(req.getUsername())
-			.email(req.getEmail())
-			.phone_number(req.getPhoneNum())
-			.address(address)
-			.nickname(req.getNickname())
-			.role(mapToRole(req.getRole()))
-			.authRole(AuthRole.ROLE_USER)
-			.profileImageUrl(req.getProfileImageUrl())
-			.agreeMarketing(req.getAgreeMarketing())
-			.agreeMarketingAt(req.getAgreeMarketing() ? LocalDateTime.now() : null)
-			.oauthId(URLDecoder.decode(req.getOauthId(), StandardCharsets.UTF_8)) // 디코딩 해서 db 저장
-			.oauthProvider(URLDecoder.decode(req.getOauthProvider(), StandardCharsets.UTF_8)) // 디코딩 해서 db 저장
-			.userProfile(userPrprofile)  // 연관관계 연결
-			.build();
-
-		userPrprofile.setUser(user);
-		address.setUser(user);
-		Users savedUser = userRepository.save(user);
-
-		// 필수 약관 동의 내역 저장
-		saveUserAgreements(savedUser, req.getAgreedTermsIds());
-
-		createTokenAndSetCookie(savedUser, response);
-	}
-
-	public void registerPro(SignupRequest.ProSignupRequestDto req, HttpServletResponse response) {
-
-		// 카테고리 조회
-		Category proCategory = categoryRepository.findById(req.getCategoryId())
-			.orElseThrow(() -> new CategoryHandler(ErrorStatus.CATEGORY_NOT_FOUND));
-
-		//  ProProfile 생성 및 Users 연관 설정
-		ProProfile proProfile = ProProfile.builder()
-			.center(req.getCenter())
-			.career(req.getCareer())
-			.category(proCategory)
-			.age(req.getAge())
-			.build();
-
-		SignupRequest.ProSignupRequestDto.AddressRequest addressDto = req.getAddress();
-		Address address = Address.builder()
-			.city(addressDto.getCity())
-			.district(addressDto.getDistrict())
-			.street(addressDto.getStreet())
-			.zipcode(addressDto.getZipcode())
-			.streetCode(addressDto.getStreetCode())
-			.specAddress(addressDto.getSpecAddress())
-			.build();
-
-		// Users 생성 및 연관관계 설정
-		Users user = Users.builder()
-			.username(req.getUsername())
-			.email(req.getEmail())
-			.phone_number(req.getPhoneNum())
-			.address(address)
-			.nickname(req.getNickname())
-			.role(mapToRole(req.getRole())) // Role.PRO
-			.gender(mapToGender(req.getGender()))
-			.authRole(AuthRole.ROLE_USER)
-			.profileImageUrl(req.getProfileImageUrl())
-			.agreeMarketing(req.getAgreeMarketing())
-			.agreeMarketingAt(req.getAgreeMarketing() ? LocalDateTime.now() : null)
-			.oauthId(URLDecoder.decode(req.getOauthId(), StandardCharsets.UTF_8))
-			.oauthProvider(URLDecoder.decode(req.getOauthProvider(), StandardCharsets.UTF_8))
-			.proProfile(proProfile)
-			.build();
-
-		proProfile.setUser(user);
-		address.setUser(user);
-		Users savedUser = userRepository.save(user);
-
-		// 필수 약관 동의 내역 저장
-		saveUserAgreements(savedUser, req.getAgreedTermsIds());
-
-		createTokenAndSetCookie(savedUser, response);
-	}
+	// public void registerUser(SignupRequest.UserSignupRequestDto req, HttpServletResponse response) {
+	//
+	// 	Category userCategory = categoryRepository.findById(req.getCategoryId())
+	// 		.orElseThrow(() -> new CategoryHandler(ErrorStatus.CATEGORY_NOT_FOUND));
+	//
+	// 	// UserProfile 생성
+	// 	UserProfile userPrprofile = UserProfile.builder()
+	// 		.category(userCategory)
+	// 		.build();
+	//
+	// 	SignupRequest.UserSignupRequestDto.AddressRequest addressDto = req.getAddress();
+	// 	Address address = Address.builder()
+	// 		.city(addressDto.getCity())
+	// 		.district(addressDto.getDistrict())
+	// 		.street(addressDto.getStreet())
+	// 		.zipcode(addressDto.getZipcode())
+	// 		.streetCode(addressDto.getStreetCode())
+	// 		.specAddress(addressDto.getSpecAddress())
+	// 		.build();
+	//
+	// 	// Users 생성 및 연관관계 설정
+	// 	Users user = Users.builder()
+	// 		.username(req.getUsername())
+	// 		.email(req.getEmail())
+	// 		.phone_number(req.getPhoneNum())
+	// 		.address(address)
+	// 		.nickname(req.getNickname())
+	// 		.role(mapToRole(req.getRole()))
+	// 		.authRole(AuthRole.ROLE_USER)
+	// 		.profileImageUrl(req.getProfileImageUrl())
+	// 		.agreeMarketing(req.getAgreeMarketing())
+	// 		.agreeMarketingAt(req.getAgreeMarketing() ? LocalDateTime.now() : null)
+	// 		.oauthId(URLDecoder.decode(req.getOauthId(), StandardCharsets.UTF_8)) // 디코딩 해서 db 저장
+	// 		.oauthProvider(URLDecoder.decode(req.getOauthProvider(), StandardCharsets.UTF_8)) // 디코딩 해서 db 저장
+	// 		.userProfile(userPrprofile)  // 연관관계 연결
+	// 		.build();
+	//
+	// 	userPrprofile.setUser(user);
+	// 	address.setUser(user);
+	// 	Users savedUser = userRepository.save(user);
+	//
+	// 	// 필수 약관 동의 내역 저장
+	// 	saveUserAgreements(savedUser, req.getAgreedTermsIds());
+	//
+	// 	createTokenAndSetCookie(savedUser, response);
+	// }
+	//
+	// public void registerPro(SignupRequest.ProSignupRequestDto req, HttpServletResponse response) {
+	//
+	// 	// 카테고리 조회
+	// 	Category proCategory = categoryRepository.findById(req.getCategoryId())
+	// 		.orElseThrow(() -> new CategoryHandler(ErrorStatus.CATEGORY_NOT_FOUND));
+	//
+	// 	//  ProProfile 생성 및 Users 연관 설정
+	// 	ProProfile proProfile = ProProfile.builder()
+	// 		.center(req.getCenter())
+	// 		.career(req.getCareer())
+	// 		.category(proCategory)
+	// 		.age(req.getAge())
+	// 		.build();
+	//
+	// 	SignupRequest.ProSignupRequestDto.AddressRequest addressDto = req.getAddress();
+	// 	Address address = Address.builder()
+	// 		.city(addressDto.getCity())
+	// 		.district(addressDto.getDistrict())
+	// 		.street(addressDto.getStreet())
+	// 		.zipcode(addressDto.getZipcode())
+	// 		.streetCode(addressDto.getStreetCode())
+	// 		.specAddress(addressDto.getSpecAddress())
+	// 		.build();
+	//
+	// 	// Users 생성 및 연관관계 설정
+	// 	Users user = Users.builder()
+	// 		.username(req.getUsername())
+	// 		.email(req.getEmail())
+	// 		.phone_number(req.getPhoneNum())
+	// 		.address(address)
+	// 		.nickname(req.getNickname())
+	// 		.role(mapToRole(req.getRole())) // Role.PRO
+	// 		.gender(mapToGender(req.getGender()))
+	// 		.authRole(AuthRole.ROLE_USER)
+	// 		.profileImageUrl(req.getProfileImageUrl())
+	// 		.agreeMarketing(req.getAgreeMarketing())
+	// 		.agreeMarketingAt(req.getAgreeMarketing() ? LocalDateTime.now() : null)
+	// 		.oauthId(URLDecoder.decode(req.getOauthId(), StandardCharsets.UTF_8))
+	// 		.oauthProvider(URLDecoder.decode(req.getOauthProvider(), StandardCharsets.UTF_8))
+	// 		.proProfile(proProfile)
+	// 		.build();
+	//
+	// 	proProfile.setUser(user);
+	// 	address.setUser(user);
+	// 	Users savedUser = userRepository.save(user);
+	//
+	// 	// 필수 약관 동의 내역 저장
+	// 	saveUserAgreements(savedUser, req.getAgreedTermsIds());
+	//
+	// 	createTokenAndSetCookie(savedUser, response);
+	// }
 
 	private void saveUserAgreements(Users user, List<Long> agreedTermsIds) {
 		if (agreedTermsIds == null || agreedTermsIds.isEmpty())
@@ -208,4 +208,62 @@ public class AuthService {
 		response.addCookie(refreshCookie);
 	}
 
+	public void registerUser_photo(SignupRequest.UserSignupRequestDto req,
+		MultipartFile profileImage,
+		HttpServletResponse response) {
+
+		String imageUrl = null;
+		if (profileImage != null && !profileImage.isEmpty()) {
+			Uuid uuid = Uuid.builder().uuid(UUID.randomUUID().toString()).build();
+			String keyName = amazonS3Manager.generateProfilePhotoKeyName(uuid);
+			imageUrl = amazonS3Manager.uploadFile(keyName, profileImage);
+		}
+
+		Users user = Users.builder()
+			.username(req.getUsername())
+			.email(req.getEmail())
+			.phone_number(req.getPhoneNum())
+			.nickname(req.getNickname())
+			.role(mapToRole(req.getRole()))
+			.authRole(AuthRole.ROLE_USER)
+			.profileImageUrl(imageUrl)  // S3 URL 저장
+			.agreeMarketing(req.getAgreeMarketing())
+			.agreeMarketingAt(req.getAgreeMarketing() ? LocalDateTime.now() : null)
+			.oauthId(URLDecoder.decode(req.getOauthId(), StandardCharsets.UTF_8))
+			.oauthProvider(URLDecoder.decode(req.getOauthProvider(), StandardCharsets.UTF_8))
+			.build();
+
+		userRepository.save(user);
+		createTokenAndSetCookie(user, response);
+	}
+
+	public void registerPro_photo(SignupRequest.ProSignupRequestDto req,
+		MultipartFile profileImage,
+		HttpServletResponse response) {
+
+		String imageUrl = null;
+		if (profileImage != null && !profileImage.isEmpty()) {
+			Uuid uuid = Uuid.builder().uuid(UUID.randomUUID().toString()).build();
+			String keyName = amazonS3Manager.generateProfilePhotoKeyName(uuid);
+			imageUrl = amazonS3Manager.uploadFile(keyName, profileImage);
+		}
+
+		Users user = Users.builder()
+			.username(req.getUsername())
+			.email(req.getEmail())
+			.phone_number(req.getPhoneNum())
+			.nickname(req.getNickname())
+			.role(mapToRole(req.getRole()))
+			.gender(mapToGender(req.getGender()))
+			.authRole(AuthRole.ROLE_USER)
+			.profileImageUrl(imageUrl)
+			.agreeMarketing(req.getAgreeMarketing())
+			.agreeMarketingAt(req.getAgreeMarketing() ? LocalDateTime.now() : null)
+			.oauthId(URLDecoder.decode(req.getOauthId(), StandardCharsets.UTF_8))
+			.oauthProvider(URLDecoder.decode(req.getOauthProvider(), StandardCharsets.UTF_8))
+			.build();
+
+		userRepository.save(user);
+		createTokenAndSetCookie(user, response);
+	}
 }

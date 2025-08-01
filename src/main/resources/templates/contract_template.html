@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>PT(퍼스널 트레이닝) 계약서</title>
+    <style>
+        /* PDF 생성 시 적용될 스타일 */
+        body {
+            font-family: "Malgun Gothic", sans-serif; /* 한글 폰트 지정 */
+            margin: 0;
+            padding: 0;
+            background-color: #fff;
+            font-size: 11px;
+            color: #333;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 30px;
+            border: 1px solid #eee;
+        }
+        h1 {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #000;
+        }
+        h3 {
+            font-size: 16px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 5px;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        p {
+            line-height: 1.7;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            background-color: #f2f2f2;
+            width: 120px;
+            font-weight: bold;
+        }
+        .info-table td {
+            line-height: 1.6;
+        }
+        .info-table strong {
+            display: inline-block;
+            width: 80px;
+        }
+        .date-section {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+        .signature-section {
+            margin-top: 60px;
+            text-align: right;
+        }
+        .signature-section p {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>PT(퍼스널 트레이닝) 계약서</h1>
+
+    <div class="date-section">
+        <p><strong>계약일:</strong> <span th:text="${contractDate}">미지정</span></p>
+    </div>
+
+    <h3>제 1조 (계약 당사자)</h3>
+    <table class="info-table">
+        <tr>
+            <th>회원 (갑)</th>
+            <td>
+                <strong>성명:</strong> <span th:text="${userName}">입력 전</span><br/>
+                <strong>생년월일:</strong> <span th:text="${userBirth}">-</span><br/>
+                <strong>연락처:</strong> <span th:text="${userPhoneNumber}">-</span><br/>
+                <strong>주소:</strong> <span th:text="${userAddress}">-</span>
+            </td>
+        </tr>
+        <tr>
+            <th>트레이너 (을)</th>
+            <td>
+                <strong>성명:</strong> <span th:text="${proName}">입력 전</span><br/>
+                <strong>생년월일:</strong> <span th:text="${proBirth}">-</span><br/>
+                <strong>연락처:</strong> <span th:text="${proPhoneNumber}">-</span><br/>
+                <strong>주소:</strong> <span th:text="${proAddress}">-</span>
+            </td>
+        </tr>
+    </table>
+
+    <h3>제 2조 (서비스 내용)</h3>
+    <table>
+        <tr>
+            <th>총 세션 횟수</th>
+            <td><span th:text="${totalSession}">-</span> 회</td>
+        </tr>
+        <tr>
+            <th>총 계약 금액</th>
+            <td><span th:text="${#numbers.formatInteger(price, 3, 'COMMA')}">0</span> 원</td>
+        </tr>
+        <tr>
+            <th>운동 시작일</th>
+            <td th:text="${startDate}">-</td>
+        </tr>
+        <tr>
+            <th>운동 장소</th>
+            <td th:text="${ptAddress}">-</td>
+        </tr>
+    </table>
+
+    <h3>제 3조 (환불 및 취소 규정)</h3>
+    <p>
+        1. 수업 시작 전: 총 결제 금액의 10%를 위약금으로 공제한 후 환불됩니다.<br/>
+        2. 수업 시작 후: [총 결제 금액 - (위약금 10% + 이용한 세션의 정상가)] 기준으로 환불됩니다.<br/>
+        3. 수업 연기 및 취소는 최소 24시간 전에 트레이너에게 통보해야 하며, 그렇지 않을 경우 해당 세션은 이용한 것으로 간주합니다.
+    </p>
+
+    <h3>제 4조 (권리 및 의무)</h3>
+    <p>
+        "갑"과 "을"은 상호 신뢰를 바탕으로 본 계약의 내용을 성실히 이행할 의무가 있습니다. "을"은 전문적인 지식을 바탕으로 "갑"의 운동 목표 달성을 위해 최선을 다하며, "갑"은 "을"의 지도에 적극적으로 따라야 합니다.
+    </p>
+
+    <div class="signature-section">
+        <p>상기 계약 내용을 충분히 숙지하고 동의하며, 이에 서명합니다.</p>
+        <p><strong>갑 (회원) :</strong> <span th:text="${userName}"></span> (서명)</p>
+        <p><strong>을 (트레이너) :</strong> <span th:text="${proName}"></span> (서명)</p>
+    </div>
+
+</div>
+</body>
+</html>

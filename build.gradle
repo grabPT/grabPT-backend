@@ -88,11 +88,15 @@ dependencies {
     // 자바 8 날짜/시간(LocalDateTime) -> JSON 변환을 위한 라이브러리
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 
-    // (선택) Thymeleaf: HTML을 동적으로 생성하기 위해 추천
+    // Thymeleaf: HTML을 동적으로 생성하기 위해 추천
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 
-    // Flying Saucer (HTML -> PDF 변환)
-    implementation 'org.xhtmlrenderer:flying-saucer-pdf-openpdf:9.1.22'
+    // JAXB : S3 저장 실패 방지
+    implementation 'javax.xml.bind:jaxb-api:2.3.1'
+    implementation 'com.sun.xml.bind:jaxb-impl:2.3.1'
+
+    // Html to Pdf
+    implementation 'com.openhtmltopdf:openhtmltopdf-pdfbox:1.0.10'
     
     // ImPort 의존성
     implementation 'com.github.iamport:iamport-rest-client-java:0.2.21'

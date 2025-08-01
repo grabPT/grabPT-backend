@@ -17,7 +17,7 @@ public class PdfGenerateService {
 	 * @param htmlFilePath 'resources' 폴더 기준의 파일 경로 (예: "templates/contract.html")
 	 * @return 생성된 PDF의 ByteArrayInputStream
 	 */
-	public ByteArrayInputStream generatePdfFromHtmlFile(String htmlFilePath) throws IOException {
+	public ByteArrayInputStream generatePdfFromHtml(String htmlFilePath) throws IOException {
 
 		// 1. ClassPathResource를 사용해 resources 폴더의 파일을 찾습니다.
 		ClassPathResource resource = new ClassPathResource(htmlFilePath);

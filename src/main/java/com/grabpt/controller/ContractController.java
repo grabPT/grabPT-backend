@@ -61,7 +61,6 @@ public class ContractController {
 	@PostMapping("/contracts/{contractId}/submit")
 	public ApiResponse<String> generateAndSavePdf(@PathVariable Long contractId) {
 		try {
-			// 이제 서비스의 이 메소드 하나만 호출하면 모든 과정이 처리됩니다.
 			String fileUrl = contractService.generateAndSavePdfToS3(contractId);
 			return ApiResponse.onSuccess(fileUrl);
 		} catch (Exception e) {

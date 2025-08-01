@@ -2,12 +2,18 @@ package com.grabpt.repository.OrderRepository;
 
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.grabpt.domain.entity.Order;
+import com.grabpt.domain.enums.PaymentStatus;
+import com.grabpt.dto.response.MemberPaymentDto;
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
+
 	@Query("select o from Order o" +
 		" left join fetch o.payment p" +
 		" left join fetch o.user m" +
@@ -18,5 +24,42 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 		" left join fetch o.payment p" +
 		" where o.orderUid = :orderUid")
 	Optional<Order> findOrderAndPayment(String orderUid);
+
+	/** 트레이너 총 적립 금액 */
+	@Query("SELECT COALESCE(SUM(o.price), 0) FROM Order o " +
+		"JOIN o.matching m " +
+		"JOIN m.suggestion s " +
+		"WHERE s.proProfile.id = :proProfileId " +
+		"AND o.payment.status = :status")
+	Long getTrainerTotalEarnings(@Param("proProfileId") Long proProfileId,
+		@Param("status") PaymentStatus status);
+
+	/** 트레이너 총 결제 건수 */
+	@Query("SELECT COUNT(o) FROM Order o " +
+		"JOIN o.matching m " +
+		"JOIN m.suggestion s " +
+		"WHERE s.proProfile.id = :proProfileId " +
+		"AND o.payment.status = :status")
+	Long getTrainerTotalOrders(@Param("proProfileId") Long proProfileId,
+		@Param("status") PaymentStatus status);
+
+	/** 회원 결제 내역 (페이징) */
+	@Query("SELECT new com.grabpt.dto.response.MemberPaymentDto(" +
+		"u.nickname, " +
+		"r.sessionCount, " +
+		"o.price, " +
+		"o.price, " +
+		"o.createdAt) " +
+		"FROM Order o " +
+		"JOIN o.matching m " +
+		"JOIN m.suggestion s " +
+		"JOIN m.requestion r " +
+		"JOIN r.user u " +
+		"WHERE s.proProfile.id = :proProfileId " +
+		"AND o.payment.status = :status " +
+		"ORDER BY o.createdAt DESC")
+	Page<MemberPaymentDto> getMemberPayments(@Param("proProfileId") Long proProfileId,
+		@Param("status") PaymentStatus status,
+		Pageable pageable);
 
 }

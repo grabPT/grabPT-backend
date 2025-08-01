@@ -3,6 +3,7 @@ package com.grabpt.controller;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -12,7 +13,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.grabpt.apiPayload.ApiResponse;
 import com.grabpt.apiPayload.code.status.ErrorStatus;
@@ -46,31 +49,60 @@ public class AuthController {
 	private final UserDetailsService userDetailsService;
 	private final AuthService authService;
 
-	@Operation(
-		summary = "User 회원가입 요청",
-		description = "회원가입에 필요한 정보 전달 시 DB 저장 및 JWT 토큰 생성 후 반환, access, refresh 토큰은 쿠키로 전달"
-	)
-	// 최종 회원가입
-	@PostMapping("/user-signup")
-	public ApiResponse<String> user_signup(@RequestBody SignupRequest.UserSignupRequestDto signupRequest,
+	@Operation(summary = "User 회원가입 요청 (Multipart)",
+		description = "JSON 데이터와 프로필 이미지를 동시에 전송하는 회원가입")
+	@PostMapping(value = "/user-signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ApiResponse<String> userSignup(
+		@RequestPart("data") SignupRequest.UserSignupRequestDto signupRequest,
+		@RequestPart(value = "profileImage", required = false) MultipartFile profileImage,
 		HttpServletResponse response) {
-		authService.registerUser(signupRequest, response);
 
-		return ApiResponse.onSuccess("User 토큰 저장 완료");
+		authService.registerUser_photo(signupRequest, profileImage, response);
+		return ApiResponse.onSuccess("User 회원가입 완료");
 	}
 
-	@Operation(
-		summary = "Pro 회원가입 요청",
-		description = "회원가입에 필요한 정보 전달 시 DB 저장 및 JWT 토큰 생성 후 반환, access, refresh 토큰은 쿠키로 전달"
-	)
-	// 최종 회원가입
-	@PostMapping("/pro-signup")
-	public ApiResponse<String> pro_signup(@RequestBody SignupRequest.ProSignupRequestDto signupRequest,
+	@Operation(summary = "Pro 회원가입 요청 (Multipart)",
+		description = "JSON 데이터와 프로필 이미지를 동시에 전송하는 회원가입")
+	@PostMapping(value = "/pro-signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ApiResponse<String> proSignup(
+		@RequestPart("data") SignupRequest.ProSignupRequestDto signupRequest,
+		@RequestPart(value = "profileImage", required = false) MultipartFile profileImage,
 		HttpServletResponse response) {
-		authService.registerPro(signupRequest, response);
 
-		return ApiResponse.onSuccess("Pro 토큰 저장 완료");
+		authService.registerPro_photo(signupRequest, profileImage, response);
+		return ApiResponse.onSuccess("Pro 회원가입 완료");
 	}
+
+	// @Operation(
+	// 	summary = "User 회원가입 요청",
+	// 	description = "회원가입에 필요한 정보 전달 시 DB 저장 및 JWT 토큰 생성 후 반환, access, refresh 토큰은 쿠키로 전달"
+	// )
+	// // 최종 회원가입
+	// @PostMapping("/user-signup")
+	// public ApiResponse<String> user_signup(@RequestBody SignupRequest.UserSignupRequestDto signupRequest,
+	// 	HttpServletResponse response) {
+	// 	try {
+	// 		authService.registerUser(signupRequest, response);
+	// 		return ApiResponse.onSuccess("User 토큰 저장 완료");
+	// 	} catch (DataIntegrityViolationException ex) {
+	// 		log.error("중복 이메일 에러: {}", ex.getMessage());
+	// 		throw new AuthHandler(ErrorStatus.DUPLICATE_USER_EMAIL);
+	// 	}
+	//
+	// }
+	//
+	// @Operation(
+	// 	summary = "Pro 회원가입 요청",
+	// 	description = "회원가입에 필요한 정보 전달 시 DB 저장 및 JWT 토큰 생성 후 반환, access, refresh 토큰은 쿠키로 전달"
+	// )
+	// // 최종 회원가입
+	// @PostMapping("/pro-signup")
+	// public ApiResponse<String> pro_signup(@RequestBody SignupRequest.ProSignupRequestDto signupRequest,
+	// 	HttpServletResponse response) {
+	// 	authService.registerPro(signupRequest, response);
+	//
+	// 	return ApiResponse.onSuccess("Pro 토큰 저장 완료");
+	// }
 
 	// JWT 토큰 재발행
 	@Operation(

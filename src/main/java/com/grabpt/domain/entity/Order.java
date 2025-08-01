@@ -39,6 +39,10 @@ public class Order extends BaseEntity {
 	@JoinColumn(name = "payment_id")
 	private Payment payment;
 
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "matching_id")
+	private Matching matching; // 어떤 매칭에서 발생한 결제인지 (1:N)
+
 	@Builder
 	public Order(Long price, String itemName, String orderUid, Users user, Payment payment) {
 		this.price = price;

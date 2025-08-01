@@ -35,9 +35,6 @@ public class SignupRequest {
 		@Schema(description = "카테고리", example = "1")
 		private Long categoryId;
 
-		@Schema(description = "사용자가 입력한 프로필 이미지", example = "eoiaIOQJ2414kldsfPOVMIasd.png")
-		private String profileImageUrl;
-
 		@Schema(description = "oauth 인증 id", example = "google-12523512352351")
 		private String oauthId;
 
@@ -96,9 +93,6 @@ public class SignupRequest {
 
 		@Schema(description = "카테고리(프로는 하나)", example = "1")
 		private Long categoryId;
-
-		@Schema(description = "사용자가 입력한 프로필 이미지", example = "eoiaIOQJ2414kldsfPOVMIasd.png")
-		private String profileImageUrl;
 
 		@Schema(description = "oauth 인증 id", example = "google-12523512352351")
 		private String oauthId;

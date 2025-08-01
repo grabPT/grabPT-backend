@@ -49,6 +49,11 @@ public class AmazonS3Manager {
 		return amazonConfig.getUserPhoto() + '/' + uuid.getUuid();
 	}
 
+
+	public String generateProfilePhotoKeyName(Uuid uuid) {
+		return amazonConfig.getProfilePhoto() + '/' + uuid.getUuid();
+  }
+
 	/**
 	 * 서버에서 생성된 파일 스트림(InputStream)을 S3에 업로드합니다.
 	 * @param keyName S3에 저장될 파일의 전체 경로 및 이름

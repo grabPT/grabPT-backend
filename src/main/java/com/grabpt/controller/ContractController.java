@@ -54,9 +54,18 @@ public class ContractController {
 		return ApiResponse.onSuccess(contract.getId());
 	}
 
-	@Operation(description = "계약서 제출 및 저장")
-	@PostMapping("/contract/{contractId}/submit")
-	public void submitContract() {
-		//계약일 setting 및 pdf로 변환해서 s3저장
+	@Operation(
+		summary = "계약서 PDF 생성 및 S3 저장 API",
+		description = "계약서 ID를 받아 PDF를 생성하고 S3에 업로드한 뒤, 파일 URL을 DB에 저장합니다."
+	)
+	@PostMapping("/contracts/{contractId}/submit")
+	public ApiResponse<String> generateAndSavePdf(@PathVariable Long contractId) {
+		try {
+			String fileUrl = contractService.generateAndSavePdfToS3(contractId);
+			return ApiResponse.onSuccess(fileUrl);
+		} catch (Exception e) {
+			// 서비스에서 RuntimeException으로 예외를 던지므로, 여기서 잡아서 처리합니다.
+			return ApiResponse.onFailure("PDF_PROCESSING_ERROR", e.getMessage(), null);
+		}
 	}
 }

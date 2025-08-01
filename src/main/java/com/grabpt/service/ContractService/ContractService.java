@@ -8,5 +8,6 @@ public interface ContractService{
 	public Contract writeUserInfo(Long contractId, ContractRequest.ContractInfoDto request);
 	public Contract writeProInfo(Long contractId, ContractRequest.ContractInfoDto request);
 	public Contract findById(Long contractId);
+	public String generateAndSavePdfToS3(Long contractId);
 }
 

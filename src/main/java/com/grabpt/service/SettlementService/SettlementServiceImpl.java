@@ -3,7 +3,6 @@ package com.grabpt.service.SettlementService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.grabpt.domain.enums.MatchingStatus;
@@ -28,9 +27,9 @@ public class SettlementServiceImpl implements SettlementService {
 	public TrainerDashboardDto getTrainerDashboard(Long proProfileId, int page, int size) {
 		Long totalEarnings = orderRepository.getTrainerTotalEarnings(proProfileId, PaymentStatus.OK);
 		Long totalOrders = orderRepository.getTrainerTotalOrders(proProfileId, PaymentStatus.OK);
-		Long activeClients = matchingRepository.getActiveClients(proProfileId, MatchingStatus.MATCHED);
+		Long activeClients = matchingRepository.getActiveClients(proProfileId, MatchingStatus.COMPLETED);
 
-		Pageable pageable = PageRequest.of(page, size, Sort.by("paymentDate").descending());
+		Pageable pageable = PageRequest.of(page, size);
 		Page<MemberPaymentDto> memberPayments
 			= orderRepository.getMemberPayments(proProfileId, PaymentStatus.OK, pageable);
 

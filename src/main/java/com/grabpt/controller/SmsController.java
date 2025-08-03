@@ -20,7 +20,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/sms")
+@RequestMapping("/api/sms")
 @RequiredArgsConstructor
 public class SmsController {
 

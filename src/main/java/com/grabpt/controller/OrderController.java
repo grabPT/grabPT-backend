@@ -22,8 +22,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Controller
 @Slf4j
+@Controller
 @RequiredArgsConstructor
 public class OrderController {
 
@@ -84,7 +84,9 @@ public class OrderController {
 		String userEmail = userQueryService.getUserInfo(request).getEmail();
 		Users user = userQueryService.findByEmail(userEmail).get();
 		log.info("price = " + req.getPrice());
-		Order customOrder = orderService.customOrder(user, req.getPrice(), req.getItemName());
+
+		//  matchingId 전달
+		Order customOrder = orderService.customOrder(user, req.getPrice(), req.getItemName(), req.getMatchingId());
 
 		String message = "주문 실패";
 		if (customOrder != null) {

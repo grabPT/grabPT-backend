@@ -26,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping("/requestion")
+@RequestMapping("api/requestion")
 @RequiredArgsConstructor
 @Slf4j
 public class RequestionController {

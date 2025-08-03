@@ -44,11 +44,12 @@ public class Order extends BaseEntity {
 	private Matching matching; // 어떤 매칭에서 발생한 결제인지 (1:N)
 
 	@Builder
-	public Order(Long price, String itemName, String orderUid, Users user, Payment payment) {
+	public Order(Long price, String itemName, String orderUid, Users user, Payment payment, Matching matching) {
 		this.price = price;
 		this.itemName = itemName;
 		this.orderUid = orderUid;
 		this.user = user;
 		this.payment = payment;
+		this.matching = matching;
 	}
 }

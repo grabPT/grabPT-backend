@@ -73,6 +73,7 @@ public class ImPortRequestDto {
 	public static class CustomOrderRequestDto {
 		private Long price; // 결제 고유 번호
 		private String itemName; // 주문 고유 번호
+		private Long matchingId;
 	}
 
 	@Getter

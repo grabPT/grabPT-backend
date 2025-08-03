@@ -23,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping("/suggestion")
+@RequestMapping("/api/suggestion")
 @RequiredArgsConstructor
 @Slf4j
 public class SuggestionController {

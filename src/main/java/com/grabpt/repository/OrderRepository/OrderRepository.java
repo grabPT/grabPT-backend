@@ -49,15 +49,16 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 		"r.sessionCount, " +
 		"o.price, " +
 		"o.price, " +
-		"o.createdAt) " +
+		"p.createdAt) " +
 		"FROM Order o " +
+		"JOIN o.payment p " +
 		"JOIN o.matching m " +
 		"JOIN m.suggestion s " +
 		"JOIN m.requestion r " +
 		"JOIN r.user u " +
 		"WHERE s.proProfile.id = :proProfileId " +
-		"AND o.payment.status = :status " +
-		"ORDER BY o.createdAt DESC")
+		"AND p.status = :status " +
+		"ORDER BY p.createdAt DESC")
 	Page<MemberPaymentDto> getMemberPayments(@Param("proProfileId") Long proProfileId,
 		@Param("status") PaymentStatus status,
 		Pageable pageable);

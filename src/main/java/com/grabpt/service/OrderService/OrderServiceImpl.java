@@ -5,10 +5,12 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.grabpt.domain.entity.Matching;
 import com.grabpt.domain.entity.Order;
 import com.grabpt.domain.entity.Payment;
 import com.grabpt.domain.entity.Users;
 import com.grabpt.domain.enums.PaymentStatus;
+import com.grabpt.repository.MatchingRepository.MatchingRepository;
 import com.grabpt.repository.OrderRepository.OrderRepository;
 import com.grabpt.repository.PaymentRepository.PaymentRepository;
 
@@ -21,6 +23,7 @@ public class OrderServiceImpl implements OrderService {
 
 	private final OrderRepository orderRepository;
 	private final PaymentRepository paymentRepository;
+	private final MatchingRepository matchingRepository;
 
 	@Override
 	public Order order(Users users) {
@@ -45,7 +48,12 @@ public class OrderServiceImpl implements OrderService {
 	}
 
 	@Override
-	public Order customOrder(Users user, Long price, String itemName) {
+	public Order customOrder(Users user, Long price, String itemName, Long matchingId) {
+
+		// 매칭 조회
+		Matching matching = matchingRepository.findById(matchingId)
+			.orElseThrow(() -> new IllegalArgumentException("Matching not found with id: " + matchingId));
+
 		// 결제내역 생성
 		Payment payment = Payment.builder()
 			.price(price)
@@ -61,6 +69,7 @@ public class OrderServiceImpl implements OrderService {
 			.itemName(itemName)
 			.orderUid(UUID.randomUUID().toString())
 			.payment(payment)
+			.matching(matching)
 			.build();
 
 		return orderRepository.save(order);

@@ -36,6 +36,12 @@ public class RequestionRequestDto {
 	@Schema(description = "목적")
 	private List<String> purpose;
 
+	@Schema(description = "목적에 기타 선택 시 Context")
+	private String etcPurposeContent;
+
+	@Schema(description = "기타 세부사항")
+	private String content;
+
 	@NotNull
 	@Schema(description = "나이대", example = "20")
 	private String ageGroup;

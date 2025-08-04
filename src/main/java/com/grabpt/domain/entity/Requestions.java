@@ -70,6 +70,12 @@ public class Requestions extends BaseEntity {
 	@Column(name = "purpose")
 	private List<String> purpose = new ArrayList<>();
 
+	//사용자가 목적에 '기타'를 선택할 경우 input 값을 포함시켜 전송해야함
+	private String etcPurposeContent;
+
+	//기타 세부사항
+	private String content;
+
 	@Column(nullable = false)
 	private String ageGroup;
 

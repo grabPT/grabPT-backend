@@ -61,6 +61,8 @@ public class RequestionServiceImpl implements RequestionService {
 			.availableTimes(dto.getAvailableTimes())
 			.trainerGender(dto.getTrainerGender())
 			.startPreference(dto.getStartPreference())
+			.etcPurposeContent(dto.getEtcPurposeContent())
+			.content(dto.getContent())
 			.location(dto.getLocation())
 			.status(RequestStatus.MATCHING)
 			.build();

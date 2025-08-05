@@ -6,7 +6,6 @@ import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 
-import jakarta.servlet.http.Cookie;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,6 +23,7 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -123,7 +123,7 @@ public class JwtTokenProvider {
 			.setSubject(email)
 			.setIssuedAt(now)
 			.setExpiration(expiry)
-			.signWith(getSigningKey(), SignatureAlgorithm.HS512)
+			.signWith(getSigningKey(), SignatureAlgorithm.HS256)
 			.compact();
 	}
 

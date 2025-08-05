@@ -1,13 +1,15 @@
 package com.grabpt.service.SuggestionService;
 
-import java.time.LocalDateTime;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.stream.Collectors;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import com.grabpt.apiPayload.code.status.ErrorStatus;
 import com.grabpt.apiPayload.exception.handler.ProHandler;
 import com.grabpt.apiPayload.exception.handler.RequestionHandler;
@@ -81,6 +83,11 @@ public class SuggestionServiceImpl implements SuggestionService {
 		int suggestedPrice = suggestion.getPrice();
 		int discount = originalPrice - suggestedPrice;
 
+		// 사진 URL 추출
+		List<String> photoUrls = pro.getPhotos().stream()
+			.map(ProPhoto::getImageUrl)
+			.collect(Collectors.toList());
+
 		return SuggestionResponseDto.SuggestionDetailResponseDto.builder()
 			.nickname(user.getNickname())
 			.center(pro.getCenter())
@@ -91,9 +98,7 @@ public class SuggestionServiceImpl implements SuggestionService {
 			.isDiscounted(discount > 0)
 			.message(suggestion.getMessage())
 			.location(suggestion.getLocation())
-			.photoUrls(pro.getPhotos().stream()
-				.map(ProPhoto::getImageUrl)
-				.collect(Collectors.toList()))
+			.photoUrls(photoUrls) // 사진 포함
 			.build();
 	}
 

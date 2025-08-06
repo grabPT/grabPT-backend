@@ -77,13 +77,21 @@ public class ChatController {
 	}
 
 	@Operation(
-		description = "채팅방의 모든 메시지를 조회합니다. roomId를 pathVariable로 전달받습니다",
-		summary = "채팅방의 모든 메시지 조회 API"
+		description = "채팅방의 최근 메시지를 20개 조회합니다. roomId를 pathVariable로 전달받고, cursor id를 requestParam으로 받습니다",
+		summary = "채팅방의 메시지 20개 조회 API (cursor기반 기본값 0)"
 	)
 	@GetMapping("/chatRoom/{roomId}/messages")
 	@ResponseBody
-	public ApiResponse<List<ChatResponse.MessageResponseDto>> getMessagesByChatRoom(@PathVariable(name = "roomId") Long roomId){
-		return ApiResponse.onSuccess(chatService.getMessagesByChatRoom(roomId));
+	public ApiResponse<ChatResponse.MessageResponseByCursorDto> getMessagesByChatRoom(@PathVariable(name = "roomId") Long roomId,
+																					  @RequestParam(name = "cursor", required = false, defaultValue = "0") long cursor){
+		List<ChatResponse.MessageResponseDto> messageResponseDto = chatService.getMessagesByChatRoom(roomId, cursor);
+
+		ChatResponse.MessageResponseByCursorDto messageResponseByCursorDto = ChatResponse.MessageResponseByCursorDto.builder()
+			.cursor(messageResponseDto.get(messageResponseDto.size()-1).getMessageId())
+			.messages(messageResponseDto)
+			.build();
+
+		return ApiResponse.onSuccess(messageResponseByCursorDto);
 	}
 
 	@Operation(

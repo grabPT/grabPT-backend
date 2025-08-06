@@ -1,6 +1,7 @@
 package com.grabpt.repository.ChatRepository;
 
 import com.grabpt.domain.entity.Messages;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -9,8 +10,12 @@ import java.util.List;
 import java.util.Optional;
 
 public interface MessageRepository extends JpaRepository<Messages, Long> {
-	@Query("SELECT m FROM Messages m WHERE m.chatRoom.id = :roomId")
-	List<Messages> findAllByChatRoom(@Param("roomId") Long roomId);
+	@Query("""
+	SELECT m FROM Messages m WHERE m.chatRoom.id = :roomId
+	AND (:cursor = 0 OR m.id < :cursor)
+	ORDER BY m.id DESC
+	""")
+	List<Messages> findMessagesByCursor(@Param("roomId") Long roomId, @Param("cursor") Long cursor, Pageable pageable);
 
 	Optional<Messages> findTopByChatRoom_IdOrderByIdDesc(Long roomId); //가장 최근 메시지
 
@@ -24,9 +29,7 @@ public interface MessageRepository extends JpaRepository<Messages, Long> {
     AND m.id > :lastReadMessageId
     """)
 	Long countByRoomIdAndIdGreaterThan(
-		@Param("roomId") Long roomId,
-		@Param("lastReadMessageId") Long lastReadMessageId
-	);
+		@Param("roomId") Long roomId, @Param("lastReadMessageId") Long lastReadMessageId);
 
 	@Query("SELECT m FROM Messages m WHERE m.chatRoom.id = :roomId AND m.readCount = 1 AND m.sender.id <> :userId")
 	List<Messages> findUnreadMessages(@Param("roomId") Long roomId, @Param("userId") Long userId);

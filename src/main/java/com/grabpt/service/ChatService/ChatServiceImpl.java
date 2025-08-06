@@ -13,6 +13,9 @@ import com.grabpt.repository.ChatRepository.UserChatRoomRepository;
 import com.grabpt.repository.UserRepository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -97,8 +100,13 @@ public class ChatServiceImpl implements ChatService{
 	}
 
 	@Override
-	public List<ChatResponse.MessageResponseDto> getMessagesByChatRoom(Long roomId) {
-		List<Messages> messagesByChatRoom = messageRepository.findAllByChatRoom(roomId);
+	public List<ChatResponse.MessageResponseDto> getMessagesByChatRoom(Long roomId, Long cursor) {
+		if(cursor == null){
+			cursor = 0L;
+		}
+		Pageable pageable = PageRequest.of(0, 20);
+
+		List<Messages> messagesByChatRoom = messageRepository.findMessagesByCursor(roomId, cursor, pageable);
 		List<ChatResponse.MessageResponseDto> messageResponseDto = messagesByChatRoom.stream().map(
 			message-> ChatConverter.toMessageResponseDto(message)).collect(Collectors.toList());
 		return messageResponseDto;

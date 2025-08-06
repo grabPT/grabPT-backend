@@ -1,7 +1,9 @@
 package com.grabpt.controller;
 
 import org.springframework.data.domain.Page;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -84,5 +86,40 @@ public class SuggestionController {
 	) throws IllegalAccessException {
 		Page<SuggestionResponseDto.MySuggestionPagingDto> response = suggestionService.getMySuggestions(request, page);
 		return ApiResponse.onSuccess(response);
+	}
+
+	@PatchMapping("/{suggestionId}")
+	@Operation(
+		summary = "제안서 수정 API",
+		description = "작성자가 본인의 제안서를 수정합니다."
+	)
+	public ApiResponse<String> updateSuggestion(
+		@PathVariable Long suggestionId,
+		@RequestBody SuggestionRequestDto dto,
+		HttpServletRequest request
+	) throws IllegalAccessException {
+
+		UserResponseDto.UserInfoDTO userInfo = userQueryService.getUserInfo(request);
+		String email = userInfo.getEmail();
+
+		suggestionService.updateSuggestion(suggestionId, dto, email);
+		return ApiResponse.onSuccess("제안서가 성공적으로 수정되었습니다.");
+	}
+
+	@DeleteMapping("/{suggestionId}")
+	@Operation(
+		summary = "제안서 삭제 API",
+		description = "작성자가 본인의 제안서를 삭제합니다."
+	)
+	public ApiResponse<String> deleteSuggestion(
+		@PathVariable Long suggestionId,
+		HttpServletRequest request
+	) throws IllegalAccessException {
+
+		UserResponseDto.UserInfoDTO userInfo = userQueryService.getUserInfo(request);
+		String email = userInfo.getEmail();
+
+		suggestionService.deleteSuggestion(suggestionId, email);
+		return ApiResponse.onSuccess("제안서가 성공적으로 삭제되었습니다.");
 	}
 }

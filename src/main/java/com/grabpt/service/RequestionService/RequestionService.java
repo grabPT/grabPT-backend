@@ -21,4 +21,13 @@ public interface RequestionService {
 	Page<RequestionResponseDto.RequestionResponsePagingDto> getNearbyRequestions(
 		HttpServletRequest request, String sortBy, Pageable pageable) throws
 		IllegalAccessException;
+
+	void update(Long requestionId, RequestionRequestDto dto, String email);
+
+	void delete(Long requestionId, String email);
+
+	// RequestionService.java
+	Page<RequestionResponseDto.UserOwnRequestionDto> getRequestionsByUser(HttpServletRequest request,
+		Pageable pageable) throws IllegalAccessException;
+
 }

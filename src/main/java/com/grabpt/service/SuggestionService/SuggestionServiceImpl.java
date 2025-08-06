@@ -130,4 +130,36 @@ public class SuggestionServiceImpl implements SuggestionService {
 			.status(s.getRequestion().getStatus())
 			.build());
 	}
+
+	@Override
+	@Transactional
+	public void updateSuggestion(Long suggestionId, SuggestionRequestDto dto, String email) {
+		// 작성자 검증
+		Suggestions suggestion = suggestionRepository.findById(suggestionId)
+			.orElseThrow(() -> new SuggestionHandler(ErrorStatus.SUGGESTION_NOT_FOUND));
+
+		if (!suggestion.getProProfile().getUser().getEmail().equals(email)) {
+			throw new SuggestionHandler(ErrorStatus.INVALID_PRO); // 작성자 아님
+		}
+
+		// 값 변경
+		suggestion.setPrice(dto.getPrice());
+		suggestion.setSessionCount(dto.getSessionCount());
+		suggestion.setMessage(dto.getMessage());
+		suggestion.setLocation(dto.getLocation());
+		suggestion.setSentAt(dto.getSentAt() != null ? dto.getSentAt() : LocalDate.now());
+		suggestion.setIsAgreed(dto.getIsAgreed() != null ? dto.getIsAgreed() : false);
+	}
+
+	@Override
+	public void deleteSuggestion(Long suggestionId, String email) {
+		Suggestions suggestion = suggestionRepository.findById(suggestionId)
+			.orElseThrow(() -> new SuggestionHandler(ErrorStatus.SUGGESTION_NOT_FOUND));
+
+		if (!suggestion.getProProfile().getUser().getEmail().equals(email)) {
+			throw new SuggestionHandler(ErrorStatus.INVALID_PRO);
+		}
+
+		suggestionRepository.delete(suggestion);
+	}
 }

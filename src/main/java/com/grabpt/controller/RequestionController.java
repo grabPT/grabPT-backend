@@ -3,7 +3,9 @@ package com.grabpt.controller;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -76,6 +78,53 @@ public class RequestionController {
 		Pageable pageable = PageRequest.of(Math.max(page - 1, 0), size);
 		Page<RequestionResponseDto.RequestionResponsePagingDto> response =
 			requestionService.getNearbyRequestions(request, sortBy, pageable);
+		return ApiResponse.onSuccess(response);
+	}
+
+	@PatchMapping("/{requestionId}")
+	@Operation(
+		summary = "요청서 수정 API",
+		description = "사용자가 본인의 요청서를 수정합니다."
+	)
+	public ApiResponse<String> updateRequestion(
+		@PathVariable Long requestionId,
+		@RequestBody RequestionRequestDto dto,
+		HttpServletRequest request
+	) throws IllegalAccessException {
+		UserResponseDto.UserInfoDTO userInfo = userQueryService.getUserInfo(request);
+		String email = userInfo.getEmail();
+
+		requestionService.update(requestionId, dto, email);
+		return ApiResponse.onSuccess("요청서가 성공적으로 수정되었습니다.");
+	}
+
+	@DeleteMapping("/{requestionId}")
+	@Operation(
+		summary = "요청서 삭제 API",
+		description = "사용자가 본인의 요청서를 삭제합니다."
+	)
+	public ApiResponse<String> deleteRequestion(
+		@PathVariable Long requestionId,
+		HttpServletRequest request
+	) throws IllegalAccessException {
+		UserResponseDto.UserInfoDTO userInfo = userQueryService.getUserInfo(request);
+		String email = userInfo.getEmail();
+
+		requestionService.delete(requestionId, email);
+		return ApiResponse.onSuccess("요청서가 성공적으로 삭제되었습니다.");
+	}
+
+	// RequestionController.java
+	@GetMapping("/my")
+	@Operation(summary = "내 요청서 목록 조회 API", description = "회원이 본인이 작성한 요청서 목록을 조회합니다.")
+	public ApiResponse<Page<RequestionResponseDto.UserOwnRequestionDto>> getMyRequestions(
+		@RequestParam(defaultValue = "1") int page,
+		@RequestParam(defaultValue = "3") int size,
+		HttpServletRequest request
+	) throws IllegalAccessException {
+		Pageable pageable = PageRequest.of(Math.max(page - 1, 0), size);
+		Page<RequestionResponseDto.UserOwnRequestionDto> response = requestionService.getRequestionsByUser(request,
+			pageable);
 		return ApiResponse.onSuccess(response);
 	}
 

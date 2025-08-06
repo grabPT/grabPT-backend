@@ -9,6 +9,8 @@ public class UserConverter {
 		return UserResponseDto.UserInfoDTO.builder()
 			.name(user.getNickname())
 			.email(user.getEmail())
+			.userId(user.getId())
+			.role(user.getRole().toString())
 			.build();
 	}
 }

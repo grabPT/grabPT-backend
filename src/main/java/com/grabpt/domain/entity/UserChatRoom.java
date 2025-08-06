@@ -40,6 +40,7 @@ public class UserChatRoom extends BaseEntity {
 	@JoinColumn(name = "other_user_id", nullable = false)
 	private Users otherUser;
 
+	private Long unreadCount;
 	private String roomName;
 	private Long lastReadMessageId; // 마지막으로 읽은 메시지 ID 저장
 	private LocalDateTime lastReadAt;

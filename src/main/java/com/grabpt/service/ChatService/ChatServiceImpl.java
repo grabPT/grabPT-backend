@@ -124,7 +124,8 @@ public class ChatServiceImpl implements ChatService{
 		return chatRooms.stream()
 			.map(chatRoom -> {
 				Long roomId = chatRoom.getChatRoom().getId();
-				Long unreadCount = unreadMessageCount.getOrDefault(roomId, 0L);				return ChatConverter.toChatRoomPreviewDto(chatRoom, unreadCount);
+				Long unreadCount = unreadMessageCount.getOrDefault(roomId, 0L);
+				return ChatConverter.toChatRoomPreviewDto(chatRoom, unreadCount);
 			})
 			.toList();
 	}
@@ -135,6 +136,21 @@ public class ChatServiceImpl implements ChatService{
 	public Map<Long, Long> getUnreadMessageCount(List<Long> roomIds, Long userId){
 		return messageRepository.getUnreadCountMap(roomIds, userId);
 	}
+
+	@Override
+	public Long getAllUnreadMessageCount(Long userId){
+		Users user = userRepository.findById(userId)
+			.orElseThrow(() -> new UserHandler(ErrorStatus.MEMBER_NOT_FOUND));
+
+		List<UserChatRoom> chatRooms = userChatRoomRepository.findByUserId(userId, null);
+
+		List<Long> roomIds = chatRooms.stream()
+			.map(chatRoom -> chatRoom.getChatRoom().getId())
+			.toList();
+		Map<Long, Long> unreadMessageCount = getUnreadMessageCount(roomIds, userId);
+		return unreadMessageCount.values().stream().mapToLong(Long::longValue).sum();
+	}
+
 
 	//채팅방 접속상태에서 message 읽은 경우
 	@Override

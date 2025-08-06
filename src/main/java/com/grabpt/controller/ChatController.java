@@ -86,8 +86,13 @@ public class ChatController {
 																					  @RequestParam(name = "cursor", required = false, defaultValue = "0") long cursor){
 		List<ChatResponse.MessageResponseDto> messageResponseDto = chatService.getMessagesByChatRoom(roomId, cursor);
 
+		long newCursor = 0;
+		if (!messageResponseDto.isEmpty()) {
+			newCursor = messageResponseDto.get(messageResponseDto.size() - 1).getMessageId();
+		}
+
 		ChatResponse.MessageResponseByCursorDto messageResponseByCursorDto = ChatResponse.MessageResponseByCursorDto.builder()
-			.cursor(messageResponseDto.get(messageResponseDto.size()-1).getMessageId())
+			.cursor(newCursor)
 			.messages(messageResponseDto)
 			.build();
 
@@ -104,6 +109,16 @@ public class ChatController {
 																			  HttpServletRequest request) throws IllegalAccessException {
 		Long userId = userQueryService.getUserId(request);
 		return ApiResponse.onSuccess(chatService.getChatRoomList(userId, keyword));
+	}
+	@Operation(
+		summary = "유저의 전체 안읽은 메시지 개수 조회"
+	)
+	@GetMapping("chat/unreadCount")
+	@ResponseBody
+	public ApiResponse<Long> getUnreadCount(HttpServletRequest request) throws IllegalAccessException {
+		Long userId = userQueryService.getUserId(request);
+		Long allUnreadMessageCount = chatService.getAllUnreadMessageCount(userId);
+		return ApiResponse.onSuccess(allUnreadMessageCount);
 	}
 
 	@GetMapping("/chat-test")

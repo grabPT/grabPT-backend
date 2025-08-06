@@ -21,10 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -119,28 +116,24 @@ public class ChatServiceImpl implements ChatService{
 
 		List<UserChatRoom> chatRooms = userChatRoomRepository.findByUserId(userId, keyword);
 
+		List<Long> roomIds = chatRooms.stream()
+			.map(chatRoom -> chatRoom.getChatRoom().getId())
+			.toList();
+		Map<Long, Long> unreadMessageCount = getUnreadMessageCount(roomIds, userId);
+
 		return chatRooms.stream()
 			.map(chatRoom -> {
-				Long unreadCount = getUnreadMessageCount(chatRoom.getChatRoom().getId(), userId);
-				return ChatConverter.toChatRoomPreviewDto(chatRoom, unreadCount);
+				Long roomId = chatRoom.getChatRoom().getId();
+				Long unreadCount = unreadMessageCount.getOrDefault(roomId, 0L);				return ChatConverter.toChatRoomPreviewDto(chatRoom, unreadCount);
 			})
 			.toList();
-	}
-
-	//Message Count 관련
-	//채팅방에서 유저가 마지막으로 읽은 메시지의 아이디 가져옴
-	@Override
-	public Long getLastReadMessageId(Long roomId, Long userId){
-		UserChatRoom chatRoom = userChatRoomRepository.findByRoomIdAndUserId(roomId, userId).orElseThrow(
-			() -> new ChatHandler(ErrorStatus.CHATROOM_NOT_FOUND));
-		return chatRoom.getLastReadMessageId();
 	}
 
 
 	//상대가 보낸 메시지중 lastReadMessageId보다 큰 메시지 수
 	@Override
-	public Long getUnreadMessageCount(Long roomId, Long userId){
-		return messageRepository.countUnreadMessages(roomId, userId);
+	public Map<Long, Long> getUnreadMessageCount(List<Long> roomIds, Long userId){
+		return messageRepository.getUnreadCountMap(roomIds, userId);
 	}
 
 	//채팅방 접속상태에서 message 읽은 경우

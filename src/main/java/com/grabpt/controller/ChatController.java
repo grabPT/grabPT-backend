@@ -108,7 +108,6 @@ public class ChatController {
 
 	@GetMapping("/chat-test")
 	public String chatTest(HttpServletRequest request) throws IllegalAccessException {
-		String email = userQueryService.getUserInfo(request).getEmail();
 		return "chat-test";
 	}
 }

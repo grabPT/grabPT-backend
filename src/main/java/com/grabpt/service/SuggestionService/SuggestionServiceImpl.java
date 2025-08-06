@@ -56,6 +56,7 @@ public class SuggestionServiceImpl implements SuggestionService {
 
 		Suggestions suggestion = Suggestions.builder()
 			.price(dto.getPrice())
+			.sessionCount(dto.getSessionCount())
 			.message(dto.getMessage())
 			.location(dto.getLocation())
 			.sentAt(dto.getSentAt() != null ? dto.getSentAt() : LocalDate.now())

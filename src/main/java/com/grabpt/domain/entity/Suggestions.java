@@ -48,6 +48,8 @@ public class Suggestions extends BaseEntity {
 	@Column(nullable = false)
 	private Integer price;
 
+	private Integer sessionCount;
+
 	@Column(nullable = false)
 	private String message;
 

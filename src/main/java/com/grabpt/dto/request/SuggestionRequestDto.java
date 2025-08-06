@@ -28,6 +28,10 @@ public class SuggestionRequestDto {
 	private Integer price;
 
 	@NotNull
+	@Schema(description = "회차", example = "1")
+	private Integer sessionCount;
+
+	@NotNull
 	@Schema(description = "제안서에 들어갈 설명", example = "안녕하세요, 반갑습니다.")
 	private String message;
 

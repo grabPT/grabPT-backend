@@ -99,6 +99,7 @@ public class RequestionServiceImpl implements RequestionService {
 		}
 
 		return requestionPage.map(req -> {
+			Users user = req.getUser();
 			String username = req.getUser().getNickname();
 			String userStreet = req.getLocation(); // Requestions 주소 기준으로 수정하였습니다
 
@@ -108,7 +109,61 @@ public class RequestionServiceImpl implements RequestionService {
 				.sessionCount(req.getSessionCount())
 				.price(req.getPrice())
 				.status(req.getStatus())
+				.userProfileImageUrl(user.getProfileImageUrl())
+				.requestionId(req.getId())
 				.build();
 		});
+	}
+
+	@Override
+	@Transactional
+	public void update(Long requestionId, RequestionRequestDto dto, String email) {
+		Requestions requestion = requestionRepository.findById(requestionId)
+			.orElseThrow(() -> new RequestionHandler(ErrorStatus.REQUESTION_NOT_FOUND));
+
+		if (!requestion.getUser().getEmail().equals(email)) {
+			throw new RequestionHandler(ErrorStatus.INVALID_USER); // 작성자 아님
+		}
+
+		Category category = categoryRepository.findById(dto.getCategoryId())
+			.orElseThrow(() -> new RequestionHandler(ErrorStatus.CATEGORY_NOT_FOUND));
+
+		// 값 변경
+		requestion.setCategory(category);
+		requestion.setPrice(dto.getPrice());
+		requestion.setSessionCount(dto.getSessionCount());
+		requestion.setPurpose(dto.getPurpose());
+		requestion.setEtcPurposeContent(dto.getEtcPurposeContent());
+		requestion.setContent(dto.getContent());
+		requestion.setAgeGroup(dto.getAgeGroup());
+		requestion.setUserGender(dto.getUserGender());
+		requestion.setAvailableDays(dto.getAvailableDays());
+		requestion.setAvailableTimes(dto.getAvailableTimes());
+		requestion.setTrainerGender(dto.getTrainerGender());
+		requestion.setStartPreference(dto.getStartPreference());
+		requestion.setLocation(dto.getLocation());
+	}
+
+	@Override
+	public void delete(Long requestionId, String email) {
+		Requestions requestion = requestionRepository.findById(requestionId)
+			.orElseThrow(() -> new RequestionHandler(ErrorStatus.REQUESTION_NOT_FOUND));
+
+		if (!requestion.getUser().getEmail().equals(email)) {
+			throw new RequestionHandler(ErrorStatus.INVALID_USER);
+		}
+
+		requestionRepository.delete(requestion);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Page<RequestionResponseDto.UserOwnRequestionDto> getRequestionsByUser(HttpServletRequest request,
+		Pageable pageable) throws IllegalAccessException {
+		UserResponseDto.UserInfoDTO userInfo = userQueryService.getUserInfo(request);
+		String email = userInfo.getEmail();
+
+		Page<Requestions> requestions = requestionRepository.findAllByUserEmail(email, pageable);
+		return requestions.map(RequestionResponseDto.UserOwnRequestionDto::from);
 	}
 }

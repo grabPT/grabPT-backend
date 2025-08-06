@@ -124,4 +124,17 @@ public class Requestions extends BaseEntity {
 			user.addRequestion(this);
 		}
 	}
+
+	public void setPurpose(List<String> purpose) {
+		this.purpose = new ArrayList<>(purpose);
+	}
+
+	public void setAvailableDays(List<String> availableDays) {
+		this.availableDays = new ArrayList<>(availableDays);
+	}
+
+	public void setAvailableTimes(List<String> availableTimes) {
+		this.availableTimes = new ArrayList<>(availableTimes);
+	}
+
 }

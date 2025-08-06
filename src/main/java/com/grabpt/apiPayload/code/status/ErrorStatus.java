@@ -48,7 +48,7 @@ public enum ErrorStatus implements BaseErrorCode {
 
 	REQUESTION_NOT_FOUND(HttpStatus.BAD_REQUEST, "REQ4001", "존재하지 않는 요청서입니다."),
 
-	SUGGESTION_NOT_FOUND(HttpStatus.BAD_REQUEST, "SUG4001", "존재하지 않는 지원서입니다."),
+	SUGGESTION_NOT_FOUND(HttpStatus.BAD_REQUEST, "SUGG4001", "존재하지 않는 지원서입니다."),
 
 	REQUESTION_ALREADY_MATCHED(HttpStatus.BAD_REQUEST, "REQ4002", "요청서가 이미 매치되었습니다."),
 
@@ -61,6 +61,11 @@ public enum ErrorStatus implements BaseErrorCode {
 	PROFILE_NOT_FOUND(HttpStatus.BAD_REQUEST, "PROF4001", "프로필이 존재하지 않습니다"),
 
 	DUPLICATE_USER_EMAIL(HttpStatus.BAD_REQUEST, "AUTH4003", "이미 가입된 이메일입니다."),
+
+	INVALID_PRO(HttpStatus.BAD_REQUEST, "SUGG4002", "제안서를 등록한 트레이너와 다른 유저입니다."),
+
+	INVALID_USER(HttpStatus.BAD_REQUEST, "SUGG4002", "요청서를 등록한 유저와 다른 유저입니다."),
+
 	;
 
 	private final HttpStatus httpStatus;

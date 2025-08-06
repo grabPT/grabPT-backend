@@ -18,4 +18,9 @@ public interface SuggestionService {
 
 	Page<SuggestionResponseDto.MySuggestionPagingDto> getMySuggestions(HttpServletRequest request, int page) throws
 		IllegalAccessException;
+
+	void updateSuggestion(Long suggestionId, SuggestionRequestDto dto, String email);
+
+	void deleteSuggestion(Long suggestionId, String email);
+
 }

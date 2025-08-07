@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class ChatResponse {
 	@AllArgsConstructor
@@ -20,6 +21,16 @@ public class ChatResponse {
 		@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
 		LocalDateTime sendAt;
 		Integer readCount;
+	}
+
+	@AllArgsConstructor
+	@NoArgsConstructor
+	@Setter
+	@Getter
+	@Builder
+	public static class MessageResponseByCursorDto{
+		List<MessageResponseDto> messages;
+		Long cursor;
 	}
 
 	@AllArgsConstructor

@@ -11,6 +11,7 @@ import com.grabpt.domain.entity.*;
 import com.grabpt.domain.enums.MatchingStatus;
 import com.grabpt.dto.request.ContractRequest;
 import com.grabpt.repository.ContractRepository.ContractRepository;
+import com.grabpt.service.AlarmService.AlarmService;
 import com.grabpt.service.PdfService.PdfGenerateService;
 
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ import org.thymeleaf.context.Context;
 @RequiredArgsConstructor
 public class ContractServiceImpl implements ContractService {
 	private final ContractRepository contractRepository;
+	private final AlarmService alarmService;
 	private final PdfGenerateService pdfGenerateService;
 	private final TemplateEngine templateEngine;
 	private final AmazonS3Manager amazonS3Manager;
@@ -59,7 +61,11 @@ public class ContractServiceImpl implements ContractService {
 		userInfo.setBirth(request.getBirth());
 		userInfo.setGender(request.getGender());
 		userInfo.setPhoneNumber(request.getPhoneNumber());
-		contract.setUserInfo(userInfo);
+		contract.setProInfo(userInfo); //수정
+
+		Long userId = contract.getMatching().getRequestion().getUser().getId(); //너무 길긴 함
+		alarmService.sendAlarm(userId, "CONTRACT", "계약서 작성 완료",
+			"계약서 작성이 완료되었어요. 결제를 진행해주세요", "/contract/"+contractId);
 		return contract;
 	}
 

@@ -3,6 +3,7 @@ package com.grabpt.service.PaymentService;
 import java.io.IOException;
 import java.math.BigDecimal;
 
+import com.grabpt.service.AlarmService.AlarmService;
 import org.springframework.stereotype.Service;
 
 import com.grabpt.domain.entity.Order;
@@ -27,6 +28,7 @@ public class PaymentServiceImpl implements PaymentService {
 	private final OrderRepository orderRepository;
 	private final PaymentRepository paymentRepository;
 	private final IamportClient iamportClient;
+	private final AlarmService alarmService;
 
 	@Override // 결제 정보 확인 및 검증
 	public IamportResponse<Payment> paymentByCallback(ImPortRequestDto.PaymentCallbackRequest request) {
@@ -69,6 +71,9 @@ public class PaymentServiceImpl implements PaymentService {
 			// 결제 상태 변경
 			order.getPayment().changePaymentBySuccess(PaymentStatus.OK, iamportResponse.getResponse().getImpUid());
 
+			Long userId = order.getUser().getId();
+			alarmService.sendAlarm(userId, "PAYMENT", "결제 완료",
+				"결제가 성공적으로 완료되었습니다.", "/success-payment");
 			return iamportResponse;
 
 		} catch (IamportResponseException e) {

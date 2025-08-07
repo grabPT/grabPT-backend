@@ -109,6 +109,7 @@ cloud:
         proPhoto: proPhoto
         userPhoto: userPhoto
         profilePhoto: profilePhoto
+        suggestionPhoto: suggestionPhoto
         test: test
     region:
       static: ap-northeast-2

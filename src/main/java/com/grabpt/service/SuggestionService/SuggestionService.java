@@ -1,6 +1,9 @@
 package com.grabpt.service.SuggestionService;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.grabpt.domain.entity.Suggestions;
 import com.grabpt.dto.request.SuggestionRequestDto;
@@ -10,7 +13,9 @@ import jakarta.servlet.http.HttpServletRequest;
 
 public interface SuggestionService {
 
-	Suggestions save(SuggestionRequestDto dto, String email);
+	// Suggestions save(SuggestionRequestDto dto, String email);
+
+	Suggestions save(SuggestionRequestDto dto, String email, List<MultipartFile> photos);
 
 	SuggestionResponseDto.SuggestionDetailResponseDto getDetail(Long suggestionId);
 

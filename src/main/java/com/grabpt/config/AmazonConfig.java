@@ -43,6 +43,9 @@ public class AmazonConfig {
 	@Value("${cloud.aws.s3.path.profilePhoto}")
 	private String profilePhoto;
 
+	@Value("${cloud.aws.s3.path.suggestionPhoto}")
+	private String suggestionPhoto;
+
 	@Value("${cloud.aws.s3.path.test}")
 	private String test;
 

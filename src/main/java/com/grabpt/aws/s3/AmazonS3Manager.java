@@ -49,10 +49,13 @@ public class AmazonS3Manager {
 		return amazonConfig.getUserPhoto() + '/' + uuid.getUuid();
 	}
 
-
 	public String generateProfilePhotoKeyName(Uuid uuid) {
 		return amazonConfig.getProfilePhoto() + '/' + uuid.getUuid();
-  }
+	}
+
+	public String generateSuggestionPhotoKeyName(Uuid uuid) {
+		return amazonConfig.getSuggestionPhoto() + '/' + uuid.getUuid();
+	}
 
 	/**
 	 * 서버에서 생성된 파일 스트림(InputStream)을 S3에 업로드합니다.
@@ -72,7 +75,7 @@ public class AmazonS3Manager {
 				new PutObjectRequest(amazonConfig.getBucket(), keyName, inputStream, metadata)
 			);
 		} catch (Exception e) {
-			log.error("S3에 InputStream 업로드 중 오류 발생 : {}", (Object) e.getStackTrace());
+			log.error("S3에 InputStream 업로드 중 오류 발생 : {}", (Object)e.getStackTrace());
 			throw new RuntimeException("S3에 파일 업로드 중 오류가 발생했습니다.", e);
 		}
 

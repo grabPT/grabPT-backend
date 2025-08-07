@@ -111,6 +111,8 @@ public class RequestionServiceImpl implements RequestionService {
 				.status(req.getStatus())
 				.userProfileImageUrl(user.getProfileImageUrl())
 				.requestionId(req.getId())
+				.content(req.getContent())
+				.etcPurposeContent(req.getEtcPurposeContent())
 				.build();
 		});
 	}
@@ -165,5 +167,13 @@ public class RequestionServiceImpl implements RequestionService {
 
 		Page<Requestions> requestions = requestionRepository.findAllByUserEmail(email, pageable);
 		return requestions.map(RequestionResponseDto.UserOwnRequestionDto::from);
+	}
+
+	@Override
+	public boolean canEditRequestion(Long requestionId, String email) {
+		Requestions requestion = requestionRepository.findById(requestionId)
+			.orElseThrow(() -> new RequestionHandler(ErrorStatus.REQUESTION_NOT_FOUND));
+
+		return requestion.getUser().getEmail().equals(email);
 	}
 }

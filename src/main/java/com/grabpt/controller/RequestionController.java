@@ -1,5 +1,8 @@
 package com.grabpt.controller;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -42,14 +45,19 @@ public class RequestionController {
 		description = "작성한 요청서를 저장"
 	)
 	@PostMapping
-	public ApiResponse<String> setRequestion(@RequestBody RequestionRequestDto dto,
+	public ApiResponse<RequestionResponseDto.RequestionSaveResponseDto> setRequestion(
+		@RequestBody RequestionRequestDto dto,
 		HttpServletRequest request) throws IllegalAccessException {
 
 		UserResponseDto.UserInfoDTO userInfo = userQueryService.getUserInfo(request);
 		String email = userInfo.getEmail();
 		Requestions saved = requestionService.save(dto, email);
 
-		return ApiResponse.onSuccess(saved.getId().toString() + "저장 완료");
+		return ApiResponse.onSuccess(
+			RequestionResponseDto.RequestionSaveResponseDto.builder()
+				.requestionId(saved.getId())
+				.build()
+		);
 	}
 
 	@GetMapping("/{requestionId}")
@@ -125,6 +133,22 @@ public class RequestionController {
 		Pageable pageable = PageRequest.of(Math.max(page - 1, 0), size);
 		Page<RequestionResponseDto.UserOwnRequestionDto> response = requestionService.getRequestionsByUser(request,
 			pageable);
+		return ApiResponse.onSuccess(response);
+	}
+
+	@GetMapping("/{requestionId}/requestion-can-edit")
+	@Operation(summary = "요청서 수정 가능 여부 확인", description = "현재 로그인한 사용자가 요청서를 작성했는지 확인합니다.")
+	public ApiResponse<Map<String, Boolean>> canEditRequestion(
+		@PathVariable Long requestionId,
+		HttpServletRequest request
+	) throws IllegalAccessException {
+		UserResponseDto.UserInfoDTO userInfo = userQueryService.getUserInfo(request);
+		String email = userInfo.getEmail();
+
+		boolean canEdit = requestionService.canEditRequestion(requestionId, email);
+
+		Map<String, Boolean> response = new HashMap<>();
+		response.put("canEdit", canEdit);
 		return ApiResponse.onSuccess(response);
 	}
 

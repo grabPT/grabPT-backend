@@ -26,8 +26,9 @@ public interface RequestionService {
 
 	void delete(Long requestionId, String email);
 
-	// RequestionService.java
 	Page<RequestionResponseDto.UserOwnRequestionDto> getRequestionsByUser(HttpServletRequest request,
 		Pageable pageable) throws IllegalAccessException;
+
+	boolean canEditRequestion(Long requestionId, String email);
 
 }

@@ -149,8 +149,8 @@ public class RequestionResponseDto {
 		if (gender == null)
 			return null;
 		return switch (gender) {
-			case MALE -> "남성";
-			case FEMALE -> "여성";
+			case MALE -> "남자";
+			case FEMALE -> "여자";
 		};
 	}
 }

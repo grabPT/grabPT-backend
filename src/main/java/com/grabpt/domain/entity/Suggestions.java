@@ -1,12 +1,15 @@
 package com.grabpt.domain.entity;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
 import com.grabpt.domain.common.BaseEntity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -15,6 +18,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -45,6 +49,9 @@ public class Suggestions extends BaseEntity {
 	@JoinColumn(name = "pro_profile_id")
 	private ProProfile proProfile;
 
+	@OneToMany(mappedBy = "suggestion", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<SuggestionPhoto> photos = new ArrayList<>();
+
 	@Column(nullable = false)
 	private Integer price;
 
@@ -73,5 +80,10 @@ public class Suggestions extends BaseEntity {
 		if (requestion != null && !requestion.getSuggestions().contains(this)) {
 			requestion.addSuggestion(this);
 		}
+	}
+
+	public void addPhoto(SuggestionPhoto photo) {
+		this.photos.add(photo);
+		photo.setSuggestion(this);
 	}
 }

@@ -1,9 +1,11 @@
 package com.grabpt.controller;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.data.domain.Page;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -12,7 +14,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.grabpt.apiPayload.ApiResponse;
 import com.grabpt.domain.entity.Suggestions;
@@ -36,19 +40,41 @@ public class SuggestionController {
 	private final SuggestionService suggestionService;
 	private final UserQueryService userQueryService;
 
+	// @Operation(
+	// 	summary = "제안서 저장 API",
+	// 	description = "트레이너가 보낸 제안서를 저장합니다."
+	// )
+	// @PostMapping
+	// public ApiResponse<SuggestionResponseDto.SuggestionSaveResponseDto> setSuggestion(
+	// 	@RequestBody SuggestionRequestDto dto,
+	// 	HttpServletRequest request) throws IllegalAccessException {
+	//
+	// 	UserResponseDto.UserInfoDTO userInfo = userQueryService.getUserInfo(request);
+	// 	String email = userInfo.getEmail();  // 현재 로그인한 트레이너 이메일
+	//
+	// 	Suggestions saved = suggestionService.save(dto, email);
+	//
+	// 	return ApiResponse.onSuccess(
+	// 		SuggestionResponseDto.SuggestionSaveResponseDto.builder()
+	// 			.suggestionId(saved.getId())
+	// 			.build()
+	// 	);
+	// }
+
 	@Operation(
-		summary = "제안서 저장 API",
-		description = "트레이너가 보낸 제안서를 저장합니다."
+		summary = "제안서 저장 API (Multipart)",
+		description = "트레이너가 보낸 제안서를 저장합니다. JSON + 이미지 리스트 형식으로 전송하세요."
 	)
-	@PostMapping
+	@PostMapping(value = "", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ApiResponse<SuggestionResponseDto.SuggestionSaveResponseDto> setSuggestion(
-		@RequestBody SuggestionRequestDto dto,
+		@RequestPart("data") SuggestionRequestDto dto,
+		@RequestPart(value = "photos", required = false) List<MultipartFile> photos,
 		HttpServletRequest request) throws IllegalAccessException {
 
 		UserResponseDto.UserInfoDTO userInfo = userQueryService.getUserInfo(request);
 		String email = userInfo.getEmail();  // 현재 로그인한 트레이너 이메일
 
-		Suggestions saved = suggestionService.save(dto, email);
+		Suggestions saved = suggestionService.save(dto, email, photos);
 
 		return ApiResponse.onSuccess(
 			SuggestionResponseDto.SuggestionSaveResponseDto.builder()

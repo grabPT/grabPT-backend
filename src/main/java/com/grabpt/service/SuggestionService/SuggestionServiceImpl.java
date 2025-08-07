@@ -1,7 +1,9 @@
 package com.grabpt.service.SuggestionService;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -9,16 +11,19 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.grabpt.apiPayload.code.status.ErrorStatus;
 import com.grabpt.apiPayload.exception.handler.ProHandler;
 import com.grabpt.apiPayload.exception.handler.RequestionHandler;
 import com.grabpt.apiPayload.exception.handler.SuggestionHandler;
 import com.grabpt.apiPayload.exception.handler.UserHandler;
+import com.grabpt.aws.s3.AmazonS3Manager;
+import com.grabpt.aws.s3.Uuid;
 import com.grabpt.converter.SuggestionConverter;
-import com.grabpt.domain.entity.ProPhoto;
 import com.grabpt.domain.entity.ProProfile;
 import com.grabpt.domain.entity.Requestions;
+import com.grabpt.domain.entity.SuggestionPhoto;
 import com.grabpt.domain.entity.Suggestions;
 import com.grabpt.domain.entity.Users;
 import com.grabpt.dto.request.SuggestionRequestDto;
@@ -42,9 +47,36 @@ public class SuggestionServiceImpl implements SuggestionService {
 	private final ProProfileRepository proProfileRepository;
 	private final RequestionRepository requestionRepository;
 	private final UserQueryService userQueryService;
+	private final AmazonS3Manager amazonS3Manager;
+
+	// @Override
+	// public Suggestions save(SuggestionRequestDto dto, String email) {
+	// 	Users user = userRepository.findByEmail(email)
+	// 		.orElseThrow(() -> new UserHandler(ErrorStatus.MEMBER_NOT_FOUND));
+	//
+	// 	ProProfile proProfile = proProfileRepository.findByUser(user)
+	// 		.orElseThrow(() -> new ProHandler(ErrorStatus.PRO_NOT_FOUND));
+	//
+	// 	Requestions requestion = requestionRepository.findById(dto.getRequestionId())
+	// 		.orElseThrow(() -> new RequestionHandler(ErrorStatus.REQUESTION_NOT_FOUND));
+	//
+	// 	Suggestions suggestion = Suggestions.builder()
+	// 		.price(dto.getPrice())
+	// 		.sessionCount(dto.getSessionCount())
+	// 		.message(dto.getMessage())
+	// 		.location(dto.getLocation())
+	// 		.sentAt(dto.getSentAt() != null ? dto.getSentAt() : LocalDate.now())
+	// 		.isAgreed(dto.getIsAgreed() != null ? dto.getIsAgreed() : false)
+	// 		.build();
+	//
+	// 	suggestion.setProProfile(proProfile);   // 연관관계 설정
+	// 	suggestion.setRequestion(requestion);   // 연관관계 설정
+	//
+	// 	return suggestionRepository.save(suggestion);
+	// }
 
 	@Override
-	public Suggestions save(SuggestionRequestDto dto, String email) {
+	public Suggestions save(SuggestionRequestDto dto, String email, List<MultipartFile> photos) {
 		Users user = userRepository.findByEmail(email)
 			.orElseThrow(() -> new UserHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
@@ -61,10 +93,28 @@ public class SuggestionServiceImpl implements SuggestionService {
 			.location(dto.getLocation())
 			.sentAt(dto.getSentAt() != null ? dto.getSentAt() : LocalDate.now())
 			.isAgreed(dto.getIsAgreed() != null ? dto.getIsAgreed() : false)
+			.photos(new ArrayList<>())
 			.build();
 
-		suggestion.setProProfile(proProfile);   // 연관관계 설정
-		suggestion.setRequestion(requestion);   // 연관관계 설정
+		suggestion.setProProfile(proProfile);
+		suggestion.setRequestion(requestion);
+
+		// S3 업로드 및 SuggestionPhoto 저장
+		if (photos != null && !photos.isEmpty()) {
+			for (MultipartFile photo : photos) {
+				String keyName = amazonS3Manager.generateSuggestionPhotoKeyName(
+					Uuid.builder().uuid(UUID.randomUUID().toString()).build()
+				);
+				String imageUrl = amazonS3Manager.uploadFile(keyName, photo);
+
+				SuggestionPhoto suggestionPhoto = SuggestionPhoto.builder()
+					.imageUrl(imageUrl)
+					.suggestion(suggestion)
+					.build();
+
+				suggestion.addPhoto(suggestionPhoto); // 양방향 연관관계 처리
+			}
+		}
 
 		return suggestionRepository.save(suggestion);
 	}
@@ -85,8 +135,8 @@ public class SuggestionServiceImpl implements SuggestionService {
 		int discount = originalPrice - suggestedPrice;
 
 		// 사진 URL 추출
-		List<String> photoUrls = pro.getPhotos().stream()
-			.map(ProPhoto::getImageUrl)
+		List<String> photoUrls = suggestion.getPhotos().stream()
+			.map(photo -> photo.getImageUrl())
 			.collect(Collectors.toList());
 
 		return SuggestionResponseDto.SuggestionDetailResponseDto.builder()

@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.grabpt.service.AlarmService.AlarmService;
+import com.grabpt.service.AlarmService.AlarmServiceImpl;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -42,6 +44,7 @@ public class SuggestionServiceImpl implements SuggestionService {
 	private final ProProfileRepository proProfileRepository;
 	private final RequestionRepository requestionRepository;
 	private final UserQueryService userQueryService;
+	private final AlarmService alarmService;
 
 	@Override
 	public Suggestions save(SuggestionRequestDto dto, String email) {
@@ -65,8 +68,10 @@ public class SuggestionServiceImpl implements SuggestionService {
 
 		suggestion.setProProfile(proProfile);   // 연관관계 설정
 		suggestion.setRequestion(requestion);   // 연관관계 설정
-
-		return suggestionRepository.save(suggestion);
+		suggestion = suggestionRepository.save(suggestion);
+		alarmService.sendAlarm(requestion.getUser().getId(), "SUGGESTION", "제안서 도착",
+			user.getNickname()+" 님이 제안서를 보냈습니다", "/api/suggestion/"+suggestion.getId());
+		return suggestion;
 	}
 
 	@Override

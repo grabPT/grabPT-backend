@@ -18,6 +18,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 import com.grabpt.config.auth.PrincipalDetailsService;
 import com.grabpt.config.jwt.JwtAuthenticationFilter;
@@ -56,6 +57,7 @@ public class SecurityConfig {
 			.cors(withDefaults())  // 프론트
 			.csrf(AbstractHttpConfigurer::disable)
 			.formLogin(AbstractHttpConfigurer::disable)
+			.addFilterBefore(new CorsFilter(corsConfigurationSource()), JwtAuthenticationFilter.class)
 			.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider),
 				UsernamePasswordAuthenticationFilter.class)
 			.authorizeHttpRequests(auth -> auth

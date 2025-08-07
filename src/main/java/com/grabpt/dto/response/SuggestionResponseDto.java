@@ -57,6 +57,7 @@ public class SuggestionResponseDto {
 		private Integer price;
 		private Integer sessionCount;
 		private RequestStatus status;
+		private Long requestionId;
 	}
 
 	@Getter

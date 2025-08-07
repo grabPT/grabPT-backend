@@ -13,6 +13,7 @@ import com.grabpt.apiPayload.exception.handler.UserHandler;
 import com.grabpt.domain.entity.Category;
 import com.grabpt.domain.entity.Requestions;
 import com.grabpt.domain.entity.Users;
+import com.grabpt.domain.enums.Gender;
 import com.grabpt.domain.enums.RequestStatus;
 import com.grabpt.dto.request.RequestionRequestDto;
 import com.grabpt.dto.response.RequestionResponseDto;
@@ -56,10 +57,10 @@ public class RequestionServiceImpl implements RequestionService {
 			.sessionCount(dto.getSessionCount())
 			.purpose(dto.getPurpose())
 			.ageGroup(dto.getAgeGroup())
-			.userGender(dto.getUserGender())
+			.userGender(Gender.fromKorean(dto.getUserGender()))
 			.availableDays(dto.getAvailableDays())
 			.availableTimes(dto.getAvailableTimes())
-			.trainerGender(dto.getTrainerGender())
+			.trainerGender(Gender.fromKorean(dto.getTrainerGender()))
 			.startPreference(dto.getStartPreference())
 			.etcPurposeContent(dto.getEtcPurposeContent())
 			.content(dto.getContent())
@@ -138,10 +139,10 @@ public class RequestionServiceImpl implements RequestionService {
 		requestion.setEtcPurposeContent(dto.getEtcPurposeContent());
 		requestion.setContent(dto.getContent());
 		requestion.setAgeGroup(dto.getAgeGroup());
-		requestion.setUserGender(dto.getUserGender());
+		requestion.setUserGender(Gender.fromKorean(dto.getUserGender()));
 		requestion.setAvailableDays(dto.getAvailableDays());
 		requestion.setAvailableTimes(dto.getAvailableTimes());
-		requestion.setTrainerGender(dto.getTrainerGender());
+		requestion.setTrainerGender(Gender.fromKorean(dto.getTrainerGender()));
 		requestion.setStartPreference(dto.getStartPreference());
 		requestion.setLocation(dto.getLocation());
 	}

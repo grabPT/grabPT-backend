@@ -128,6 +128,7 @@ public class SuggestionServiceImpl implements SuggestionService {
 			.price(s.getRequestion().getPrice())
 			.sessionCount(s.getRequestion().getSessionCount())
 			.status(s.getRequestion().getStatus())
+			.requestionId(s.getRequestion().getId())
 			.build());
 	}
 

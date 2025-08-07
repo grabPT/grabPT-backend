@@ -129,6 +129,7 @@ public class SuggestionServiceImpl implements SuggestionService {
 			.sessionCount(s.getRequestion().getSessionCount())
 			.status(s.getRequestion().getStatus())
 			.requestionId(s.getRequestion().getId())
+			.suggestionId(s.getId())
 			.profileImageUrl(s.getProProfile().getUser().getProfileImageUrl())
 			.build());
 	}

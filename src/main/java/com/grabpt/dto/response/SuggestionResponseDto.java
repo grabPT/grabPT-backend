@@ -59,6 +59,7 @@ public class SuggestionResponseDto {
 		private RequestStatus status;
 		private String profileImageUrl;
 		private Long requestionId;
+		private Long suggestionId;
 	}
 
 	@Getter

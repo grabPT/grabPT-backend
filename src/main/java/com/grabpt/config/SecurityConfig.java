@@ -1,7 +1,5 @@
 package com.grabpt.config;
 
-import static org.springframework.security.config.Customizer.*;
-
 import java.util.List;
 
 import org.springframework.context.annotation.Bean;
@@ -64,7 +62,7 @@ public class SecurityConfig {
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http
 			.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-			.cors(withDefaults())  // 프론트
+			.cors(cors -> cors.configurationSource(corsConfigurationSource()))  // 프론트
 			.csrf(AbstractHttpConfigurer::disable)
 			.formLogin(AbstractHttpConfigurer::disable)
 			.addFilterBefore(corsFilter(), UsernamePasswordAuthenticationFilter.class)
@@ -73,15 +71,14 @@ public class SecurityConfig {
 				.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 				.requestMatchers("/user/**").authenticated()
 				.requestMatchers("/admin/**").hasRole("ADMIN")
-				.requestMatchers("/swagger", "/swagger-ui.html", "/swagger-ui/**", "/api-docs", "/api-docs/**",
-					"/v3/api-docs/**").permitAll()
+				.requestMatchers("/swagger", "/swagger-ui.html", "/swagger-ui/**",
+					"/api-docs", "/api-docs/**", "/v3/api-docs/**").permitAll()
 				.requestMatchers("/auth/api/temp-info").permitAll() // 온보딩 테스트용
 				.requestMatchers("/api/**").permitAll()
 				.anyRequest().permitAll()
 			)
 			.authenticationProvider(authenticationProvider())
 			.oauth2Login(oauth2 -> oauth2
-				// .loginPage("/login")
 				.userInfoEndpoint(userInfo -> userInfo
 					.userService(principalOauth2UserService)
 				)
@@ -93,7 +90,12 @@ public class SecurityConfig {
 	@Bean
 	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
-		configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://43.203.91.190:8080")); // Vite 개발 서버 허용
+		configuration.setAllowedOrigins(List.of(
+			"http://localhost:5173",
+			"http://43.203.91.190",
+			"http://43.203.91.190:8080",
+			"http://grabpt.com"
+		));
 		configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 		configuration.setAllowedHeaders(List.of("*"));
 		configuration.setAllowCredentials(true);

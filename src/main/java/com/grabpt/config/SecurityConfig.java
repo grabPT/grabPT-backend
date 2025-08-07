@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -58,6 +59,7 @@ public class SecurityConfig {
 			.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider),
 				UsernamePasswordAuthenticationFilter.class)
 			.authorizeHttpRequests(auth -> auth
+				.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 				.requestMatchers("/user/**").authenticated()
 				.requestMatchers("/admin/**").hasRole("ADMIN")
 				.requestMatchers("/swagger", "/swagger-ui.html", "/swagger-ui/**", "/api-docs", "/api-docs/**",

@@ -3,8 +3,6 @@ package com.grabpt.dto.request;
 import java.time.LocalDate;
 import java.util.List;
 
-import com.grabpt.domain.enums.Gender;
-
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -46,8 +44,8 @@ public class RequestionRequestDto {
 	@Schema(description = "나이대", example = "20")
 	private String ageGroup;
 
-	@Schema(description = "사용자 성별", example = "MALE")
-	private Gender userGender;
+	@Schema(description = "사용자 성별", example = "남자")
+	private String userGender;
 
 	@Schema(description = "가능한 날자")
 	private List<String> availableDays;
@@ -55,8 +53,8 @@ public class RequestionRequestDto {
 	@Schema(description = "가능한 시간대")
 	private List<String> availableTimes;
 
-	@Schema(description = "트레이너 성별", example = "MALE")
-	private Gender trainerGender;
+	@Schema(description = "트레이너 성별", example = "남자")
+	private String trainerGender;
 
 	@Schema(description = "선호 시작")
 	private LocalDate startPreference;

@@ -10,5 +10,7 @@ public interface reviewRepository extends JpaRepository<Review, Long> {
 	Page<Review> findAllByUserId(Long userId, Pageable pageable);
 
 	// JPA 규칙
-	Page<Review> findAllByProProfile_Id(Long proProfileId, Pageable pageable); // 전문가용
+	Page<Review> findAllByProProfile_Id(Long proProfileId, Pageable pageable); //// 전문가용
+
+	Page<Review> findAllByProProfile_IdAndProProfile_Category_Code(Long proProfileId, String categoryCode, Pageable pageable);
 }

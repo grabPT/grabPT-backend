@@ -44,6 +44,7 @@ public class ProfileResponseDTO {
 		private Long proId;
 		private String profileImageUrl;
 		private String proName;
+		private String userName;
 		private String center;
 		private String categoryName; // 카테고리 이름 추가
 		private Double averageRating; // 리뷰 평점 추가

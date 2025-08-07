@@ -1,6 +1,7 @@
 package com.grabpt.controller;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -32,6 +33,10 @@ public class MyProfileController {
 	private final ProfileService profileService;
 
 	// @AuthenticationPrincipal Long userId
+	@Operation(
+		description = "유저의 프로필을 조회합니다.",
+		summary = "유저의 프로필을 조회합니다."
+	)
 	@GetMapping
 	public ApiResponse<ProfileResponseDTO.MyProfileDTO> getMyUserProfile(@RequestParam(name = "userId") Long userId) {
 		return ApiResponse.onSuccess(profileService.findMyUserProfile(userId));
@@ -48,16 +53,21 @@ public class MyProfileController {
 
 	@GetMapping("/reviews")
 	public ApiResponse<Page<MyReviewListDTO>> getMyReviewList(
-		@RequestParam(name = "userId") Long userId, Pageable pageable) {
+		@RequestParam(name = "userId") Long userId,
+		@RequestParam(defaultValue = "1") int page,
+		@RequestParam(defaultValue = "10") int size) {
 
+		Pageable pageable = PageRequest.of(Math.max(page - 1, 0), size);
 		return ApiResponse.onSuccess(profileService.findMyReviews(userId, pageable));
 	}
 
 	@GetMapping("/requests")
 	public ApiResponse<Page<MyRequestListDTO>> getMyRequestList(
 		@RequestParam(name = "userId") Long userId,
-		Pageable pageable) {
+		@RequestParam(defaultValue = "1") int page,
+		@RequestParam(defaultValue = "10") int size) {
 
+		Pageable pageable = PageRequest.of(Math.max(page - 1, 0), size);
 		return ApiResponse.onSuccess(profileService.findMyRequests(userId, pageable));
 	}
 

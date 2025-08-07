@@ -77,13 +77,26 @@ public class ChatController {
 	}
 
 	@Operation(
-		description = "채팅방의 모든 메시지를 조회합니다. roomId를 pathVariable로 전달받습니다",
-		summary = "채팅방의 모든 메시지 조회 API"
+		description = "채팅방의 최근 메시지를 20개 조회합니다. roomId를 pathVariable로 전달받고, cursor id를 requestParam으로 받습니다",
+		summary = "채팅방의 메시지 20개 조회 API (cursor기반 기본값 0)"
 	)
 	@GetMapping("/chatRoom/{roomId}/messages")
 	@ResponseBody
-	public ApiResponse<List<ChatResponse.MessageResponseDto>> getMessagesByChatRoom(@PathVariable(name = "roomId") Long roomId){
-		return ApiResponse.onSuccess(chatService.getMessagesByChatRoom(roomId));
+	public ApiResponse<ChatResponse.MessageResponseByCursorDto> getMessagesByChatRoom(@PathVariable(name = "roomId") Long roomId,
+																					  @RequestParam(name = "cursor", required = false, defaultValue = "0") long cursor){
+		List<ChatResponse.MessageResponseDto> messageResponseDto = chatService.getMessagesByChatRoom(roomId, cursor);
+
+		long newCursor = 0;
+		if (!messageResponseDto.isEmpty()) {
+			newCursor = messageResponseDto.get(messageResponseDto.size() - 1).getMessageId();
+		}
+
+		ChatResponse.MessageResponseByCursorDto messageResponseByCursorDto = ChatResponse.MessageResponseByCursorDto.builder()
+			.cursor(newCursor)
+			.messages(messageResponseDto)
+			.build();
+
+		return ApiResponse.onSuccess(messageResponseByCursorDto);
 	}
 
 	@Operation(
@@ -97,10 +110,19 @@ public class ChatController {
 		Long userId = userQueryService.getUserId(request);
 		return ApiResponse.onSuccess(chatService.getChatRoomList(userId, keyword));
 	}
+	@Operation(
+		summary = "유저의 전체 안읽은 메시지 개수 조회"
+	)
+	@GetMapping("chat/unreadCount")
+	@ResponseBody
+	public ApiResponse<Long> getUnreadCount(HttpServletRequest request) throws IllegalAccessException {
+		Long userId = userQueryService.getUserId(request);
+		Long allUnreadMessageCount = chatService.getAllUnreadMessageCount(userId);
+		return ApiResponse.onSuccess(allUnreadMessageCount);
+	}
 
 	@GetMapping("/chat-test")
 	public String chatTest(HttpServletRequest request) throws IllegalAccessException {
-		String email = userQueryService.getUserInfo(request).getEmail();
 		return "chat-test";
 	}
 }

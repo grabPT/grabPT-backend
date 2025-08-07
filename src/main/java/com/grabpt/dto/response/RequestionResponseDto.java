@@ -26,14 +26,14 @@ public class RequestionResponseDto {
 		private Long requestionId;
 		private List<String> purpose;
 		private String ageGroup;
-		private Gender userGender;
+		private String userGender;
 		private Integer price;
 		private Integer sessionCount;
 		private String location;
 		private LocalDate startPreference;
 		private List<String> availableDays;
 		private List<String> availableTimes;
-		private Gender trainerGender;
+		private String trainerGender;
 		private String content; // 상세 설명
 		private String etcPurposeContent; // 기타 목적
 
@@ -48,14 +48,14 @@ public class RequestionResponseDto {
 				.requestionId(r.getId())
 				.purpose(r.getPurpose())
 				.ageGroup(r.getAgeGroup())
-				.userGender(r.getUserGender())
+				.userGender(convertGenderToKorean(r.getUserGender()))
 				.price(r.getPrice())
 				.sessionCount(r.getSessionCount())
 				.location(r.getLocation())
 				.startPreference(r.getStartPreference())
 				.availableDays(r.getAvailableDays())
 				.availableTimes(r.getAvailableTimes())
-				.trainerGender(r.getTrainerGender())
+				.trainerGender(convertGenderToKorean(r.getTrainerGender()))
 				.content(r.getContent())
 				.etcPurposeContent(r.getEtcPurposeContent())
 				.nickname(u.getNickname())
@@ -143,5 +143,14 @@ public class RequestionResponseDto {
 	@AllArgsConstructor
 	public static class RequestionSaveResponseDto {
 		private Long requestionId;
+	}
+
+	private static String convertGenderToKorean(Gender gender) {
+		if (gender == null)
+			return null;
+		return switch (gender) {
+			case MALE -> "남성";
+			case FEMALE -> "여성";
+		};
 	}
 }

@@ -23,4 +23,5 @@ public interface SuggestionService {
 
 	void deleteSuggestion(Long suggestionId, String email);
 
+	boolean canEditSuggestion(Long suggestionId, String email);
 }

@@ -162,4 +162,13 @@ public class SuggestionServiceImpl implements SuggestionService {
 
 		suggestionRepository.delete(suggestion);
 	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public boolean canEditSuggestion(Long suggestionId, String email) {
+		Suggestions suggestion = suggestionRepository.findById(suggestionId)
+			.orElseThrow(() -> new SuggestionHandler(ErrorStatus.SUGGESTION_NOT_FOUND));
+
+		return suggestion.getProProfile().getUser().getEmail().equals(email);
+	}
 }

@@ -1,7 +1,9 @@
 package com.grabpt.dto.response;
 
 import java.util.List;
+
 import com.grabpt.domain.enums.RequestStatus;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -57,4 +59,10 @@ public class SuggestionResponseDto {
 		private RequestStatus status;
 	}
 
+	@Getter
+	@Builder
+	@AllArgsConstructor
+	public static class SuggestionSaveResponseDto {
+		private Long suggestionId;
+	}
 }

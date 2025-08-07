@@ -15,7 +15,7 @@ public interface SuggestionService {
 
 	// Suggestions save(SuggestionRequestDto dto, String email);
 
-	Suggestions save(SuggestionRequestDto dto, String email, List<MultipartFile> photos);
+	Suggestions save(SuggestionRequestDto dto, String email, List<MultipartFile> photos, Long requestionId);
 
 	SuggestionResponseDto.SuggestionDetailResponseDto getDetail(Long suggestionId);
 

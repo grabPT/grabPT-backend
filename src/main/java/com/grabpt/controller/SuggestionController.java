@@ -65,8 +65,9 @@ public class SuggestionController {
 		summary = "제안서 저장 API (Multipart)",
 		description = "트레이너가 보낸 제안서를 저장합니다. JSON + 이미지 리스트 형식으로 전송하세요."
 	)
-	@PostMapping(value = "", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	@PostMapping(value = "/{requestionId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ApiResponse<SuggestionResponseDto.SuggestionSaveResponseDto> setSuggestion(
+		@PathVariable Long requestionId,
 		@RequestPart("data") SuggestionRequestDto dto,
 		@RequestPart(value = "photos", required = false) List<MultipartFile> photos,
 		HttpServletRequest request) throws IllegalAccessException {
@@ -74,7 +75,7 @@ public class SuggestionController {
 		UserResponseDto.UserInfoDTO userInfo = userQueryService.getUserInfo(request);
 		String email = userInfo.getEmail();  // 현재 로그인한 트레이너 이메일
 
-		Suggestions saved = suggestionService.save(dto, email, photos);
+		Suggestions saved = suggestionService.save(dto, email, photos, requestionId);
 
 		return ApiResponse.onSuccess(
 			SuggestionResponseDto.SuggestionSaveResponseDto.builder()

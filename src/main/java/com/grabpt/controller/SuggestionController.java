@@ -65,7 +65,7 @@ public class SuggestionController {
 		summary = "제안서 저장 API (Multipart)",
 		description = "트레이너가 보낸 제안서를 저장합니다. JSON + 이미지 리스트 형식으로 전송하세요."
 	)
-	@PostMapping(value = "/{requestionId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ApiResponse<SuggestionResponseDto.SuggestionSaveResponseDto> setSuggestion(
 		@RequestPart("data") SuggestionRequestDto dto,
 		@RequestPart(value = "photos", required = false) List<MultipartFile> photos,

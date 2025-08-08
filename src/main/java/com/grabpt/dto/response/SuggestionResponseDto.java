@@ -44,6 +44,9 @@ public class SuggestionResponseDto {
 		private String address;
 		private Integer price;
 		private Double averageRate; // 평점 추가
+		private Integer sessionCount;
+		private String profileImageUrl;
+		private Long suggestionId;
 
 	}
 

@@ -19,9 +19,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class SuggestionRequestDto {
 
-	// @NotNull
-	// @Schema(description = "요청서 id", example = "1")
-	// private Long requestionId;
+	@NotNull
+	@Schema(description = "요청서 id", example = "1")
+	private Long requestionId;
 
 	@NotNull
 	@Schema(description = "가격", example = "50000")

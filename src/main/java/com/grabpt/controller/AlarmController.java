@@ -1,32 +1,47 @@
 package com.grabpt.controller;
 
 import com.grabpt.apiPayload.ApiResponse;
+import com.grabpt.apiPayload.code.status.ErrorStatus;
+import com.grabpt.apiPayload.exception.handler.AlarmHandler;
 import com.grabpt.converter.AlarmConverter;
 import com.grabpt.domain.entity.Alarm;
 import com.grabpt.dto.response.AlarmResponseDto;
+import com.grabpt.dto.response.UserResponseDto;
 import com.grabpt.repository.AlarmRepository.AlarmRepository;
+import com.grabpt.service.AlarmService.AlarmService;
 import com.grabpt.service.UserService.UserQueryService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
-@RequestMapping("/api/alarm")
-@RestController
+@Controller
 @RequiredArgsConstructor
 public class AlarmController {
 
+	private final AlarmService alarmService;
 	private final UserQueryService userQueryService;
-	private final AlarmRepository alarmRepository;
 
-	@GetMapping
+	@GetMapping("/api/alarmList")
+	@ResponseBody
 	public ApiResponse<List<AlarmResponseDto>> getAlarmList(HttpServletRequest request) throws IllegalAccessException {
 		Long userId = userQueryService.getUserId(request);
-		List<Alarm> alarmList = alarmRepository.findAllByUserId(userId);
+		List<Alarm> alarmList = alarmService.findAllByUserId(userId);
 		List<AlarmResponseDto> list = alarmList.stream().map(AlarmConverter::toAlarmResponseDto).toList();
 		return ApiResponse.onSuccess(list);
+	}
+
+	@PatchMapping("/api/alarm/{alarmId}/read")
+	public ApiResponse<AlarmResponseDto> readAlarm(@PathVariable(name = "alarmId") Long alarmId){
+		return ApiResponse.onSuccess(alarmService.readAlarm(alarmId));
+	}
+
+	@GetMapping("/alarm-test")
+	public String test(HttpServletRequest request) throws IllegalAccessException {
+		Long userId = userQueryService.getUserId(request);
+		return "alarm-test";
 	}
 }

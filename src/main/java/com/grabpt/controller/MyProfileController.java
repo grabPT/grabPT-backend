@@ -1,8 +1,10 @@
 package com.grabpt.controller;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -32,14 +34,18 @@ public class MyProfileController {
 	private final ProfileService profileService;
 
 	// @AuthenticationPrincipal Long userId
+	@Operation(
+		description = "유저의 프로필을 조회합니다.",
+		summary = "유저의 프로필을 조회합니다."
+	)
 	@GetMapping
-	public ApiResponse<ProfileResponseDTO.MyProfileDTO> getMyUserProfile(@RequestParam(name = "userId") Long userId) {
+	public ApiResponse<ProfileResponseDTO.MyProfileDTO> getMyUserProfile(@AuthenticationPrincipal(expression = "user.id") Long userId) {
 		return ApiResponse.onSuccess(profileService.findMyUserProfile(userId));
 	}
 
 	@PatchMapping
 	public ApiResponse<ProfileResponseDTO.MyProfileDTO> updateMyUserProfile(
-		@RequestParam(name = "userId") Long userId,
+		@AuthenticationPrincipal(expression = "user.id") Long userId,
 		@Valid @RequestBody UserProfileUpdateRequestDTO request) {
 
 		profileService.updateMyUserProfile(userId, request);
@@ -48,22 +54,27 @@ public class MyProfileController {
 
 	@GetMapping("/reviews")
 	public ApiResponse<Page<MyReviewListDTO>> getMyReviewList(
-		@RequestParam(name = "userId") Long userId, Pageable pageable) {
+		@AuthenticationPrincipal(expression = "user.id") Long userId,
+		@RequestParam(defaultValue = "1") int page,
+		@RequestParam(defaultValue = "10") int size) {
 
+		Pageable pageable = PageRequest.of(Math.max(page - 1, 0), size);
 		return ApiResponse.onSuccess(profileService.findMyReviews(userId, pageable));
 	}
 
 	@GetMapping("/requests")
 	public ApiResponse<Page<MyRequestListDTO>> getMyRequestList(
-		@RequestParam(name = "userId") Long userId,
-		Pageable pageable) {
+		@AuthenticationPrincipal(expression = "user.id") Long userId,
+		@RequestParam(defaultValue = "1") int page,
+		@RequestParam(defaultValue = "10") int size) {
 
+		Pageable pageable = PageRequest.of(Math.max(page - 1, 0), size);
 		return ApiResponse.onSuccess(profileService.findMyRequests(userId, pageable));
 	}
 
 	@PatchMapping(value = "/image", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
 	public ApiResponse<String> updateUserProfileImage(
-		@RequestParam(name = "userId") Long userId,
+		@AuthenticationPrincipal(expression = "user.id") Long userId,
 		@RequestPart(value = "image") MultipartFile profileImage) {
 
 		profileService.updateUserProfileImage(userId, profileImage);
@@ -73,7 +84,7 @@ public class MyProfileController {
 
 	@DeleteMapping
 	@Operation(summary = "회원 탈퇴 API", description = "현재 로그인된 사용자의 계정을 비활성화합니다.")
-	public ApiResponse<String> withdrawUser(@RequestParam(name = "userId") Long userId) {
+	public ApiResponse<String> withdrawUser(@AuthenticationPrincipal(expression = "user.id") Long userId) {
 		profileService.deleteUser(userId);
 		return ApiResponse.onSuccess("회원 탈퇴가 성공적으로 처리되었습니다.");
 	}

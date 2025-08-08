@@ -32,6 +32,26 @@ public class ProfileResponseDTO {
 		private String name;
 		private String nickname;
 		private String email;
+		// location
+		private List<MyProProfileDTO.AddressDTO> address;
+
+		@Getter
+		@Builder
+		public static class AddressDTO {
+			private String city;
+			private String district;
+			private String street;
+			private String zipcode;
+
+			public static MyProProfileDTO.AddressDTO from(Address address) {
+				return MyProProfileDTO.AddressDTO.builder()
+					.city(address.getCity())
+					.district(address.getDistrict())
+					.street(address.getStreet())
+					.zipcode(address.getZipcode())
+					.build();
+			}
+		}
 	}
 
 	/**
@@ -44,6 +64,7 @@ public class ProfileResponseDTO {
 		private Long proId;
 		private String profileImageUrl;
 		private String proName;
+		private String userName;
 		private String center;
 		private String categoryName; // 카테고리 이름 추가
 		private Double averageRating; // 리뷰 평점 추가

@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.grabpt.apiPayload.code.status.ErrorStatus;
+import com.grabpt.apiPayload.exception.handler.UserHandler;
 import com.grabpt.aws.s3.AmazonS3Manager;
 import com.grabpt.aws.s3.Uuid;
 import com.grabpt.domain.entity.ProCertification;
@@ -40,6 +42,9 @@ public class CertificationServiceImpl implements CertificationService {
 					uuidRepository.save(uuid);
 					String keyName = s3Manager.generateProPhotoKeyName(uuid);
 					imageUrl = s3Manager.uploadFile(keyName, image);
+				}
+				else{
+					throw new UserHandler(ErrorStatus.NOT_IMAGE);
 				}
 
 				ProCertification certification = ProCertification.builder()

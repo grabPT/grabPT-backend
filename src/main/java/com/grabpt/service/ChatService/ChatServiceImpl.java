@@ -93,6 +93,11 @@ public class ChatServiceImpl implements ChatService{
 
 		chatRoom.setLastMessage(save.getContent());
 		chatRoom.setLastMessageTime(save.getSentAt());
+
+		Long otherUserId = userChatRoomRepository.getOtherUserId(sender.getId(), chatRoom.getId());
+		log.info("otherUserId: {}", otherUserId);
+		Long allUnreadMessageCount = getAllUnreadMessageCount(otherUserId);
+		messagingTemplate.convertAndSend("/subscribe/chat/"+otherUserId+"/unread-count", allUnreadMessageCount);
 		return newMessage;
 	}
 

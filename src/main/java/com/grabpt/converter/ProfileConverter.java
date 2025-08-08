@@ -14,9 +14,15 @@ import java.util.stream.Collectors;
 
 public class ProfileConverter {
 
+
 	// MyProfileDTO 변환
 	public static ProfileResponseDTO.MyProfileDTO toMyProfileDTO(Users user) {
 		UserProfile profile = user.getUserProfile();
+
+		List<ProfileResponseDTO.MyProProfileDTO.AddressDTO> addressDTOS = (user.getAddress() != null)
+			? Collections.singletonList(ProfileResponseDTO.MyProfileDTO.AddressDTO.from(user.getAddress()))
+			: Collections.emptyList();
+
 
 		if (profile == null) {
 			return ProfileResponseDTO.MyProfileDTO.builder()
@@ -25,6 +31,7 @@ public class ProfileConverter {
 				.name(user.getUsername())
 				.nickname(user.getNickname())
 				.email(user.getEmail())
+				.address(addressDTOS)
 				.build();
 		}
 
@@ -34,6 +41,7 @@ public class ProfileConverter {
 			.name(user.getUsername())
 			.nickname(user.getNickname())
 			.email(user.getEmail())
+			.address(addressDTOS)
 			.build();
 	}
 
@@ -79,7 +87,8 @@ public class ProfileConverter {
 		return ProfileResponseDTO.MyProProfileDTO.builder()
 			.proId(user.getId())
 			.profileImageUrl(user.getProfileImageUrl())
-			.proName(user.getUsername())
+			.proName(user.getNickname())
+			.userName(user.getUsername())
 			.center(proProfile.getCenter())
 			.categoryName(user.getProProfile().getCategory().getName())
 			.averageRating(averageRating)

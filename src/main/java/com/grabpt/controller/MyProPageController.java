@@ -3,8 +3,10 @@ package com.grabpt.controller;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -42,15 +44,17 @@ public class MyProPageController {
 
 	@GetMapping
 	public ApiResponse<ProfileResponseDTO.MyProProfileDTO> getMyProUserProfile(
-		@RequestParam(name = "userId") Long userId) {
+		@AuthenticationPrincipal(expression = "user.id") Long userId) {
 		return ApiResponse.onSuccess(profileService.findMyProUserProfile(userId));
 	}
 
 	@GetMapping("/reviews")
 	public ApiResponse<Page<MyReviewListDTO>> getProReviews(
-		@RequestParam(name = "userId") Long userId,
-		Pageable pageable) {
+		@AuthenticationPrincipal(expression = "user.id") Long userId,
+		@RequestParam(defaultValue = "1") int page,
+		@RequestParam(defaultValue = "10") int size) {
 
+		Pageable pageable = PageRequest.of(Math.max(page - 1, 0), size);
 		Page<MyReviewListDTO> reviews = profileService.findProReviews(userId, pageable);
 		return ApiResponse.onSuccess(reviews);
 	}
@@ -58,15 +62,22 @@ public class MyProPageController {
 	@GetMapping("/certification")
 	@Operation(summary = "전문가 자격증/이력 조회 API")
 	public ApiResponse<CertificationResponseDTO> getProCertifications(
-		@RequestParam(name = "userId") Long userId) {
+		@AuthenticationPrincipal(expression = "user.id") Long userId) {
 		CertificationResponseDTO certifications = profileService.findMyCertifications(userId);
 		return ApiResponse.onSuccess(certifications);
 	}
 
 	@PostMapping(value = "/certification", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-	@Operation(summary = "전문가 자격증/이력 등록 API", description = "새로운 이력 정보를 추가합니다.")
+	@Operation(summary = "전문가 자격증/이력 등록 API", description = "{\n"
+		+ "  \"certifications\": [\n"
+		+ "    {\n"
+		+ "      \"description\": \"생활스포츠지도사 2급\",\n"
+		+ "      \"certificationType\": 0\n"
+		+ "    }\n"
+		+ "  ]\n"
+		+ "}\n")
 	public ApiResponse<String> registerProCertifications(
-		@RequestParam(name = "userId") Long userId,
+		@AuthenticationPrincipal(expression = "user.id") Long userId,
 		@RequestParam("request") String requestJson, // DTO를 String으로 받음
 		@RequestPart(value = "images", required = false) List<MultipartFile> images) throws Exception {
 
@@ -79,7 +90,7 @@ public class MyProPageController {
 
 	@PatchMapping("/center")
 	public ApiResponse<String> updateProCenter(
-		@RequestParam(name = "userId") Long userId,
+		@AuthenticationPrincipal(expression = "user.id") Long userId,
 		@Valid @RequestBody CenterUpdateRequestDTO request) {
 
 		profileService.updateProCenter(userId, request);
@@ -88,7 +99,7 @@ public class MyProPageController {
 
 	@PatchMapping("/description")
 	public ApiResponse<String> updateProDescription(
-		@RequestParam(name = "userId") Long userId,
+		@AuthenticationPrincipal(expression = "user.id") Long userId,
 		@Valid @RequestBody DescriptionUpdateRequestDTO request) {
 		profileService.updateProDescription(userId, request);
 		return ApiResponse.onSuccess("전문가 소개가 수정되었습니다.");
@@ -96,7 +107,7 @@ public class MyProPageController {
 
 	@PatchMapping(value = "/photos", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
 	public ApiResponse<String> updateProPhotos(
-		@RequestParam(name = "userId") Long userId,
+		@AuthenticationPrincipal(expression = "user.id") Long userId,
 		@RequestPart(value = "photos") List<MultipartFile> photoFiles) {
 
 		// profileService의 public 메서드를 호출합니다.
@@ -107,7 +118,7 @@ public class MyProPageController {
 
 	@PatchMapping("/ptPrice")
 	public ApiResponse<String> updateProPtPrice(
-		@RequestParam(name = "userId") Long userId,
+		@AuthenticationPrincipal(expression = "user.id") Long userId,
 		@Valid @RequestBody PtPriceUpdateRequestDTO request) {
 		profileService.updateProPtPrice(userId, request);
 		return ApiResponse.onSuccess("PT 가격 정보가 수정되었습니다.");
@@ -115,7 +126,7 @@ public class MyProPageController {
 
 	@PatchMapping("/ptProgram")
 	public ApiResponse<String> updateProProgram(
-		@RequestParam(name = "userId") Long userId,
+		@AuthenticationPrincipal(expression = "user.id") Long userId,
 		@Valid @RequestBody PtProgramUpdateRequestDTO request) {
 		profileService.updateProProgram(userId, request);
 		return ApiResponse.onSuccess("PT 프로그램 정보가 수정되었습니다.");
@@ -124,7 +135,7 @@ public class MyProPageController {
 	@PatchMapping("/location")
 	@Operation(summary = "전문가 위치 정보 수정 API", description = "전문가의 센터 및 대표 주소 정보를 수정합니다.")
 	public ApiResponse<String> updateProLocation(
-		@RequestParam(name = "userId") Long userId,
+		@AuthenticationPrincipal(expression = "user.id") Long userId,
 		@RequestBody @Valid ProLocationUpdateRequestDTO request) {
 
 		profileService.updateProLocation(userId, request);

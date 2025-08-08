@@ -25,4 +25,6 @@ public interface ProProfileRepository extends JpaRepository<ProProfile, Long> {
 	List<ProProfile> findAllProByCategoryCodeAndRegion(String categoryCode, String region);
 
 	Page<ProProfile> findByCategory_Code(String categoryCode, Pageable pageable);
+
+	ProProfile findByUserId(Long userId);
 }

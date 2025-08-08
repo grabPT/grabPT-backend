@@ -1,5 +1,7 @@
 package com.grabpt.dto.response;
 
+import com.grabpt.domain.entity.Address;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,7 +15,9 @@ public class UserResponseDto {
 	@AllArgsConstructor
 	public static class UserInfoDTO {
 		Long userId;
-		String name;
+		String nickname;
+		String username;
+		Address address;
 		String email;
 		String role;
 	}

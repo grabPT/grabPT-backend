@@ -11,18 +11,18 @@ public class MyRequestListDTO {
 	private String imageURL;
 	private Long userId;
 	private String location;
+	private List<String> availableDays;
 	private List<String> availableTimes;
 	private String categoryName;
 	private Integer sessionCount;
 	private String content;
-
-
 
 	public MyRequestListDTO(Requestions requestion) {
 		this.requestId = requestion.getId();
 		this.imageURL = requestion.getUser().getProfileImageUrl();
 		this.userId = requestion.getUser().getId();
 		this.location = requestion.getLocation();
+		this.availableDays = requestion.getAvailableDays();
 		this.availableTimes = requestion.getAvailableTimes();
 		this.categoryName = requestion.getCategory().getName();
 		this.sessionCount = requestion.getSessionCount();

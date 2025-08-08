@@ -94,7 +94,8 @@ public class SecurityConfig {
 			"http://localhost:5173",
 			"http://43.203.91.190",
 			"http://43.203.91.190:8080",
-			"http://grabpt.com"
+			"http://grabpt.com",
+			"https://grabpt.com"
 		));
 		configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 		configuration.setAllowedHeaders(List.of("*"));

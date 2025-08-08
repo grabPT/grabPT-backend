@@ -47,6 +47,7 @@ public class RequestionResponseDto {
 
 			return RequestionDetailResponseDto.builder()
 				.requestionId(r.getId())
+				.categoryId(r.getCategory().getId())
 				.purpose(r.getPurpose())
 				.ageGroup(r.getAgeGroup())
 				.userGender(convertGenderToKorean(r.getUserGender()))

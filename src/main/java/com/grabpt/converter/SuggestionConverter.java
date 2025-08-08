@@ -24,7 +24,7 @@ public class SuggestionConverter {
 				.averageRate(pro.getAverageRating())
 				.sessionCount(requestion != null ? requestion.getSessionCount() : null)
 				.profileImageUrl(user.getProfileImageUrl())
-				.requestionId(requestion != null ? requestion.getId() : null)
+				.suggestionId(s.getId())
 				.build();
 		});
 	}

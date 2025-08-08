@@ -46,7 +46,7 @@ public class SuggestionResponseDto {
 		private Double averageRate; // 평점 추가
 		private Integer sessionCount;
 		private String profileImageUrl;
-		private Long requestionId;
+		private Long suggestionId;
 
 	}
 

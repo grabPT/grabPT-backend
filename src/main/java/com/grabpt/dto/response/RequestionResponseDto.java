@@ -53,7 +53,10 @@ public class RequestionResponseDto {
 				.userGender(convertGenderToKorean(r.getUserGender()))
 				.price(r.getPrice())
 				.sessionCount(r.getSessionCount())
-				.location(r.getLocation())
+				.location(String.format("%s %s %s",
+					r.getUser().getAddress().getCity(),
+					r.getUser().getAddress().getDistrict(),
+					r.getUser().getAddress().getStreet()))
 				.startPreference(r.getStartPreference())
 				.availableDays(r.getAvailableDays())
 				.availableTimes(r.getAvailableTimes())

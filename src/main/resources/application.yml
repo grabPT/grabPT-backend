@@ -54,7 +54,7 @@ spring:
               - email
               - profile
             authorization-grant-type: authorization_code
-            redirect-uri: http://api.grabpt.com/login/oauth2/code/google
+            redirect-uri: https://api.grabpt.com/login/oauth2/code/google
 
           kakao:
             client-id: ${KAKAO_CLIENT_ID}

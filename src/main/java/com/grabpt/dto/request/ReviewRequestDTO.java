@@ -6,9 +6,6 @@ import lombok.Getter;
 @Getter
 public class ReviewRequestDTO {
 
-	@Schema(description = "리뷰를 작성하는 사용자 ID", example = "1")
-	private Long userId;
-
 	@Schema(description = "리뷰를 받는 전문가 프로필 ID", example = "1")
 	private Long proProfileId;
 

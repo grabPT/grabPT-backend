@@ -37,7 +37,6 @@ import com.grabpt.service.CertificationService.CertificationService;
 import com.grabpt.service.PhotoService.PhotoService;
 import lombok.RequiredArgsConstructor;
 import java.util.Collections;
-import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -200,17 +199,15 @@ public class ProfileServiceImpl implements ProfileService {
 	@Override
 	@Transactional
 	public void updateUserProfileImage(Long userId, MultipartFile profileImage) {
-		// 1. 사용자 조회
+
 		Users user = findUserById(userId);
 
-		// 2. S3에 이미지 업로드 시도
 		String newImageUrl = photoService.uploadProfileImage(profileImage);
 
 		if (newImageUrl != null) {
-			// 3-1. 사용자의 profileImageUrl을 업데이트하고,
+
 			user.setProfileImageUrl(newImageUrl);
 
-			// 3-2. ✅ 변경된 사용자 정보를 명시적으로 저장합니다.
 			userRepository.save(user);
 		}
 	}
@@ -247,16 +244,14 @@ public class ProfileServiceImpl implements ProfileService {
 			throw new GeneralException(ErrorStatus.MEMBER_NOT_FOUND);
 		}
 
-		// 1. 센터 정보 업데이트
 		proProfile.setCenter(request.getCenter());
 		proProfile.setCenterDescription(request.getCenterDescription());
 
-		// 2. 대표 주소 업데이트
-		Address address = user.getAddress(); // 기존 주소 가져오기
+		Address address = user.getAddress();
 		if (address == null) {
 			address = new Address();
-			address.setUser(user); // 새로 생성된 Address 객체에 Users 설정
-			user.setAddress(address); // Users 객체에 새로 생성된 Address 설정
+			address.setUser(user);
+			user.setAddress(address);
 		}
 
 		address.setCity(request.getCity());

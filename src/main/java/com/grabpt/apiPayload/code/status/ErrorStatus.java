@@ -66,6 +66,8 @@ public enum ErrorStatus implements BaseErrorCode {
 
 	INVALID_USER(HttpStatus.BAD_REQUEST, "SUGG4002", "요청서를 등록한 유저와 다른 유저입니다."),
 
+	NOT_IMAGE(HttpStatus.BAD_REQUEST,"IMG4001","이미지가 없습니다.")
+
 	;
 
 	private final HttpStatus httpStatus;

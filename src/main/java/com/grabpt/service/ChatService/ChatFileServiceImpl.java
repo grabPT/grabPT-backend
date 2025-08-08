@@ -25,7 +25,6 @@ public class ChatFileServiceImpl implements ChatFileService{
 
 	private final AmazonS3Manager amazonS3Manager;
 	private final AmazonConfig amazonConfig;
-	private final AmazonS3Client s3Client;
 
 	@Override
 	public ChatRequest.MessageRequestDto uploadChatFile(Long roomId, Long userId, MultipartFile file) {

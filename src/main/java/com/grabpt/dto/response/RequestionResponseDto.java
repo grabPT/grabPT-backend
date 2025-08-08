@@ -24,6 +24,7 @@ public class RequestionResponseDto {
 	@AllArgsConstructor
 	public static class RequestionDetailResponseDto {
 		private Long requestionId;
+		private Long categoryId;
 		private List<String> purpose;
 		private String ageGroup;
 		private String userGender;
@@ -46,6 +47,7 @@ public class RequestionResponseDto {
 
 			return RequestionDetailResponseDto.builder()
 				.requestionId(r.getId())
+				.categoryId(r.getCategory().getId())
 				.purpose(r.getPurpose())
 				.ageGroup(r.getAgeGroup())
 				.userGender(convertGenderToKorean(r.getUserGender()))

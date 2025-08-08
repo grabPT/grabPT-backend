@@ -63,12 +63,13 @@ public class SecurityConfig {
 		http
 			.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.cors(cors -> cors.configurationSource(corsConfigurationSource()))  // 프론트
-			.csrf(AbstractHttpConfigurer::disable)
+			.csrf(csrf -> csrf.ignoringRequestMatchers("/ws-connect/**"))
 			.formLogin(AbstractHttpConfigurer::disable)
 			.addFilterBefore(corsFilter(), UsernamePasswordAuthenticationFilter.class)
 			.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
 			.authorizeHttpRequests(auth -> auth
 				.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+				.requestMatchers("/ws-connect/**").permitAll()
 				.requestMatchers("/user/**").authenticated()
 				.requestMatchers("/admin/**").hasRole("ADMIN")
 				.requestMatchers("/swagger", "/swagger-ui.html", "/swagger-ui/**",

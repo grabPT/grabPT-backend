@@ -8,18 +8,19 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 
 @Configuration
 @EnableWebSocketMessageBroker
-public class WebSocketConfig implements WebSocketMessageBrokerConfigurer{
+public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
 	@Override
-	public void configureMessageBroker(MessageBrokerRegistry config){
+	public void configureMessageBroker(MessageBrokerRegistry config) {
 		config.enableSimpleBroker("/subscribe");
 		config.setApplicationDestinationPrefixes("/publish");
 	}
 
 	@Override
-	public void registerStompEndpoints(StompEndpointRegistry registry){
+	public void registerStompEndpoints(StompEndpointRegistry registry) {
 		registry.addEndpoint("/ws-connect")
 			.setAllowedOriginPatterns("*")
+			// .setAllowedOriginPatterns("https://www.grabpt.com", "https://grabpt.com")
 			.withSockJS();
 	}
 }

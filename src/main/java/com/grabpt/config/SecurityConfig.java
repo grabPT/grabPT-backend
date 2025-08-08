@@ -63,7 +63,7 @@ public class SecurityConfig {
 		http
 			.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.cors(cors -> cors.configurationSource(corsConfigurationSource()))  // 여기가 핵심
-			.csrf(csrf -> csrf.ignoringRequestMatchers("/ws-connect/**"))
+			.csrf(csrf->csrf.disable())
 			.formLogin(AbstractHttpConfigurer::disable)
 			.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)  //  유지
 			.authorizeHttpRequests(auth -> auth

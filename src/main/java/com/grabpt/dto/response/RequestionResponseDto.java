@@ -47,16 +47,12 @@ public class RequestionResponseDto {
 
 			return RequestionDetailResponseDto.builder()
 				.requestionId(r.getId())
-				.categoryId(r.getCategory().getId())
 				.purpose(r.getPurpose())
 				.ageGroup(r.getAgeGroup())
 				.userGender(convertGenderToKorean(r.getUserGender()))
 				.price(r.getPrice())
 				.sessionCount(r.getSessionCount())
-				.location(String.format("%s %s %s",
-					r.getUser().getAddress().getCity(),
-					r.getUser().getAddress().getDistrict(),
-					r.getUser().getAddress().getStreet()))
+				.location(r.getLocation())
 				.startPreference(r.getStartPreference())
 				.availableDays(r.getAvailableDays())
 				.availableTimes(r.getAvailableTimes())

@@ -3,6 +3,7 @@ package com.grabpt.controller;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -49,8 +50,10 @@ public class MyProPageController {
 	@GetMapping("/reviews")
 	public ApiResponse<Page<MyReviewListDTO>> getProReviews(
 		@RequestParam(name = "userId") Long userId,
-		Pageable pageable) {
+		@RequestParam(defaultValue = "1") int page,
+		@RequestParam(defaultValue = "10") int size) {
 
+		Pageable pageable = PageRequest.of(Math.max(page - 1, 0), size);
 		Page<MyReviewListDTO> reviews = profileService.findProReviews(userId, pageable);
 		return ApiResponse.onSuccess(reviews);
 	}

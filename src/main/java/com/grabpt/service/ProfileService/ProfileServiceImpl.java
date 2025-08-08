@@ -101,16 +101,37 @@ public class ProfileServiceImpl implements ProfileService {
 	}
 
 	@Override
-	public ProProfileResponseDTO findProProfile(Long userId) {
-		Users user = findUserById(userId);
+	@Transactional(readOnly = true)
+	public Page<MyReviewListDTO> findReviewsByCategoryAndUserId(String categoryCode, Long userId, Pageable pageable) {
+
+		Users user = userRepository.findById(userId) // userRepository를 주입받아야 함
+			.orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
 		if (user.getProProfile() == null) {
 			throw new GeneralException(ErrorStatus.MEMBER_NOT_FOUND);
 		}
-		return ProfileConverter.toProProfileDetailDTO(user);
+
+		Long proProfileId = user.getProProfile().getId();
+
+		Page<Review> reviews = reviewRepository.findAllByProProfile_IdAndProProfile_Category_Code(proProfileId, categoryCode, pageable);
+
+
+		return reviews.map(MyReviewListDTO::from);
 	}
 
 	@Override
-	@Transactional(readOnly = true) // 데이터를 조회만 하므로 readOnly = true 추가 권장
+	@Transactional(readOnly = true)
+	public ProProfileResponseDTO findProProfileByCategoryAndUser(String categoryCode, Long userId) {
+		ProProfile proProfile = proProfileRepository.findByUserId(userId);
+		if (proProfile == null) {
+			throw new GeneralException(ErrorStatus.MEMBER_NOT_FOUND);
+		}
+
+		return ProfileConverter.toProProfileDetailDTO(proProfile);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
 	public Page<ProProfileResponseDTO> findProProfilesByCategory(String categoryCode, Pageable pageable) {
 		Page<ProProfile> proProfiles = proProfileRepository.findByCategory_Code(categoryCode, pageable);
 

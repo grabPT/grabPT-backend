@@ -64,7 +64,7 @@ public class MyProfileController {
 
 	@GetMapping("/requests")
 	public ApiResponse<Page<MyRequestListDTO>> getMyRequestList(
-		@RequestParam Long userId,
+		@AuthenticationPrincipal(expression = "user.id") Long userId,
 		@RequestParam(defaultValue = "1") int page,
 		@RequestParam(defaultValue = "10") int size) {
 

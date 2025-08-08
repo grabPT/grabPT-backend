@@ -13,8 +13,21 @@ public class UserResponseDto {
 	@AllArgsConstructor
 	public static class UserInfoDTO {
 		Long userId;
-		String name;
+		String nickname;
+		String username;
+		AddressDto address;
 		String email;
 		String role;
+	}
+
+	@Getter
+	@Builder
+	public static class AddressDto {
+		private String city;
+		private String district;
+		private String street;
+		private String zipcode;
+		private String streetCode;
+		private String specAddress;
 	}
 }

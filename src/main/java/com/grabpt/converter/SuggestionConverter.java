@@ -14,6 +14,7 @@ public class SuggestionConverter {
 			var pro = s.getProProfile();
 			var user = pro.getUser();
 			var address = user.getAddress();
+			var requestion = s.getRequestion();
 
 			return SuggestionResponseDto.SuggestionResponsePagingDto.builder()
 				.nickname(user.getNickname())
@@ -21,6 +22,9 @@ public class SuggestionConverter {
 				.address(address != null ? address.getFullAddress() : "")
 				.price(s.getPrice())
 				.averageRate(pro.getAverageRating())
+				.sessionCount(requestion != null ? requestion.getSessionCount() : null)
+				.profileImageUrl(user.getProfileImageUrl())
+				.requestionId(requestion != null ? requestion.getId() : null)
 				.build();
 		});
 	}

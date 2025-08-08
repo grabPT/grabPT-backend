@@ -4,7 +4,6 @@ import com.grabpt.aws.s3.AmazonS3Manager;
 import com.grabpt.aws.s3.Uuid;
 import com.grabpt.domain.entity.ProPhoto;
 import com.grabpt.domain.entity.ProProfile;
-import com.grabpt.domain.entity.Users;
 import com.grabpt.repository.UuidRepository.UuidRepository;
 
 import lombok.RequiredArgsConstructor;

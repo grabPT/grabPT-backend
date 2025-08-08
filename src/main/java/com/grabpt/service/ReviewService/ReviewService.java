@@ -3,5 +3,5 @@ package com.grabpt.service.ReviewService;
 import com.grabpt.dto.request.ReviewRequestDTO;
 
 public interface ReviewService {
-	void createReview(ReviewRequestDTO reviewRequestDTO);
+	void createReview(Long userId,ReviewRequestDTO reviewRequestDTO);
 }

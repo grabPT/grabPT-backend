@@ -1,5 +1,6 @@
 package com.grabpt.controller;
 
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,8 +21,9 @@ public class ReviewController {
 
 	@Operation(summary = "리뷰 작성 API", description = "사용자가 전문가에 대한 리뷰를 작성합니다.")
 	@PostMapping
-	public ApiResponse<String> addReview(@RequestBody ReviewRequestDTO reviewRequestDTO) {
-		reviewService.createReview(reviewRequestDTO);
+	public ApiResponse<String> addReview(@AuthenticationPrincipal(expression = "user.id") Long userId
+	,@RequestBody ReviewRequestDTO reviewRequestDTO) {
+		reviewService.createReview(userId, reviewRequestDTO);
 		return ApiResponse.onSuccess("리뷰가 성공적으로 등록되었습니다.");
 	}
 }

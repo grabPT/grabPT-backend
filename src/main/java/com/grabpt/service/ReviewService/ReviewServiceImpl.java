@@ -24,8 +24,8 @@ public class ReviewServiceImpl implements ReviewService {
 	private final ProProfileRepository proProfileRepository;
 
 	@Override
-	public void createReview(ReviewRequestDTO reviewRequestDTO) {
-		Users user = userRepository.findById(reviewRequestDTO.getUserId())
+	public void createReview(Long userId,ReviewRequestDTO reviewRequestDTO) {
+		Users user = userRepository.findById(userId)
 			.orElseThrow(()-> new UserHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
 		ProProfile proProfile = proProfileRepository.findById(reviewRequestDTO.getProProfileId())

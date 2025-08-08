@@ -1,5 +1,7 @@
 package com.grabpt.dto.response;
 
+import java.util.List;
+
 import com.grabpt.domain.entity.Requestions;
 
 import lombok.Getter;
@@ -9,6 +11,7 @@ public class MyRequestListDTO {
 	private String imageURL;
 	private Long userId;
 	private String location;
+	private List<String> availableTimes;
 	private String cateogryName;
 	private Integer sessionCount;
 	private String content;
@@ -20,6 +23,7 @@ public class MyRequestListDTO {
 		this.imageURL = requestion.getUser().getProfileImageUrl();
 		this.userId = requestion.getUser().getId();
 		this.location = requestion.getLocation();
+		this.availableTimes = requestion.getAvailableTimes();
 		this.cateogryName = requestion.getCategory().getName();
 		this.sessionCount = requestion.getSessionCount();
 		this.content = requestion.getContent();

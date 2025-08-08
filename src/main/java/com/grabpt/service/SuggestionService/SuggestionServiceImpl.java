@@ -76,14 +76,14 @@ public class SuggestionServiceImpl implements SuggestionService {
 	// }
 
 	@Override
-	public Suggestions save(SuggestionRequestDto dto, String email, List<MultipartFile> photos, Long requestionId) {
+	public Suggestions save(SuggestionRequestDto dto, String email, List<MultipartFile> photos) {
 		Users user = userRepository.findByEmail(email)
 			.orElseThrow(() -> new UserHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
 		ProProfile proProfile = proProfileRepository.findByUser(user)
 			.orElseThrow(() -> new ProHandler(ErrorStatus.PRO_NOT_FOUND));
 
-		Requestions requestion = requestionRepository.findById(requestionId)
+		Requestions requestion = requestionRepository.findById(dto.getRequestionId())
 			.orElseThrow(() -> new RequestionHandler(ErrorStatus.REQUESTION_NOT_FOUND));
 
 		Suggestions suggestion = Suggestions.builder()

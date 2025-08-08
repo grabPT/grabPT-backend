@@ -12,7 +12,7 @@ public class MyRequestListDTO {
 	private Long userId;
 	private String location;
 	private List<String> availableTimes;
-	private String cateogryName;
+	private String categoryName;
 	private Integer sessionCount;
 	private String content;
 
@@ -24,7 +24,7 @@ public class MyRequestListDTO {
 		this.userId = requestion.getUser().getId();
 		this.location = requestion.getLocation();
 		this.availableTimes = requestion.getAvailableTimes();
-		this.cateogryName = requestion.getCategory().getName();
+		this.categoryName = requestion.getCategory().getName();
 		this.sessionCount = requestion.getSessionCount();
 		this.content = requestion.getContent();
 

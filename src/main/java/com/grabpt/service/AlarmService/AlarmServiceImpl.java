@@ -1,11 +1,13 @@
 package com.grabpt.service.AlarmService;
 
 import com.grabpt.apiPayload.code.status.ErrorStatus;
+import com.grabpt.apiPayload.exception.handler.AlarmHandler;
 import com.grabpt.apiPayload.exception.handler.UserHandler;
 import com.grabpt.config.auth.PrincipalDetails;
 import com.grabpt.converter.AlarmConverter;
 import com.grabpt.domain.entity.Alarm;
 import com.grabpt.domain.entity.Users;
+import com.grabpt.dto.response.AlarmResponseDto;
 import com.grabpt.repository.AlarmRepository.AlarmRepository;
 import com.grabpt.repository.UserRepository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Slf4j
 @Service
@@ -40,4 +44,22 @@ public class AlarmServiceImpl implements AlarmService {
 		messagingTemplate.convertAndSend("/subscribe/alarm/"+user.getId(), AlarmConverter.toAlarmResponseDto(alarm));
 		log.info("Alarm sent to user: {}", user.getId());
 	}
+
+
+	@Override
+	@Transactional
+	public AlarmResponseDto readAlarm(Long alarmId) {
+		Alarm alarm = alarmRepository.findById(alarmId).orElseThrow(
+			()->new AlarmHandler(ErrorStatus.ALARM_NOT_FOUND)
+		);
+		alarm.setRead(true);
+		alarmRepository.save(alarm);
+		return AlarmConverter.toAlarmResponseDto(alarm);
+	}
+
+	@Override
+	public List<Alarm> findAllByUserId(Long userId){
+		return alarmRepository.findAllByUserId(userId);
+	}
+
 }

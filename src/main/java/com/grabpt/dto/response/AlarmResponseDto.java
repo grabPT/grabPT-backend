@@ -1,5 +1,6 @@
 package com.grabpt.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,6 +19,7 @@ public class AlarmResponseDto {
 	String title;
 	String content;
 	String redirectUrl;
+	@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
 	LocalDateTime createdAt;
 	boolean isRead;
 }

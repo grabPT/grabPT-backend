@@ -85,18 +85,20 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 			accessCookie.setHttpOnly(true);
 			accessCookie.setSecure(true);
 			accessCookie.setPath("/");
+			accessCookie.setDomain(".grabpt.com");
 			accessCookie.setMaxAge(60 * 30); // 30분
 
 			Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
 			refreshCookie.setHttpOnly(true);
 			refreshCookie.setSecure(true);
 			refreshCookie.setPath("/");
+			refreshCookie.setDomain(".grabpt.com");
 			refreshCookie.setMaxAge(60 * 60 * 24 * 7); // 7일
 
 			response.addCookie(accessCookie);
 			response.addCookie(refreshCookie);
 
-			response.sendRedirect("http://localhost:5173/"); // 환경에 맞게 수정\
+			response.sendRedirect("https://www.grabpt.com/"); // 환경에 맞게 수정\
 
 			return;
 		}
@@ -111,6 +113,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 			cookie.setHttpOnly(false);
 			cookie.setSecure(false);
 			cookie.setPath("/");
+			cookie.setDomain(".grabpt.com");
 			cookie.setMaxAge(5 * 60); // 5분
 			response.addCookie(cookie);
 		}
@@ -125,6 +128,6 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 		log.info("신규 회원 소셜 로그인 - provider: {}, email: {}, name: {}",
 			oauthProvider, email, name);
 
-		response.sendRedirect("http://localhost:5173/signup");
+		response.sendRedirect("https://www.grabpt.com/signup");
 	}
 }

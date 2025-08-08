@@ -62,11 +62,10 @@ public class SecurityConfig {
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http
 			.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-			.cors(cors -> cors.configurationSource(corsConfigurationSource()))  // 프론트
+			.cors(cors -> cors.configurationSource(corsConfigurationSource()))  // 여기가 핵심
 			.csrf(csrf -> csrf.ignoringRequestMatchers("/ws-connect/**"))
 			.formLogin(AbstractHttpConfigurer::disable)
-			.addFilterBefore(corsFilter(), UsernamePasswordAuthenticationFilter.class)
-			.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+			.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)  //  유지
 			.authorizeHttpRequests(auth -> auth
 				.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 				.requestMatchers("/ws-connect/**").permitAll()
@@ -74,7 +73,7 @@ public class SecurityConfig {
 				.requestMatchers("/admin/**").hasRole("ADMIN")
 				.requestMatchers("/swagger", "/swagger-ui.html", "/swagger-ui/**",
 					"/api-docs", "/api-docs/**", "/v3/api-docs/**").permitAll()
-				.requestMatchers("/auth/api/temp-info").permitAll() // 온보딩 테스트용
+				.requestMatchers("/auth/api/temp-info").permitAll()
 				.requestMatchers("/api/**").permitAll()
 				.anyRequest().permitAll()
 			)
@@ -96,7 +95,8 @@ public class SecurityConfig {
 			"http://43.203.91.190",
 			"http://43.203.91.190:8080",
 			"http://grabpt.com",
-			"https://grabpt.com"
+			"https://grabpt.com",
+			"https://www.grabpt.com"
 		));
 		configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 		configuration.setAllowedHeaders(List.of("*"));

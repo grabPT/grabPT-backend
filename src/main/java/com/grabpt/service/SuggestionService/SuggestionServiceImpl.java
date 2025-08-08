@@ -33,6 +33,7 @@ import com.grabpt.repository.ProProfileRepository.ProProfileRepository;
 import com.grabpt.repository.RequestionRepository.RequestionRepository;
 import com.grabpt.repository.SuggestionRepository.SuggestionRepository;
 import com.grabpt.repository.UserRepository.UserRepository;
+import com.grabpt.service.AlarmService.AlarmService;
 import com.grabpt.service.UserService.UserQueryService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -48,6 +49,7 @@ public class SuggestionServiceImpl implements SuggestionService {
 	private final RequestionRepository requestionRepository;
 	private final UserQueryService userQueryService;
 	private final AmazonS3Manager amazonS3Manager;
+	private final AlarmService alarmService;
 
 	// @Override
 	// public Suggestions save(SuggestionRequestDto dto, String email) {
@@ -115,7 +117,8 @@ public class SuggestionServiceImpl implements SuggestionService {
 				suggestion.addPhoto(suggestionPhoto); // 양방향 연관관계 처리
 			}
 		}
-
+		alarmService.sendAlarm(requestion.getUser().getId(), "SUGGESTION", "제안서 도착",
+			user.getNickname()+" 님이 제안서를 보냈습니다", "/api/suggestion/"+suggestion.getId());
 		return suggestionRepository.save(suggestion);
 	}
 

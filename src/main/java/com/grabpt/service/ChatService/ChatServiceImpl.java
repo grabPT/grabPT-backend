@@ -11,6 +11,8 @@ import com.grabpt.repository.ChatRepository.ChatRoomRepository;
 import com.grabpt.repository.ChatRepository.MessageRepository;
 import com.grabpt.repository.ChatRepository.UserChatRoomRepository;
 import com.grabpt.repository.UserRepository.UserRepository;
+import com.grabpt.service.AlarmService.AlarmService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -35,6 +37,7 @@ public class ChatServiceImpl implements ChatService{
 	private final ChatRoomRepository chatRoomRepository;
 	private final MessageRepository messageRepository;
 	private final SimpMessagingTemplate messagingTemplate;
+	private final AlarmService alarmService;
 
 	@Override
 	public ChatResponse.CreateChatRoomResponseDto getOrcreateChatRoom(ChatRequest.CreateChatRoomRequestDto request){
@@ -80,6 +83,7 @@ public class ChatServiceImpl implements ChatService{
 	}
 
 	@Override
+	@Transactional
 	public Messages createChatMessage(ChatRequest.MessageRequestDto request) {
 
 		Users sender = userRepository.findById(request.getSenderId()).orElseThrow(
@@ -91,13 +95,19 @@ public class ChatServiceImpl implements ChatService{
 		Messages newMessage = ChatConverter.toMessage(request, sender, chatRoom);
 		Messages save = messageRepository.save(newMessage);
 
-		chatRoom.setLastMessage(save.getContent());
-		chatRoom.setLastMessageTime(save.getSentAt());
-
 		Long otherUserId = userChatRoomRepository.getOtherUserId(sender.getId(), chatRoom.getId());
 		log.info("otherUserId: {}", otherUserId);
 		Long allUnreadMessageCount = getAllUnreadMessageCount(otherUserId);
 		messagingTemplate.convertAndSend("/subscribe/chat/"+otherUserId+"/unread-count", allUnreadMessageCount);
+
+		if(chatRoom.getLastMessage().equals("")){
+			alarmService.sendAlarm(otherUserId,"MESSAGE","메시지 도착",
+				sender.getNickname()+"님이 채팅을 시작했어요", "chatRoom/list");
+		}
+
+		chatRoom.setLastMessage(save.getContent());
+		chatRoom.setLastMessageTime(save.getSentAt());
+
 		return newMessage;
 	}
 

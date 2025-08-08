@@ -72,6 +72,7 @@ public class PaymentServiceImpl implements PaymentService {
 			order.getPayment().changePaymentBySuccess(PaymentStatus.OK, iamportResponse.getResponse().getImpUid());
 
 			Long userId = order.getUser().getId();
+
 			alarmService.sendAlarm(userId, "PAYMENT", "결제 완료",
 				"결제가 성공적으로 완료되었습니다.", "/success-payment");
 			return iamportResponse;

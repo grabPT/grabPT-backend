@@ -96,7 +96,8 @@ public class SecurityConfig {
 			"http://43.203.91.190:8080",
 			"http://grabpt.com",
 			"https://grabpt.com",
-			"https://www.grabpt.com"
+			"https://www.grabpt.com",
+			"https://api.grabpt.com"    // 여기에 추가 필요
 		));
 		configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 		configuration.setAllowedHeaders(List.of("*"));

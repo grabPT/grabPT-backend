@@ -16,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class CookieUtils {
 
-	private static final String COOKIE_DOMAIN = "api.grabpt.com"; // 앞에 점(.) 금지
+	private static final String COOKIE_DOMAIN = "grabpt.com"; // 앞에 점(.) 금지
 
 	private static String abbr(String s) {
 		if (s == null)

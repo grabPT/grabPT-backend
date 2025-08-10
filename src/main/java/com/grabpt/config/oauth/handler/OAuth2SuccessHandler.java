@@ -85,14 +85,14 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 			accessCookie.setHttpOnly(true);
 			accessCookie.setSecure(true);
 			accessCookie.setPath("/");
-			accessCookie.setDomain(".grabpt.com");
+			accessCookie.setDomain("grabpt.com");
 			accessCookie.setMaxAge(60 * 30); // 30분
 
 			Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
 			refreshCookie.setHttpOnly(true);
 			refreshCookie.setSecure(true);
 			refreshCookie.setPath("/");
-			refreshCookie.setDomain(".grabpt.com");
+			refreshCookie.setDomain("grabpt.com");
 			refreshCookie.setMaxAge(60 * 60 * 24 * 7); // 7일
 
 			response.addCookie(accessCookie);
@@ -113,7 +113,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 			cookie.setHttpOnly(false);
 			cookie.setSecure(false);
 			cookie.setPath("/");
-			cookie.setDomain(".grabpt.com");
+			cookie.setDomain("grabpt.com");
 			cookie.setMaxAge(5 * 60); // 5분
 			response.addCookie(cookie);
 		}

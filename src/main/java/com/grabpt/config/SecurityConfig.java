@@ -63,7 +63,7 @@ public class SecurityConfig {
 		http
 			.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.cors(cors -> cors.configurationSource(corsConfigurationSource()))  // 여기가 핵심
-			.csrf(csrf->csrf.disable())
+			.csrf(csrf -> csrf.disable())
 			.formLogin(AbstractHttpConfigurer::disable)
 			.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)  //  유지
 			.authorizeHttpRequests(auth -> auth
@@ -79,8 +79,7 @@ public class SecurityConfig {
 			)
 			.authenticationProvider(authenticationProvider())
 			.oauth2Login(oauth2 -> oauth2
-				.userInfoEndpoint(userInfo -> userInfo
-					.userService(principalOauth2UserService)
+				.userInfoEndpoint(userInfo -> userInfo.userService(principalOauth2UserService)
 				)
 				.successHandler(oauth2SuccessHandler)
 			);

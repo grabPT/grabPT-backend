@@ -1,8 +1,11 @@
 package com.grabpt.config.oauth;
 
+import java.time.Duration;
 import java.util.Base64;
 import java.util.Optional;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.util.SerializationUtils;
 
 import jakarta.servlet.http.Cookie;
@@ -24,25 +27,26 @@ public class CookieUtils {
 	}
 
 	public static void addCookie(HttpServletResponse response, String name, String value, int maxAge) {
-		Cookie cookie = new Cookie(name, value);
-		cookie.setPath("/");
-		cookie.setHttpOnly(true);
-		cookie.setMaxAge(maxAge);
-		response.addCookie(cookie);
+		ResponseCookie cookie = ResponseCookie.from(name, value)
+			.path("/")
+			.httpOnly(true)
+			.secure(true)            // HTTPS 전용
+			.sameSite("None")        // 크로스사이트 리다이렉트 허용
+			.maxAge(Duration.ofSeconds(maxAge))
+			// .domain("api.grabpt.com") // (옵션) 굳이 필요 없으면 host-only 유지
+			.build();
+		response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 	}
 
 	public static void deleteCookie(HttpServletRequest request, HttpServletResponse response, String name) {
-		Cookie[] cookies = request.getCookies();
-		if (cookies != null && cookies.length > 0) {
-			for (Cookie cookie : cookies) {
-				if (cookie.getName().equals(name)) {
-					cookie.setValue("");
-					cookie.setPath("/");
-					cookie.setMaxAge(0);
-					response.addCookie(cookie);
-				}
-			}
-		}
+		ResponseCookie cookie = ResponseCookie.from(name, "")
+			.path("/")
+			.httpOnly(true)
+			.secure(true)
+			.sameSite("None")
+			.maxAge(Duration.ZERO)   // 즉시 만료
+			.build();
+		response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 	}
 
 	public static String serialize(Object object) {

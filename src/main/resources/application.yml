@@ -131,3 +131,6 @@ logging:
   level:
     org.springframework.web.servlet.DispatcherServlet: DEBUG
     org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping: DEBUG
+    com.grabpt.config.oauth: DEBUG
+    org.springframework.security.oauth2.client.web: DEBUG
+    org.springframework.security.oauth2.client: DEBUG

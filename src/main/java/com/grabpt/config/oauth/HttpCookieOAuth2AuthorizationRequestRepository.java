@@ -78,7 +78,7 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
 			.path("/")
 			.httpOnly(true)
 			.secure(secure)
-			.sameSite("Lax")
+			.sameSite("None")
 			.maxAge(maxAge)
 			.build();
 		response.addHeader("Set-Cookie", cookie.toString());
@@ -90,7 +90,7 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
 			.path("/")
 			.httpOnly(true)
 			.secure(secure)
-			.sameSite("Lax")
+			.sameSite("None")
 			.maxAge(0)
 			.build();
 		response.addHeader("Set-Cookie", cookie.toString());

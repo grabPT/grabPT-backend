@@ -12,7 +12,6 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
-import org.springframework.security.oauth2.client.web.HttpSessionOAuth2AuthorizationRequestRepository;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -24,6 +23,7 @@ import org.springframework.web.filter.CorsFilter;
 import com.grabpt.config.auth.PrincipalDetailsService;
 import com.grabpt.config.jwt.JwtAuthenticationFilter;
 import com.grabpt.config.jwt.JwtTokenProvider;
+import com.grabpt.config.oauth.HttpCookieOAuth2AuthorizationRequestRepository;
 import com.grabpt.config.oauth.PrincipalOauth2UserService;
 import com.grabpt.config.oauth.handler.OAuth2SuccessHandler;
 
@@ -45,7 +45,7 @@ public class SecurityConfig {
 
 	@Bean
 	public AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository() {
-		return new HttpSessionOAuth2AuthorizationRequestRepository();
+		return new HttpCookieOAuth2AuthorizationRequestRepository();
 	}
 
 	@Bean

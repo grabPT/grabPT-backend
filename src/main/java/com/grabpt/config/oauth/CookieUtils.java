@@ -32,7 +32,7 @@ public class CookieUtils {
 			.httpOnly(true)
 			.secure(true)            // HTTPS 전용
 			.sameSite("None")        // 크로스사이트 리다이렉트 허용
-			.domain(".grabpt.com")
+			.domain("grabpt.com")
 			.maxAge(Duration.ofSeconds(maxAge))
 			// .domain("api.grabpt.com") // (옵션) 굳이 필요 없으면 host-only 유지
 			.build();
@@ -45,7 +45,7 @@ public class CookieUtils {
 			.httpOnly(true)
 			.secure(true)
 			.sameSite("None")
-			.domain(".grabpt.com")
+			.domain("grabpt.com")
 			.maxAge(Duration.ZERO)   // 즉시 만료
 			.build();
 		response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());

@@ -19,7 +19,7 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
 	public static final String REDIRECT_URI_PARAM_COOKIE_NAME = "redirect_uri";
 	private static final int COOKIE_EXPIRE_SECONDS = 180; // 3분 (충분)
 
-	private final String cookieDomain = ".grabpt.com"; // <- 우리의 공용 도메인
+	private final String cookieDomain = null; // <- 우리의 공용 도메인
 	private final boolean secure = true;
 
 	@Override

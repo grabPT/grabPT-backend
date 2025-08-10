@@ -45,7 +45,10 @@ public class SecurityConfig {
 
 	@Bean
 	public AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository() {
-		return new HttpCookieOAuth2AuthorizationRequestRepository();
+		var repo = new HttpCookieOAuth2AuthorizationRequestRepository();
+		org.slf4j.LoggerFactory.getLogger(SecurityConfig.class)
+			.warn("[SECURITY] Using {}", repo.getClass().getName());
+		return repo;
 	}
 
 	@Bean

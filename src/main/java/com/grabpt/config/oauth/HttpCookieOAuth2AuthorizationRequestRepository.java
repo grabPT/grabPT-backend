@@ -17,42 +17,44 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
 
 	@Override
 	public OAuth2AuthorizationRequest loadAuthorizationRequest(HttpServletRequest request) {
-		OAuth2AuthorizationRequest oAuth2AuthorizationRequest = CookieUtils.getCookie(request,
-				OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME)
-			.map(cookie -> CookieUtils.deserialize(cookie, OAuth2AuthorizationRequest.class))
+		return CookieUtils.getCookie(request, OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME)
+			.map(c -> CookieUtils.deserialize(c, OAuth2AuthorizationRequest.class))
 			.orElse(null);
-		return oAuth2AuthorizationRequest;
 	}
 
 	@Override
-	public void saveAuthorizationRequest(OAuth2AuthorizationRequest authorizationRequest, HttpServletRequest request,
+	public void saveAuthorizationRequest(OAuth2AuthorizationRequest authorizationRequest,
+		HttpServletRequest request,
 		HttpServletResponse response) {
-		if (authorizationRequest == null) {
-			removeAuthorizationRequestCookies(request, response); // 여기서도 삭제
+		// ★ null이어도 삭제하지 않는다 (중복/조기 삭제 방지)
+		if (authorizationRequest == null)
 			return;
-		}
 
-		CookieUtils.addCookie(response, OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME,
-			CookieUtils.serialize(authorizationRequest), COOKIE_EXPIRE_SECONDS);
+		CookieUtils.addCookie(response,
+			OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME,
+			CookieUtils.serialize(authorizationRequest),
+			COOKIE_EXPIRE_SECONDS);
 
-		String redirectUriAfterLogin = request.getParameter(REDIRECT_URI_PARAM_COOKIE_NAME);
-		if (StringUtils.isNotBlank(redirectUriAfterLogin)) {
-			CookieUtils.addCookie(response, REDIRECT_URI_PARAM_COOKIE_NAME, redirectUriAfterLogin,
+		String redirectUri = request.getParameter(REDIRECT_URI_PARAM_COOKIE_NAME);
+		if (StringUtils.isNotBlank(redirectUri)) {
+			CookieUtils.addCookie(response,
+				REDIRECT_URI_PARAM_COOKIE_NAME,
+				redirectUri,
 				COOKIE_EXPIRE_SECONDS);
 		}
 	}
 
+	// ★ 실제 삭제는 이 오버로드에서만 수행
 	@Override
 	public OAuth2AuthorizationRequest removeAuthorizationRequest(HttpServletRequest request,
 		HttpServletResponse response) {
 		OAuth2AuthorizationRequest req = loadAuthorizationRequest(request);
-		removeAuthorizationRequestCookies(request, response); // 실제 삭제
+		removeAuthorizationRequestCookies(response);
 		return req;
 	}
 
-	public void removeAuthorizationRequestCookies(HttpServletRequest request, HttpServletResponse response) {
-		CookieUtils.deleteCookie(request, response, OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME);
-		CookieUtils.deleteCookie(request, response, REDIRECT_URI_PARAM_COOKIE_NAME);
+	public void removeAuthorizationRequestCookies(HttpServletResponse response) {
+		CookieUtils.deleteCookie(response, OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME);
+		CookieUtils.deleteCookie(response, REDIRECT_URI_PARAM_COOKIE_NAME);
 	}
-
 }

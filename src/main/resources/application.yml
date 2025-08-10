@@ -126,3 +126,8 @@ import:
   api:
     key: ${IMP_API_KEY}
     secret: ${IMP_API_SECRET}
+
+logging:
+  level:
+    org.springframework.web.servlet.DispatcherServlet: DEBUG
+    org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping: DEBUG

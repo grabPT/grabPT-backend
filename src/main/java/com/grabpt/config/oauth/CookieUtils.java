@@ -11,24 +11,43 @@ import org.springframework.util.SerializationUtils;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class CookieUtils {
 
-	private static final String COOKIE_DOMAIN = "grabpt.com"; // 앞에 점(.) 붙이지 마세요
+	private static final String COOKIE_DOMAIN = "grabpt.com"; // 앞에 점(.) 금지
+
+	private static String abbr(String s) {
+		if (s == null)
+			return "null";
+		return s.substring(0, Math.min(24, s.length())) + (s.length() > 24 ? "..." : "");
+	}
 
 	public static Optional<Cookie> getCookie(HttpServletRequest request, String name) {
 		Cookie[] cookies = request.getCookies();
-		if (cookies == null)
+		if (cookies == null) {
+			log.debug("[COOKIE][GET] reqUri={} -> no cookies", request.getRequestURI());
 			return Optional.empty();
+		}
+		log.debug("[COOKIE][GET] reqUri={} cookieCount={}", request.getRequestURI(), cookies.length);
+
 		Cookie best = null;
 		for (Cookie c : cookies) {
-			if (!name.equals(c.getName()))
-				continue;
-			String v = c.getValue();
-			if (v == null || v.isBlank())
-				continue;
-			if (best == null || v.length() > best.getValue().length())
-				best = c;
+			if (name.equals(c.getName())) {
+				String v = c.getValue();
+				log.debug("[COOKIE][GET]   candidate name={} len={} prefix={}",
+					c.getName(), v == null ? 0 : v.length(), v == null ? "null" : abbr(v));
+				if (v != null && !v.isBlank() && (best == null || v.length() > best.getValue().length())) {
+					best = c;
+				}
+			}
+		}
+		if (best != null) {
+			log.debug("[COOKIE][GET]   -> picked name={} len={} prefix={}",
+				best.getName(), best.getValue().length(), abbr(best.getValue()));
+		} else {
+			log.debug("[COOKIE][GET]   -> {} not found", name);
 		}
 		return Optional.ofNullable(best);
 	}
@@ -42,7 +61,15 @@ public class CookieUtils {
 			.maxAge(Duration.ofSeconds(maxAgeSeconds));
 		if (COOKIE_DOMAIN != null)
 			b.domain(COOKIE_DOMAIN);
-		response.addHeader(HttpHeaders.SET_COOKIE, b.build().toString());
+
+		var built = b.build();
+		var header = built.toString();
+		log.debug("[COOKIE][ADD] name={} len={} domain={} path={} sameSite={} secure={} httpOnly={} maxAge={} -> {}",
+			name, value == null ? 0 : value.length(),
+			built.getDomain(), built.getPath(), built.getSameSite(),
+			built.isSecure(), built.isHttpOnly(), built.getMaxAge().getSeconds(), header);
+
+		response.addHeader(HttpHeaders.SET_COOKIE, header);
 	}
 
 	private static void addDeletion(HttpServletResponse response, String name, String domainOrNull) {
@@ -54,14 +81,17 @@ public class CookieUtils {
 			.maxAge(Duration.ZERO);
 		if (domainOrNull != null)
 			b.domain(domainOrNull);
-		response.addHeader(HttpHeaders.SET_COOKIE, b.build().toString());
+
+		var built = b.build();
+		var header = built.toString();
+		log.debug("[COOKIE][DEL]  name={} domain={} -> {}", name, domainOrNull, header);
+		response.addHeader(HttpHeaders.SET_COOKIE, header);
 	}
 
 	public static void deleteCookie(HttpServletResponse response, String name) {
-		// 다양한 변형으로 저장됐을 가능성 대비해서 3가지 모두 만료
-		addDeletion(response, name, null);            // host-only
-		addDeletion(response, name, "api.grabpt.com");
-		addDeletion(response, name, "grabpt.com");
+		addDeletion(response, name, null);              // host-only
+		addDeletion(response, name, "api.grabpt.com");  // 서브도메인
+		addDeletion(response, name, "grabpt.com");      // 최상위 도메인
 	}
 
 	public static String serialize(Object object) {

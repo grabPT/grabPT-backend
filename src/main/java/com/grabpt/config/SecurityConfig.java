@@ -61,7 +61,7 @@ public class SecurityConfig {
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http
-			.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+			.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
 			.cors(cors -> cors.configurationSource(corsConfigurationSource()))  // 여기가 핵심
 			.csrf(csrf -> csrf.disable())
 			.formLogin(AbstractHttpConfigurer::disable)

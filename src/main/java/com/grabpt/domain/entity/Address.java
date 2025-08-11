@@ -59,4 +59,12 @@ public class Address extends BaseEntity {
 
 		return fullAddress.toString().trim();
 	}
+
+
+	public void updateDetails(String city, String district, String street, String zipcode) {
+		this.city = city;
+		this.district = district;
+		this.street = street;
+		this.zipcode = zipcode;
+	}
 }

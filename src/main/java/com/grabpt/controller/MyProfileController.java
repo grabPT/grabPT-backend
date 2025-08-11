@@ -20,7 +20,6 @@ import org.springframework.web.multipart.MultipartFile;
 import com.grabpt.apiPayload.ApiResponse;
 import com.grabpt.apiPayload.code.status.ErrorStatus;
 import com.grabpt.apiPayload.exception.GeneralException;
-import com.grabpt.dto.request.CertificationUpdateRequestDTO;
 import com.grabpt.dto.request.UserProfileUpdateRequestDTO;
 import com.grabpt.dto.response.MyRequestListDTO;
 import com.grabpt.dto.response.MyReviewListDTO;
@@ -28,7 +27,6 @@ import com.grabpt.dto.response.ProfileResponseDTO;
 import com.grabpt.service.ProfileService.ProfileService;
 
 import io.swagger.v3.oas.annotations.Operation;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController

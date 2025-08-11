@@ -42,6 +42,7 @@ public class ProfileResponseDTO {
 			private String district;
 			private String street;
 			private String zipcode;
+			private String specAddress;
 
 			public static MyProProfileDTO.AddressDTO from(Address address) {
 				return MyProProfileDTO.AddressDTO.builder()

@@ -16,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class CookieUtils {
 
-	private static final String COOKIE_DOMAIN = "grabpt.com"; // 앞에 점(.) 금지
+	private static final String COOKIE_DOMAIN = null; // 앞에 점(.) 금지
 
 	private static String abbr(String s) {
 		if (s == null)
@@ -57,7 +57,7 @@ public class CookieUtils {
 			.path("/")
 			.httpOnly(true)
 			.secure(true)
-			.sameSite("None")
+			.sameSite("Lax")
 			.maxAge(Duration.ofSeconds(maxAgeSeconds));
 		if (COOKIE_DOMAIN != null)
 			b.domain(COOKIE_DOMAIN);
@@ -77,7 +77,7 @@ public class CookieUtils {
 			.path("/")
 			.httpOnly(true)
 			.secure(true)
-			.sameSite("None")
+			.sameSite("Lax")
 			.maxAge(Duration.ZERO);
 		if (domainOrNull != null)
 			b.domain(domainOrNull);

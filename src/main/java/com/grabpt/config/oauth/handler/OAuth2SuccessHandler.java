@@ -1,8 +1,13 @@
 package com.grabpt.config.oauth.handler;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.Base64;
 import java.util.Map;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
@@ -16,7 +21,6 @@ import com.grabpt.repository.UserRepository.UserRepository;
 import com.grabpt.service.UserService.UserQueryService;
 
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -32,6 +36,28 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 	private final UserDetailsService userDetailsService;
 	private final UserQueryService userQueryService;
 	private final UserRepository userRepository;
+
+	private static final String SHARED_DOMAIN = "grabpt.com"; // 앞에 점(.) 금지
+
+	private static String b64u(String s) {
+		if (s == null)
+			return "";
+		return Base64.getUrlEncoder().withoutPadding()
+			.encodeToString(s.getBytes(StandardCharsets.UTF_8));
+	}
+
+	private static void addCookie(HttpServletResponse res, String name, String value,
+		Duration maxAge, boolean httpOnly) {
+		ResponseCookie c = ResponseCookie.from(name, value == null ? "" : value)
+			.domain(SHARED_DOMAIN)
+			.path("/")
+			.maxAge(maxAge)
+			.secure(true)
+			.httpOnly(httpOnly)
+			.sameSite("None")
+			.build();
+		res.addHeader(HttpHeaders.SET_COOKIE, c.toString());
+	}
 
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -68,6 +94,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
 		/// 이미 존재하는 회원 검증
 		log.info("findEmail = " + email);
+
 		Users findUser = userRepository.findByEmail(email).orElse(null);
 		if (findUser != null) {
 			log.info("기존 존재 회원 로직에 들어옴");
@@ -81,22 +108,8 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 			userRepository.save(findUser);
 
 			// 쿠키로 토큰 전달
-			Cookie accessCookie = new Cookie("accessToken", accessToken);
-			accessCookie.setHttpOnly(true);
-			accessCookie.setSecure(true);
-			accessCookie.setPath("/");
-			accessCookie.setDomain("grabpt.com");
-			accessCookie.setMaxAge(60 * 30); // 30분
-
-			Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
-			refreshCookie.setHttpOnly(true);
-			refreshCookie.setSecure(true);
-			refreshCookie.setPath("/");
-			refreshCookie.setDomain("grabpt.com");
-			refreshCookie.setMaxAge(60 * 60 * 24 * 7); // 7일
-
-			response.addCookie(accessCookie);
-			response.addCookie(refreshCookie);
+			addCookie(response, "accessToken", accessToken, Duration.ofMinutes(30), true);
+			addCookie(response, "refreshToken", refreshToken, Duration.ofDays(7), true);
 
 			response.sendRedirect("https://www.grabpt.com/"); // 환경에 맞게 수정\
 
@@ -104,19 +117,11 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 		}
 
 		// 쿠키 생성
-		Cookie emailCookie = new Cookie("oauthEmail", email);
-		Cookie nameCookie = new Cookie("oauthName", name);
-		Cookie oauthIdCookie = new Cookie("oauthId", oauthId);
-		Cookie oauthProviderCookie = new Cookie("oauthProvider", oauthProvider);
-
-		for (Cookie cookie : new Cookie[] {emailCookie, nameCookie, oauthIdCookie, oauthProviderCookie}) {
-			cookie.setHttpOnly(false);
-			cookie.setSecure(false);
-			cookie.setPath("/");
-			cookie.setDomain("grabpt.com");
-			cookie.setMaxAge(5 * 60); // 5분
-			response.addCookie(cookie);
-		}
+		// 신규 회원: 프론트가 읽을 임시 쿠키 (ASCII만 허용 → Base64 URL-safe 인코딩)
+		addCookie(response, "oauthEmail", b64u(email), Duration.ofMinutes(5), false);
+		addCookie(response, "oauthName", b64u(name), Duration.ofMinutes(5), false);
+		addCookie(response, "oauthId", b64u(oauthId), Duration.ofMinutes(5), false);
+		addCookie(response, "oauthProvider", b64u(oauthProvider), Duration.ofMinutes(5), false);
 
 		// 신규 회원 → 세션에 임시 정보 저장 (null 허용)
 		HttpSession session = request.getSession();

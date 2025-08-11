@@ -8,7 +8,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -16,6 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.grabpt.apiPayload.ApiResponse;
+import com.grabpt.apiPayload.code.status.ErrorStatus;
+import com.grabpt.apiPayload.exception.GeneralException;
+import com.grabpt.dto.request.CertificationUpdateRequestDTO;
 import com.grabpt.dto.request.UserProfileUpdateRequestDTO;
 import com.grabpt.dto.response.MyRequestListDTO;
 import com.grabpt.dto.response.MyReviewListDTO;
@@ -32,6 +37,7 @@ import lombok.RequiredArgsConstructor;
 public class MyProfileController {
 
 	private final ProfileService profileService;
+	private final ObjectMapper objectMapper;
 
 	// @AuthenticationPrincipal Long userId
 	@Operation(
@@ -43,13 +49,35 @@ public class MyProfileController {
 		return ApiResponse.onSuccess(profileService.findMyUserProfile(userId));
 	}
 
-	@PatchMapping
-	public ApiResponse<ProfileResponseDTO.MyProfileDTO> updateMyUserProfile(
+	@PatchMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	@Operation(summary = "기본 프로필 수정", description = "{\n"
+		+ "  \"nickname\": \"string\",\n"
+		+ "  \"address\": {\n"
+		+ "    \"city\": \"string\",\n"
+		+ "    \"district\": \"string\",\n"
+		+ "    \"street\": \"string\",\n"
+		+ "    \"zipcode\": \"string\"\n"
+		+ "  }\n"
+		+ "}")
+	public ApiResponse<String> updateMyUserProfile(
 		@AuthenticationPrincipal(expression = "user.id") Long userId,
-		@Valid @RequestBody UserProfileUpdateRequestDTO request) {
+		@RequestParam("request") String requestJson,
+		@RequestPart(value = "image", required = false) MultipartFile profileImage) { // 이미지는 선택사항으로 처리
 
-		profileService.updateMyUserProfile(userId, request);
-		return ApiResponse.onSuccess(profileService.findMyUserProfile(userId));
+		// JSON 문자열을 DTO 객체로 변환
+		UserProfileUpdateRequestDTO request;
+
+		try {
+			// JSON 문자열을 DTO 객체로 변환
+			request = objectMapper.readValue(requestJson, UserProfileUpdateRequestDTO.class);
+		} catch (JsonProcessingException e) {
+			// JSON 파싱 실패 시, 400 Bad Request 에러를 발생시킵니다.
+			throw new GeneralException(ErrorStatus._BAD_REQUEST);
+		}
+
+		profileService.updateMyUserProfile(userId, request, profileImage);
+
+		return ApiResponse.onSuccess("프로필이 성공적으로 수정되었습니다.");
 	}
 
 	@GetMapping("/reviews")

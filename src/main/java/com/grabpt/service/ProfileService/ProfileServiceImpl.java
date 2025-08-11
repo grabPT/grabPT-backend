@@ -51,6 +51,8 @@ public class ProfileServiceImpl implements ProfileService {
 	private final ProProfileRepository proProfileRepository;
 	private final CertificationService certificationService;
 
+
+
 	@Override
 	public ProfileResponseDTO.MyProfileDTO findMyUserProfile(Long userId) {
 		Users user = findUserById(userId);
@@ -77,15 +79,40 @@ public class ProfileServiceImpl implements ProfileService {
 
 	@Override
 	@Transactional
-	public void updateMyUserProfile(Long userId, UserProfileUpdateRequestDTO request) {
-		Users user = findUserById(userId);
-		UserProfile userProfile = user.getUserProfile();
-		if (userProfile == null) {
-			throw new GeneralException(ErrorStatus.MEMBER_NOT_FOUND);
-		}
+	public void updateMyUserProfile(Long userId, UserProfileUpdateRequestDTO request, MultipartFile profileImage) {
+		Users user = userRepository.findById(userId)
+			.orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+		// 1. 닉네임 수정
 		user.setNickname(request.getNickname());
-		userProfile.setResidence(request.getResidence());
-		userProfile.setPreferredAreas(request.getPreferredAreas());
+
+		// 2. 주소 정보가 있으면 주소 수정
+		UserProfileUpdateRequestDTO.AddressDTO addressDto = request.getAddress();
+		if (addressDto != null) {
+			Address existingAddress = user.getAddress();
+			if (existingAddress != null) {
+				existingAddress.updateDetails(
+					addressDto.getCity(),
+					addressDto.getDistrict(),
+					addressDto.getStreet(),
+					addressDto.getZipcode()
+				);
+			} else {
+				Address newAddress = Address.builder()
+					.city(addressDto.getCity())
+					.district(addressDto.getDistrict())
+					.street(addressDto.getStreet())
+					.zipcode(addressDto.getZipcode())
+					.build();
+				user.setAddress(newAddress);
+			}
+		}
+
+		// 3. 이미지 파일이 있으면 프로필 이미지 수정 (주소 수정 로직과 분리)
+		if (profileImage != null && !profileImage.isEmpty()) {
+			String imageUrl = photoService.uploadProfileImage(profileImage);
+			user.setProfileImageUrl(imageUrl);
+		}
 	}
 
 

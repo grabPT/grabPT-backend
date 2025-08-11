@@ -30,7 +30,8 @@ public interface ProfileService {
 
 	Page<MyReviewListDTO> findMyReviews(Long userId, Pageable pageable);
 
-	void updateMyUserProfile(Long userId, UserProfileUpdateRequestDTO request);
+	void updateMyUserProfile(Long userId, UserProfileUpdateRequestDTO request, MultipartFile profileImage);
+
 
 	Page<MyReviewListDTO> findProReviews(Long userId, Pageable pageable);
 
@@ -42,7 +43,6 @@ public interface ProfileService {
 
 	List<CategoryResponse.ProListDto> findAllProByCategoryCodeAndRegion(String categoryCode, String region);
 	void updateProCenter(Long userId, CenterUpdateRequestDTO request);
-
 	void updateProDescription(Long userId, DescriptionUpdateRequestDTO request);
 	void updateProPhotos(Long userId, List<MultipartFile> photoFiles);
 	void updateProPtPrice(Long userId, PtPriceUpdateRequestDTO request);

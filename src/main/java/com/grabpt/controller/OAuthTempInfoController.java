@@ -10,7 +10,7 @@ import com.grabpt.dto.response.OAuthTempInfoDto;
 import jakarta.servlet.http.HttpSession;
 
 @RestController
-@RequestMapping("/auth/api")
+@RequestMapping("/api/auth")
 public class OAuthTempInfoController {
 
 	@GetMapping("/temp-info")

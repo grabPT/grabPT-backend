@@ -26,6 +26,15 @@ public class MyReviewListDTO {
 	@Schema(description = "리뷰 내용", example = "친절하고 운동도 재미있었어요!")
 	private String content;
 
+	@Schema(description = "센터명", example = "단단짐")
+	private String center;
+
+	private Long proId;
+
+	private String proNickName;
+
+
+
 	public static MyReviewListDTO from(Review review) {
 		Users user = review.getUser();
 
@@ -35,6 +44,9 @@ public class MyReviewListDTO {
 			.residence(user.getUserProfile().getResidence())
 			.rating(review.getRating())
 			.content(review.getContent())
+			.center(review.getProProfile().getCenter())
+			.proId(review.getProProfile().getUser().getId())
+			.proNickName(review.getProProfile().getUser().getNickname())
 			.build();
 	}
 }

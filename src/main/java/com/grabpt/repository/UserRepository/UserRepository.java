@@ -19,7 +19,7 @@ public interface UserRepository extends JpaRepository<Users, Long> {
 
 	// SELECT * FROM user WHERE provider = ?1 and providerId = ?2
 	Optional<Users> findByOauthProviderAndOauthId(String oauthProvider, String oauthId);
-
+	
 	Optional<Users> findByEmail(String email);
 
 	boolean existsByNickname(String nickname);

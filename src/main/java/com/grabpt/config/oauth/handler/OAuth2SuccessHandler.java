@@ -102,7 +102,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
 			// DB에 refreshToken 저장
 			oauthUser.setRefreshToken(refreshToken);
-			userRepository.save(oauthUser);
+			// userRepository.save(oauthUser);
 
 			// 쿠키로 토큰 전달
 			addCookie(response, "accessToken", accessToken, Duration.ofMinutes(30), true);

@@ -2,6 +2,10 @@ package com.grabpt.service.RequestionService;
 
 import java.util.List;
 
+import com.grabpt.domain.entity.ProProfile;
+import com.grabpt.dto.response.CategoryResponse;
+import com.grabpt.service.AlarmService.AlarmService;
+import com.grabpt.service.ProfileService.ProfileService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -36,6 +40,8 @@ public class RequestionServiceImpl implements RequestionService {
 	private final CategoryRepository categoryRepository;
 	private final UserRepository userRepository;
 	private final UserQueryService userQueryService;
+	private final ProfileService profileService;
+	private final AlarmService alarmService;
 
 	@Override
 	public List<Requestions> getReqeustions(String categoryCode, Pageable pageable) {
@@ -67,9 +73,14 @@ public class RequestionServiceImpl implements RequestionService {
 			.location(dto.getLocation())
 			.status(RequestStatus.MATCHING)
 			.build();
-
 		requestion.setUser(user); // 연관관계 설정
 
+		List<ProProfile> proProfiles = profileService.findAllProByCategoryCodeAndRegion(category.getCode(), requestion.getLocation());
+		for (ProProfile proProfile : proProfiles) {
+			alarmService.sendAlarm(proProfile.getUser().getId(),"REQUESTION", "요청서 도착",
+				requestion.getUser().getNickname()+"님의 요청서가 도착했습니다.", "/api/requestion/"+requestion.getId());
+
+		}
 		return requestionRepository.save(requestion);
 	}
 

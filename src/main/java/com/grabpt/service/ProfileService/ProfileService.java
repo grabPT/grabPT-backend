@@ -2,6 +2,7 @@ package com.grabpt.service.ProfileService;
 
 import java.util.List;
 
+import com.grabpt.domain.entity.ProProfile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
@@ -41,7 +42,7 @@ public interface ProfileService {
 
 	Page<ProProfileResponseDTO> findProProfilesByCategory(String categoryCode, Pageable pageable);
 
-	List<CategoryResponse.ProListDto> findAllProByCategoryCodeAndRegion(String categoryCode, String region);
+	List<ProProfile> findAllProByCategoryCodeAndRegion(String categoryCode, String region);
 	void updateProCenter(Long userId, CenterUpdateRequestDTO request);
 	void updateProDescription(Long userId, DescriptionUpdateRequestDTO request);
 	void updateProPhotos(Long userId, List<MultipartFile> photoFiles);

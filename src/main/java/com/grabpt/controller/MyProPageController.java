@@ -43,12 +43,14 @@ public class MyProPageController {
 	private final ObjectMapper objectMapper;
 
 	@GetMapping
+	@Operation(summary = "내 전문가 프로필을 조회합니다")
 	public ApiResponse<ProfileResponseDTO.MyProProfileDTO> getMyProUserProfile(
 		@AuthenticationPrincipal(expression = "user.id") Long userId) {
 		return ApiResponse.onSuccess(profileService.findMyProUserProfile(userId));
 	}
 
 	@GetMapping("/reviews")
+	@Operation(summary = "나(전문가) 한테 달린 리뷰를 확인합니다.")
 	public ApiResponse<Page<MyReviewListDTO>> getProReviews(
 		@AuthenticationPrincipal(expression = "user.id") Long userId,
 		@RequestParam(defaultValue = "1") int page,
@@ -89,6 +91,7 @@ public class MyProPageController {
 	}
 
 	@PatchMapping("/center")
+	@Operation(summary = "센터명을 수정합니다")
 	public ApiResponse<String> updateProCenter(
 		@AuthenticationPrincipal(expression = "user.id") Long userId,
 		@Valid @RequestBody CenterUpdateRequestDTO request) {
@@ -98,6 +101,7 @@ public class MyProPageController {
 	}
 
 	@PatchMapping("/description")
+	@Operation(summary = "프로 설명 고치기")
 	public ApiResponse<String> updateProDescription(
 		@AuthenticationPrincipal(expression = "user.id") Long userId,
 		@Valid @RequestBody DescriptionUpdateRequestDTO request) {
@@ -106,6 +110,7 @@ public class MyProPageController {
 	}
 
 	@PatchMapping(value = "/photos", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+	@Operation(summary = "프로 사진 변경")
 	public ApiResponse<String> updateProPhotos(
 		@AuthenticationPrincipal(expression = "user.id") Long userId,
 		@RequestPart(value = "photos") List<MultipartFile> photoFiles) {
@@ -117,6 +122,7 @@ public class MyProPageController {
 	}
 
 	@PatchMapping("/ptPrice")
+	@Operation(summary = "pt 가격 수정")
 	public ApiResponse<String> updateProPtPrice(
 		@AuthenticationPrincipal(expression = "user.id") Long userId,
 		@Valid @RequestBody PtPriceUpdateRequestDTO request) {
@@ -125,6 +131,7 @@ public class MyProPageController {
 	}
 
 	@PatchMapping("/ptProgram")
+	@Operation(summary = "pt 프로그램 수정")
 	public ApiResponse<String> updateProProgram(
 		@AuthenticationPrincipal(expression = "user.id") Long userId,
 		@Valid @RequestBody PtProgramUpdateRequestDTO request) {

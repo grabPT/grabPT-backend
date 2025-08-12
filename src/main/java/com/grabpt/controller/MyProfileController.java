@@ -40,7 +40,6 @@ public class MyProfileController {
 	private final ProfileService profileService;
 	private final ObjectMapper objectMapper;
 
-	// @AuthenticationPrincipal Long userId
 	@Operation(
 		description = "유저의 프로필을 조회합니다.",
 		summary = "유저의 프로필을 조회합니다."
@@ -74,6 +73,7 @@ public class MyProfileController {
 	}
 
 	@GetMapping("/reviews")
+	@Operation(summary = "리뷰(review) 확인 API")
 	public ApiResponse<Page<MyReviewListDTO>> getMyReviewList(
 		@AuthenticationPrincipal(expression = "user.id") Long userId,
 		@RequestParam(defaultValue = "1") int page,
@@ -84,6 +84,7 @@ public class MyProfileController {
 	}
 
 	@GetMapping("/requests")
+	@Operation(summary = "요청서(request) 확인 API")
 	public ApiResponse<Page<MyRequestListDTO>> getMyRequestList(
 		@AuthenticationPrincipal(expression = "user.id") Long userId,
 		@RequestParam(defaultValue = "1") int page,
@@ -94,6 +95,7 @@ public class MyProfileController {
 	}
 
 	@PatchMapping(value = "/image", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+	@Operation(summary = "이미지(Image) 변경")
 	public ApiResponse<String> updateUserProfileImage(
 		@AuthenticationPrincipal(expression = "user.id") Long userId,
 		@RequestPart(value = "image") MultipartFile profileImage) {

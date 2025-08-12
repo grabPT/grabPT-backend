@@ -69,7 +69,7 @@ public class ProfileServiceImpl implements ProfileService {
 
 	@Override
 	public Page<MyRequestListDTO> findMyRequests(Long userId, Pageable pageable) {
-		Page<Requestions> requests = requestionRepository.findAllByUserId(userId, pageable);
+		Page<Requestions> requests = requestionRepository.findAllByUserIdOrderByCreatedAtDesc(userId, pageable);;
 		return requests.map(MyRequestListDTO::new);
 	}
 

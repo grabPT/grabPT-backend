@@ -35,6 +35,7 @@ public class AlarmController {
 	}
 
 	@PatchMapping("/api/alarm/{alarmId}/read")
+	@ResponseBody
 	public ApiResponse<AlarmResponseDto> readAlarm(@PathVariable(name = "alarmId") Long alarmId){
 		return ApiResponse.onSuccess(alarmService.readAlarm(alarmId));
 	}

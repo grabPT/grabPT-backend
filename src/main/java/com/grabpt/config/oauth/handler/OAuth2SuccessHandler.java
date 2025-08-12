@@ -37,6 +37,8 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 	private static final String SHARED_DOMAIN = "grabpt.com";
 	private static final String FRONT_HOME = "https://www.grabpt.com/";
 	private static final String FRONT_SIGNUP = "https://www.grabpt.com/signup";
+	private static final String DEVELOP_FRONT_HOME = "http://localhost:5173";
+	private static final String DEVELOP_FRONT_SIGNUP = "http://localhost:5173/signup";
 
 	private static String b64(String s) {
 		if (s == null)

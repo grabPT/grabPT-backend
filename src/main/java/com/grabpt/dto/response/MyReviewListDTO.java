@@ -33,6 +33,8 @@ public class MyReviewListDTO {
 
 	private String proNickName;
 
+	private String imageURL;
+
 
 
 	public static MyReviewListDTO from(Review review) {
@@ -47,6 +49,7 @@ public class MyReviewListDTO {
 			.center(review.getProProfile().getCenter())
 			.proId(review.getProProfile().getUser().getId())
 			.proNickName(review.getProProfile().getUser().getNickname())
+			.imageURL(review.getProProfile().getUser().getProfileImageUrl())
 			.build();
 	}
 }

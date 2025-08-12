@@ -39,10 +39,10 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
 	private static final String SHARED_DOMAIN = "grabpt.com"; // 앞에 점(.) 금지
 
-	private static String b64u(String s) {
+	private static String b64(String s) {
 		if (s == null)
 			return "";
-		return Base64.getUrlEncoder().withoutPadding()
+		return Base64.getEncoder()
 			.encodeToString(s.getBytes(StandardCharsets.UTF_8));
 	}
 
@@ -118,10 +118,10 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
 		// 쿠키 생성
 		// 신규 회원: 프론트가 읽을 임시 쿠키 (ASCII만 허용 → Base64 URL-safe 인코딩)
-		addCookie(response, "oauthEmail", b64u(email), Duration.ofMinutes(5), false);
-		addCookie(response, "oauthName", b64u(name), Duration.ofMinutes(5), false);
-		addCookie(response, "oauthId", b64u(oauthId), Duration.ofMinutes(5), false);
-		addCookie(response, "oauthProvider", b64u(oauthProvider), Duration.ofMinutes(5), false);
+		addCookie(response, "oauthEmail", b64(email), Duration.ofMinutes(5), false);
+		addCookie(response, "oauthName", b64(name), Duration.ofMinutes(5), false);
+		addCookie(response, "oauthId", b64(oauthId), Duration.ofMinutes(5), false);
+		addCookie(response, "oauthProvider", b64(oauthProvider), Duration.ofMinutes(5), false);
 
 		// 신규 회원 → 세션에 임시 정보 저장 (null 허용)
 		HttpSession session = request.getSession();

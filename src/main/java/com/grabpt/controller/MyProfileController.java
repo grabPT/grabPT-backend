@@ -20,7 +20,6 @@ import org.springframework.web.multipart.MultipartFile;
 import com.grabpt.apiPayload.ApiResponse;
 import com.grabpt.apiPayload.code.status.ErrorStatus;
 import com.grabpt.apiPayload.exception.GeneralException;
-import com.grabpt.dto.request.CertificationUpdateRequestDTO;
 import com.grabpt.dto.request.UserProfileUpdateRequestDTO;
 import com.grabpt.dto.response.MyRequestListDTO;
 import com.grabpt.dto.response.MyReviewListDTO;
@@ -28,7 +27,6 @@ import com.grabpt.dto.response.ProfileResponseDTO;
 import com.grabpt.service.ProfileService.ProfileService;
 
 import io.swagger.v3.oas.annotations.Operation;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -50,15 +48,7 @@ public class MyProfileController {
 	}
 
 	@PatchMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	@Operation(summary = "기본 프로필 수정", description = "{\n"
-		+ "  \"nickname\": \"string\",\n"
-		+ "  \"address\": {\n"
-		+ "    \"city\": \"string\",\n"
-		+ "    \"district\": \"string\",\n"
-		+ "    \"street\": \"string\",\n"
-		+ "    \"zipcode\": \"string\"\n"
-		+ "  }\n"
-		+ "}")
+	@Operation(summary = "기본 프로필 수정", description = "{ \"nickname\": \"test\", \"address\": { \"city\": \"test\", \"district\": \"test\", \"street\": \"test\", \"zipcode\": \"test\", \"specAddress\" : \"test\"  } }")
 	public ApiResponse<String> updateMyUserProfile(
 		@AuthenticationPrincipal(expression = "user.id") Long userId,
 		@RequestParam("request") String requestJson,

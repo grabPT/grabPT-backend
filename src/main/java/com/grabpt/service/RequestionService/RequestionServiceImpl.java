@@ -74,6 +74,7 @@ public class RequestionServiceImpl implements RequestionService {
 			.status(RequestStatus.MATCHING)
 			.build();
 		requestion.setUser(user); // 연관관계 설정
+		Requestions save = requestionRepository.save(requestion);
 
 		List<ProProfile> proProfiles = profileService.findAllProByCategoryCodeAndRegion(category.getCode(), requestion.getLocation());
 		for (ProProfile proProfile : proProfiles) {
@@ -81,7 +82,7 @@ public class RequestionServiceImpl implements RequestionService {
 				requestion.getUser().getNickname()+"님의 요청서가 도착했습니다.", "/api/requestion/"+requestion.getId());
 
 		}
-		return requestionRepository.save(requestion);
+		return save;
 	}
 
 	@Override

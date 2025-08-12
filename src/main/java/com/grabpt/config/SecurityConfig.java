@@ -78,6 +78,7 @@ public class SecurityConfig {
 			.formLogin(AbstractHttpConfigurer::disable)
 			.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)  //  유지
 			.authorizeHttpRequests(auth -> auth
+				.requestMatchers("/auth/api/temp-info").permitAll() // 소셜로그인 get 요청 엔드포인트
 				.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 				.requestMatchers("/ws-connect/**").permitAll()
 				.requestMatchers("/user/**").authenticated()

@@ -13,6 +13,8 @@ import com.grabpt.domain.entity.Requestions;
 public interface RequestionRepository extends JpaRepository<Requestions, Long> {
 	Page<Requestions> findAllByUserId(Long userId, Pageable pageable);
 
+	Page<Requestions> findAllByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
+
 	@Query("""
 			SELECT r
 			FROM Requestions r

@@ -174,24 +174,20 @@ public class ChatServiceImpl implements ChatService{
 		Messages messages = messageRepository.findTopByChatRoom_IdOrderByIdDesc(roomId).orElseThrow(
 			()->new ChatHandler(ErrorStatus.MESSAGE_NOT_FOUND));
 
-		Long recentMessageId = messages.getId();
-		int currentReadCount = messages.getReadCount();
-		if (currentReadCount > 0) {
-			messages.setReadCount(currentReadCount - 1);
-		}
-		log.info("메시지 읽음 처리 when exist");
+
 		UserChatRoom chatRoom = userChatRoomRepository.findByRoomIdAndUserId(roomId, userId).orElseThrow(
 			() -> new ChatHandler(ErrorStatus.CHATROOM_NOT_FOUND));
 
-		chatRoom.setLastReadMessageId(recentMessageId);
+		chatRoom.setLastReadMessageId(messages.getId());
 		chatRoom.setLastReadAt(LocalDateTime.now());
 		userChatRoomRepository.save(chatRoom);
 
-		ChatResponse.ReadStatusUpdateDto dto  = ChatResponse.ReadStatusUpdateDto.builder()
-			.messageId(messages.getId())
-			.readCount(messages.getReadCount())
-			.build();
-		messagingTemplate.convertAndSend("/subscribe/chat/"+roomId+"/read-status", dto);
+		if (!messages.getSender().getId().equals(userId)) {
+			if (messages.getReadCount() > 0) {
+				messages.setReadCount(messages.getReadCount() - 1);
+			}
+			broadcastReadStatus(roomId, messages);
+		}
 	}
 
 	//채팅방 들어갈 시 message읽음 처리
@@ -202,15 +198,10 @@ public class ChatServiceImpl implements ChatService{
 		for (Messages msg : unreadMessages) {
 			msg.setReadCount(0);
 		}
-		log.info("메시지 읽음 처리 when enter");
 		messageRepository.saveAll(unreadMessages);
 
 		for (Messages msg : unreadMessages) {
-			ChatResponse.ReadStatusUpdateDto dto = ChatResponse.ReadStatusUpdateDto.builder()
-				.messageId(msg.getId())
-				.readCount(msg.getReadCount())
-				.build();
-			messagingTemplate.convertAndSend("/subscribe/chat/" + roomId + "/read-status", dto);
+			broadcastReadStatus(roomId, msg);
 		}
 
 		UserChatRoom chatRoom = userChatRoomRepository.findByRoomIdAndUserId(roomId, userId).orElseThrow(
@@ -221,5 +212,24 @@ public class ChatServiceImpl implements ChatService{
 		chatRoom.setLastReadMessageId(lastMessageId);
 		chatRoom.setLastReadAt(LocalDateTime.now());
 		userChatRoomRepository.save(chatRoom);
+
+		updateAllUnreadMessageCount(userId);
+	}
+
+	private void broadcastReadStatus(Long roomId, Messages message) {
+		ChatResponse.ReadStatusUpdateDto dto = ChatResponse.ReadStatusUpdateDto.builder()
+			.messageId(message.getId())
+			.readCount(message.getReadCount())
+			.build();
+		messagingTemplate.convertAndSend("/subscribe/chat/" + roomId + "/read-status", dto);
+		log.info("상대방 메시지 읽음 처리 완료: roomId={}, messageId={}", roomId, message.getId());
+	}
+
+	private void updateAllUnreadMessageCount(Long userId){
+		Long allUnreadMessageCount = getAllUnreadMessageCount(userId);
+		messagingTemplate.convertAndSend("/subscribe/chat/" + userId + "/unread-count", allUnreadMessageCount);
 	}
 }
+
+//읽었을 때 전체 메시지 업데이트 전달
+// 본인이 보낸 메시지는 읽음 처리 되지 않도록

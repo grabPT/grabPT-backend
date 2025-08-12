@@ -97,6 +97,7 @@ public class SecurityConfig {
 			"http://grabpt.com",
 			"https://grabpt.com",
 			"https://www.grabpt.com",
+			"wws://api.grabpt.com",
 			"https://api.grabpt.com"    // 여기에 추가 필요
 		));
 		configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));

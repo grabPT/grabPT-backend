@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.PatchMapping;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -20,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.grabpt.apiPayload.ApiResponse;
 import com.grabpt.apiPayload.code.status.ErrorStatus;
 import com.grabpt.apiPayload.exception.GeneralException;
+import com.grabpt.dto.request.DeletedRequestDTO;
 import com.grabpt.dto.request.UserProfileUpdateRequestDTO;
 import com.grabpt.dto.response.MyRequestListDTO;
 import com.grabpt.dto.response.MyReviewListDTO;
@@ -102,8 +105,18 @@ public class MyProfileController {
 
 	@DeleteMapping
 	@Operation(summary = "회원 탈퇴 API", description = "현재 로그인된 사용자의 계정을 비활성화합니다.")
-	public ApiResponse<String> withdrawUser(@AuthenticationPrincipal(expression = "user.id") Long userId) {
-		profileService.deleteUser(userId);
+	public ApiResponse<String> withdrawUser(@AuthenticationPrincipal(expression = "user.id") Long userId,
+		@RequestBody DeletedRequestDTO deletedRequest
+		) {
+		profileService.deleteUser(userId, deletedRequest);
 		return ApiResponse.onSuccess("회원 탈퇴가 성공적으로 처리되었습니다.");
 	}
+
+	@PatchMapping(value = "/restore")
+	@Operation(summary = "회원 복구")
+	public ApiResponse<String> restoreUser(Long userId) {
+		profileService.restoreUser(userId);
+		return ApiResponse.onSuccess("회원 복구가 성공적으로 처리되었습니다.");
+	}
+
 }

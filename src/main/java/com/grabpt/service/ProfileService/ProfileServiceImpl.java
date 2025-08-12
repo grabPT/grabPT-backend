@@ -1,5 +1,6 @@
 package com.grabpt.service.ProfileService;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,8 +16,10 @@ import com.grabpt.domain.entity.ProProfile;
 import com.grabpt.domain.entity.Requestions;
 import com.grabpt.domain.entity.Review;
 import com.grabpt.domain.entity.Users;
+import com.grabpt.domain.enums.Role;
 import com.grabpt.dto.request.CenterUpdateRequestDTO;
 import com.grabpt.dto.request.CertificationUpdateRequestDTO;
+import com.grabpt.dto.request.DeletedRequestDTO;
 import com.grabpt.dto.request.DescriptionUpdateRequestDTO;
 import com.grabpt.dto.request.ProLocationUpdateRequestDTO;
 import com.grabpt.dto.request.PtPriceUpdateRequestDTO;
@@ -258,9 +261,32 @@ public class ProfileServiceImpl implements ProfileService {
 
 	@Override
 	@Transactional
-	public void deleteUser(Long userId) {
-		Users user = findUserById(userId);
-		user.withdraw(); // Users 엔티티에 추가한 탈퇴 메서드 호출
+	public void deleteUser(Long userId, DeletedRequestDTO deletedRequest) {
+		Users user = userRepository.findById(userId).orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+		user.setPreviousRole(user.getRole());
+		user.setRole(Role.DELETED);
+		user.setDeletedAt(LocalDateTime.now());
+
+		user.setDeletionReason(deletedRequest.getDeletionReason());
+		userRepository.save(user);
+	}
+
+	@Override
+	@Transactional
+	public void restoreUser(Long userId) {
+		Users user = userRepository.findById(userId).orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+
+		LocalDateTime recoveryDate = LocalDateTime.now().minusDays(30);
+
+		if(user.getRole() == Role.DELETED && user.getDeletedAt().isAfter(recoveryDate)) {
+			user.setRole(user.getPreviousRole());
+			user.setDeletedAt(null);
+			user.setDeletionReason(null);
+		}
+		else {
+			throw new IllegalStateException("복구 가능 시간이 지났습니다.");
+		}
 	}
 
 	@Override

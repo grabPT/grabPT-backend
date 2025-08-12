@@ -81,6 +81,16 @@ public class Users extends BaseEntity {
 	@Column(length = 500)
 	private String accessToken;
 
+	@Column(name = "deleted_at")
+	private LocalDateTime deletedAt; // 회원탈퇴시 시간 저장
+
+	@Column(length = 500)
+	private String deletionReason; // 회원탈퇴 사유
+
+	@Enumerated(EnumType.STRING)
+	private Role previousRole;
+
+
 	// 선택 약관 (마케팅 정보 수신 동의)
 	private Boolean agreeMarketing;
 	private LocalDateTime agreeMarketingAt;
@@ -143,16 +153,5 @@ public class Users extends BaseEntity {
 		userChatRoom.setUser(this);
 	}
 
-	public void withdraw() {
-		this.username = "탈퇴한 회원";
-		this.nickname = "탈퇴한 회원";
-		this.email = "deleted@" + this.id; // 이메일은 고유해야 하므로 ID를 포함
-		this.phone_number = "";
-		this.profileImageUrl = null;
-		this.refreshToken = null;
-		this.role = Role.DELETED; // 역할(Role)을 DELETED로 변경
-		this.userProfile = null; // 프로필 정보 연결 해제
-		this.proProfile = null;
-	}
 
 }

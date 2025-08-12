@@ -8,6 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.grabpt.dto.request.CenterUpdateRequestDTO;
 import com.grabpt.dto.request.CertificationUpdateRequestDTO;
+import com.grabpt.dto.request.DeletedRequestDTO;
 import com.grabpt.dto.request.DescriptionUpdateRequestDTO;
 
 import com.grabpt.dto.request.ProLocationUpdateRequestDTO;
@@ -51,7 +52,9 @@ public interface ProfileService {
 	CertificationResponseDTO findMyCertifications(Long userId);
 	void updateProCertifications(Long userId, CertificationUpdateRequestDTO request, List<MultipartFile> images);
 
-	void deleteUser(Long userId); // 회원 탈퇴 메서드 선언
+	void deleteUser(Long userId, DeletedRequestDTO deletedRequest);// 회원 탈퇴 메서드 선언
+
+	void restoreUser(Long userId); // 회원복구 메서드
 
 	void updateProLocation(Long userId, ProLocationUpdateRequestDTO request);
 }

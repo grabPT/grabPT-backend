@@ -169,9 +169,8 @@ public class ProfileServiceImpl implements ProfileService {
 	}
 
 	@Override
-	public List<CategoryResponse.ProListDto> findAllProByCategoryCodeAndRegion(String categoryCode, String region) {
-		return CategoryConverter.toProListDto(proProfileRepository.
-			findAllProByCategoryCodeAndRegion(categoryCode, region));
+	public List<ProProfile> findAllProByCategoryCodeAndRegion(String categoryCode, String region) {
+		return proProfileRepository.findAllProByCategoryCodeAndRegion(categoryCode, region);
 	}
 
 	private Users findUserById(Long userId) {

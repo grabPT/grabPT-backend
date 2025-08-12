@@ -29,7 +29,7 @@ public class AlarmController {
 	@ResponseBody
 	public ApiResponse<List<AlarmResponseDto>> getAlarmList(HttpServletRequest request) throws IllegalAccessException {
 		Long userId = userQueryService.getUserId(request);
-		List<Alarm> alarmList = alarmService.findAllByUserId(userId);
+		List<Alarm> alarmList = alarmService.findAllUnReadAlarmByUserId(userId);
 		List<AlarmResponseDto> list = alarmList.stream().map(AlarmConverter::toAlarmResponseDto).toList();
 		return ApiResponse.onSuccess(list);
 	}

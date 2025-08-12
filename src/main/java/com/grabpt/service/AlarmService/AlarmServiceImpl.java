@@ -58,8 +58,8 @@ public class AlarmServiceImpl implements AlarmService {
 	}
 
 	@Override
-	public List<Alarm> findAllByUserId(Long userId){
-		return alarmRepository.findAllByUserId(userId);
+	public List<Alarm> findAllUnReadAlarmByUserId(Long userId){
+		return alarmRepository.findAllUnReadAlarmByUserId(userId);
 	}
 
 }

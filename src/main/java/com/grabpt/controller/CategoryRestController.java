@@ -2,6 +2,7 @@ package com.grabpt.controller;
 
 import java.util.List;
 
+import com.grabpt.domain.entity.ProProfile;
 import com.grabpt.service.ProfileService.ProfileService;
 import com.grabpt.service.RequestionService.RequestionService;
 import org.springframework.data.domain.PageRequest;
@@ -76,8 +77,8 @@ public class CategoryRestController {
 	public ApiResponse<List<CategoryResponse.ProListDto>> getTrainerList(
 		@PathVariable(name = "code") String code,
 		@RequestParam(name = "region", required = false) String region) {
-		profileService.findAllProByCategoryCodeAndRegion(code, region);
-		return ApiResponse.onSuccess(profileService.findAllProByCategoryCodeAndRegion(code, region));
+		List<ProProfile> proProfiles = profileService.findAllProByCategoryCodeAndRegion(code, region);
+		return ApiResponse.onSuccess(CategoryConverter.toProListDto(proProfiles));
 	}
 
 	@Operation(

@@ -75,7 +75,7 @@ public class ProfileServiceImpl implements ProfileService {
 
 	@Override
 	public Page<MyReviewListDTO> findMyReviews(Long userId, Pageable pageable) {
-		Page<Review> reviews = reviewRepository.findAllByUserId(userId, pageable);
+		Page<Review> reviews = reviewRepository.findAllByUserIdOrderByCreatedAt(userId, pageable);
 		return reviews.map(MyReviewListDTO::from);
 	}
 
@@ -126,7 +126,7 @@ public class ProfileServiceImpl implements ProfileService {
 		if (user.getProProfile() == null) {
 			throw new GeneralException(ErrorStatus.MEMBER_NOT_FOUND);
 		}
-		Page<Review> reviews = reviewRepository.findAllByProProfile_Id(user.getProProfile().getId(), pageable);
+		Page<Review> reviews = reviewRepository.findAllByProProfile_IdOrderByCreatedAt(user.getProProfile().getId(), pageable);
 		return reviews.map(MyReviewListDTO::from);
 	}
 
@@ -143,7 +143,7 @@ public class ProfileServiceImpl implements ProfileService {
 
 		Long proProfileId = user.getProProfile().getId();
 
-		Page<Review> reviews = reviewRepository.findAllByProProfile_IdAndProProfile_Category_Code(proProfileId, categoryCode, pageable);
+		Page<Review> reviews = reviewRepository.findAllByProProfile_IdAndProProfile_Category_CodeOrderByCreatedAt(proProfileId, categoryCode, pageable);
 
 
 		return reviews.map(MyReviewListDTO::from);

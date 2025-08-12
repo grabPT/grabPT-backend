@@ -47,7 +47,7 @@ public class RequestionServiceImpl implements RequestionService {
 	public List<Requestions> getReqeustions(String categoryCode, Pageable pageable) {
 		return requestionRepository.findTop6RequestionsByCategory(categoryCode, pageable);
 	}
-
+ 
 	@Override
 	public Requestions save(RequestionRequestDto dto, String email) {
 		Users user = userRepository.findByEmail(email)

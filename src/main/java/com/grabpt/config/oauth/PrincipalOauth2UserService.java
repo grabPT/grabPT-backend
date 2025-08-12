@@ -73,7 +73,6 @@ public class PrincipalOauth2UserService extends DefaultOAuth2UserService {
 		Users user = userOptional.orElse(
 			Users.builder()
 				.nickname(oAuth2UserInfo.getName())
-				.password(UUID.randomUUID().toString()) // 일반 로그인 차단용 임시 비번
 				.email(oAuth2UserInfo.getEmail())
 				.role(Role.USER)
 				.authRole(AuthRole.ROLE_USER)

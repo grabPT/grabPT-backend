@@ -50,8 +50,6 @@ public class Users extends BaseEntity {
 	@Column(nullable = false, length = 50)
 	private String username;
 
-	private String password;
-
 	private String profileImageUrl;
 
 	@Enumerated(EnumType.STRING)
@@ -89,7 +87,6 @@ public class Users extends BaseEntity {
 
 	@Enumerated(EnumType.STRING)
 	private Role previousRole;
-
 
 	// 선택 약관 (마케팅 정보 수신 동의)
 	private Boolean agreeMarketing;
@@ -152,6 +149,5 @@ public class Users extends BaseEntity {
 		userChatRooms.add(userChatRoom);
 		userChatRoom.setUser(this);
 	}
-
 
 }

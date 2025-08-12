@@ -92,7 +92,6 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 		log.info("findEmail = " + email);
 
 		Users oauthUser = userRepository.findByOauthProviderAndOauthId(oauthProvider, oauthId).orElse(null);
-		// Users findUser = userRepository.findByEmail(email).orElse(null);
 		if (oauthUser != null) {
 			log.info("기존 존재 회원 로직에 들어옴");
 
@@ -102,7 +101,6 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
 			// DB에 refreshToken 저장
 			oauthUser.setRefreshToken(refreshToken);
-			// userRepository.save(oauthUser);
 
 			// 쿠키로 토큰 전달
 			addCookie(response, "accessToken", accessToken, Duration.ofMinutes(30), true);
@@ -114,7 +112,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 		}
 
 		// 쿠키 생성
-		// 신규 회원: 프론트가 읽을 임시 쿠키 (ASCII만 허용 → Base64 URL-safe 인코딩)
+		// 신규 회원: 프론트가 읽을 임시 쿠키 (ASCII만 허용 → Base64)
 		addCookie(response, "oauthEmail", b64(email), Duration.ofMinutes(5), false);
 		addCookie(response, "oauthName", b64(name), Duration.ofMinutes(5), false);
 		addCookie(response, "oauthId", b64(oauthId), Duration.ofMinutes(5), false);

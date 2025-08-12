@@ -14,7 +14,6 @@ import com.grabpt.domain.entity.Address;
 import com.grabpt.domain.entity.ProProfile;
 import com.grabpt.domain.entity.Requestions;
 import com.grabpt.domain.entity.Review;
-import com.grabpt.domain.entity.UserProfile;
 import com.grabpt.domain.entity.Users;
 import com.grabpt.dto.request.CenterUpdateRequestDTO;
 import com.grabpt.dto.request.CertificationUpdateRequestDTO;
@@ -95,6 +94,7 @@ public class ProfileServiceImpl implements ProfileService {
 					addressDto.getCity(),
 					addressDto.getDistrict(),
 					addressDto.getStreet(),
+					addressDto.getSpecAddress(),
 					addressDto.getZipcode()
 				);
 			} else {
@@ -103,6 +103,7 @@ public class ProfileServiceImpl implements ProfileService {
 					.district(addressDto.getDistrict())
 					.street(addressDto.getStreet())
 					.zipcode(addressDto.getZipcode())
+					.specAddress(addressDto.getSpecAddress())
 					.build();
 				user.setAddress(newAddress);
 			}

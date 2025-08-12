@@ -50,6 +50,7 @@ public class ProfileResponseDTO {
 					.district(address.getDistrict())
 					.street(address.getStreet())
 					.zipcode(address.getZipcode())
+					.specAddress(address.getSpecAddress())
 					.build();
 			}
 		}
@@ -94,6 +95,7 @@ public class ProfileResponseDTO {
 			private String district;
 			private String street;
 			private String zipcode;
+			private String specAddress;
 
 			public static AddressDTO from(Address address) {
 				return AddressDTO.builder()
@@ -101,6 +103,7 @@ public class ProfileResponseDTO {
 					.district(address.getDistrict())
 					.street(address.getStreet())
 					.zipcode(address.getZipcode())
+					.specAddress(address.getSpecAddress())
 					.build();
 			}
 		}

@@ -33,6 +33,8 @@ public class UserProfileUpdateRequestDTO {
 
 		private String street;
 
+		private String specAddress;
+
 		private String zipcode;
 	}
 }

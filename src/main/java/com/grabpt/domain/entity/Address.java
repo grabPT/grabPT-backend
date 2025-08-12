@@ -61,10 +61,11 @@ public class Address extends BaseEntity {
 	}
 
 
-	public void updateDetails(String city, String district, String street, String zipcode) {
+	public void updateDetails(String city, String district, String street, String zipcode, String specAddress) {
 		this.city = city;
 		this.district = district;
 		this.street = street;
 		this.zipcode = zipcode;
+		this.specAddress = specAddress;
 	}
 }

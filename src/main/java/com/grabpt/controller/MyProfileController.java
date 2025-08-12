@@ -48,15 +48,7 @@ public class MyProfileController {
 	}
 
 	@PatchMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	@Operation(summary = "기본 프로필 수정", description = "{\n"
-		+ "  \"nickname\": \"string\",\n"
-		+ "  \"address\": {\n"
-		+ "    \"city\": \"string\",\n"
-		+ "    \"district\": \"string\",\n"
-		+ "    \"street\": \"string\",\n"
-		+ "    \"zipcode\": \"string\"\n"
-		+ "  }\n"
-		+ "}")
+	@Operation(summary = "기본 프로필 수정", description = "{ \"nickname\": \"test\", \"address\": { \"city\": \"test\", \"district\": \"test\", \"street\": \"test\", \"zipcode\": \"test\", \"specAddress\" : \"test\"  } }")
 	public ApiResponse<String> updateMyUserProfile(
 		@AuthenticationPrincipal(expression = "user.id") Long userId,
 		@RequestParam("request") String requestJson,

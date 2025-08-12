@@ -92,7 +92,7 @@ public class SecurityConfig {
 			.headers(h -> h
 				.frameOptions(f -> f.disable()) // X-Frame-Options 제거
 				.contentSecurityPolicy(csp -> csp
-					.policyDirectives("frame-ancestors https://www.grabpt.com https://grabpt.com")
+					.policyDirectives("frame-ancestors https://www.grabpt.com https://grabpt.com https://api.grabpt.com")
 				)
 			)
 			.authenticationProvider(authenticationProvider())

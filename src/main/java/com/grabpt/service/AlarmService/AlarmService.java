@@ -2,6 +2,7 @@ package com.grabpt.service.AlarmService;
 
 import com.grabpt.domain.entity.Alarm;
 import com.grabpt.dto.response.AlarmResponseDto;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
@@ -10,5 +11,5 @@ public interface AlarmService {
 
 	public AlarmResponseDto readAlarm(Long alarmId);
 
-	public List<Alarm> findAllByUserId(Long userId);
+	public List<Alarm> findAllUnReadAlarmByUserId(Long userId);
 }

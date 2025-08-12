@@ -338,10 +338,6 @@
             const body = JSON.parse(msg.body);
             appendMessage(body);
 
-            // 내가 아닌 다른 사람 메시지면 읽음 처리
-            if (body.senderId !== senderId && currentRoomId === roomId) {
-                markLastReadWhen2(roomId);
-            }
         });
     }
 

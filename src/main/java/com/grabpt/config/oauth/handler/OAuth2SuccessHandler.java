@@ -106,7 +106,14 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 			addCookie(response, "accessToken", accessToken, Duration.ofMinutes(30), true);
 			addCookie(response, "refreshToken", refreshToken, Duration.ofDays(7), true);
 
-			response.sendRedirect("https://www.grabpt.com/"); // 환경에 맞게 수정\
+			// 기존 코드
+			// response.sendRedirect("https://www.grabpt.com/"); // 환경에 맞게 수정\
+
+			if (oauthUser.getRole() == com.grabpt.domain.enums.Role.PRO) { // Role enum의 경로를 명확히 해주세요.
+				response.sendRedirect("https://www.grabpt.com/expert"); // 전문가 페이지로 리디렉션
+			} else {
+				response.sendRedirect("https://www.grabpt.com/"); // 그 외 사용자는 메인 페이지로 리디렉션
+			}
 
 			return;
 		}

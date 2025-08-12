@@ -19,7 +19,7 @@ public class MyRequestListDTO {
 	private String categoryName;
 	private Integer sessionCount;
 	private String content;
-	private List<AddressDTO> address;
+	private AddressDTO address;
 
 	@Getter
 	@Builder
@@ -48,7 +48,7 @@ public class MyRequestListDTO {
 
 		// 이 부분을 수정했습니다.
 		Address addresses = requestion.getUser().getAddress();
-		this.address = Collections.singletonList(AddressDTO.from(addresses));
+		this.address = AddressDTO.from(addresses);
 		this.availableDays = requestion.getAvailableDays();
 		this.availableTimes = requestion.getAvailableTimes();
 		this.categoryName = requestion.getCategory().getName();

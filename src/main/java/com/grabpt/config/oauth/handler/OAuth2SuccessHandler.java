@@ -5,11 +5,11 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Base64;
 import java.util.Map;
+import java.util.Objects;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -18,7 +18,6 @@ import org.springframework.stereotype.Component;
 import com.grabpt.config.jwt.JwtTokenProvider;
 import com.grabpt.domain.entity.Users;
 import com.grabpt.repository.UserRepository.UserRepository;
-import com.grabpt.service.UserService.UserQueryService;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,11 +32,11 @@ import lombok.extern.slf4j.Slf4j;
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
 	private final JwtTokenProvider jwtTokenProvider;
-	private final UserDetailsService userDetailsService;
-	private final UserQueryService userQueryService;
 	private final UserRepository userRepository;
 
-	private static final String SHARED_DOMAIN = "grabpt.com"; // 앞에 점(.) 금지
+	private static final String SHARED_DOMAIN = "grabpt.com";
+	private static final String FRONT_HOME = "https://www.grabpt.com/";
+	private static final String FRONT_SIGNUP = "https://www.grabpt.com/signup";
 
 	private static String b64(String s) {
 		if (s == null)
@@ -72,67 +71,70 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 		String name = null;
 		String oauthId = null;
 
-		if (oauthProvider.equals("google")) {
+		if ("google".equals(oauthProvider)) {
 			email = (String)attributes.get("email");
 			name = (String)attributes.get("name");
-			oauthId = oauthProvider + "-" + attributes.get("sub");
-			// Google은 gender 제공 안함 → null
-		} else if (oauthProvider.equals("kakao")) {
+			Object sub = attributes.get("sub");
+			oauthId = oauthProvider + "-" + (sub == null ? "" : String.valueOf(sub));
+
+		} else if ("kakao".equals(oauthProvider)) {
 			Map<String, Object> kakaoAccount = (Map<String, Object>)attributes.get("kakao_account");
-			Map<String, Object> profile = (Map<String, Object>)kakaoAccount.get("profile");
-
-			email = kakaoAccount.get("email") != null ? (String)kakaoAccount.get("email") : null;
+			Map<String, Object> profile =
+				kakaoAccount == null ? null : (Map<String, Object>)kakaoAccount.get("profile");
+			email = kakaoAccount != null ? (String)kakaoAccount.get("email") : null; // null 가능
 			name = profile != null ? (String)profile.get("nickname") : null;
-			oauthId = oauthProvider + "-" + attributes.get("id");
-		} else if (oauthProvider.equals("naver")) {
-			Map<String, Object> responseMap = (Map<String, Object>)attributes.get("response");
 
-			email = responseMap.get("email") != null ? (String)responseMap.get("email") : null;
-			name = responseMap.get("name") != null ? (String)responseMap.get("name") : null;
-			oauthId = oauthProvider + "-" + responseMap.get("id");
+			Object idObj = attributes.get("id");
+			oauthId = oauthProvider + "-" + (idObj == null ? "" : String.valueOf(idObj));
+
+		} else if ("naver".equals(oauthProvider)) {
+			Map<String, Object> resp = (Map<String, Object>)attributes.get("response");
+			if (resp != null) {
+				email = (String)resp.get("email");
+				name = (String)resp.get("name");
+				oauthId = oauthProvider + "-" + Objects.toString(resp.get("id"), "");
+			}
+		} else {
+			log.warn("Unsupported oauthProvider: {}", oauthProvider);
 		}
 
-		/// 이미 존재하는 회원 검증
-		log.info("findEmail = " + email);
+		log.info("[OAUTH SUCCESS] provider={}, oauthId={}, email={}, name={}",
+			oauthProvider, oauthId, email, name);
 
-		Users findUser = userRepository.findByEmail(email).orElse(null);
-		if (findUser != null) {
-			log.info("기존 존재 회원 로직에 들어옴");
+		// === 1) (provider, oauthId) 기준으로 기존 회원 조회 ===
+		Users byProviderId = null;
+		if (oauthId != null && !oauthId.isEmpty()) {
+			byProviderId = userRepository.findByOauthProviderAndOauthId(oauthProvider, oauthId).orElse(null);
+		}
 
-			// 토큰 직접 생성
-			String accessToken = jwtTokenProvider.generateToken(findUser);
-			String refreshToken = jwtTokenProvider.createRefreshToken(findUser.getEmail());
+		if (byProviderId != null) {
+			// 기존 소셜 연동 회원 → 토큰 발급 & 홈 이동
+			String accessToken = jwtTokenProvider.generateToken(byProviderId);
+			String refreshToken = jwtTokenProvider.createRefreshToken(byProviderId.getEmail());
+			byProviderId.setRefreshToken(refreshToken);
+			userRepository.save(byProviderId);
 
-			// DB에 refreshToken 저장
-			findUser.setRefreshToken(refreshToken);
-			userRepository.save(findUser);
-
-			// 쿠키로 토큰 전달
 			addCookie(response, "accessToken", accessToken, Duration.ofMinutes(30), true);
 			addCookie(response, "refreshToken", refreshToken, Duration.ofDays(7), true);
 
-			response.sendRedirect("https://www.grabpt.com/"); // 환경에 맞게 수정\
-
+			response.sendRedirect(FRONT_HOME);
 			return;
 		}
 
-		// 쿠키 생성
-		// 신규 회원: 프론트가 읽을 임시 쿠키 (ASCII만 허용 → Base64 URL-safe 인코딩)
-		addCookie(response, "oauthEmail", b64(email), Duration.ofMinutes(5), false);
-		addCookie(response, "oauthName", b64(name), Duration.ofMinutes(5), false);
-		addCookie(response, "oauthId", b64(oauthId), Duration.ofMinutes(5), false);
-		addCookie(response, "oauthProvider", b64(oauthProvider), Duration.ofMinutes(5), false);
-
-		// 신규 회원 → 세션에 임시 정보 저장 (null 허용)
+		// === 2) 신규 가입 준비(세션 + 임시 쿠키 후 /signup으로) ===
+		//  - 카카오는 email null일 수 있으니, 프론트에서 이메일 입력 받아 별도 가입 API로 마무리
+		//  - 여기서는 registrationToken 쓰지 않고 세션으로만 운반
 		HttpSession session = request.getSession();
-		session.setAttribute("tempEmail", email);
-		session.setAttribute("tempName", name);
 		session.setAttribute("tempOauthProvider", oauthProvider);
 		session.setAttribute("tempOauthId", oauthId);
+		session.setAttribute("tempName", name);
+		session.setAttribute("tempEmail", email); // null 허용
 
-		log.info("신규 회원 소셜 로그인 - provider: {}, email: {}, name: {}",
-			oauthProvider, email, name);
+		// 프론트 읽기용 최소 정보(b64). 민감/신뢰 필요한 값은 세션에만.
+		addCookie(response, "oauthName", b64(name), Duration.ofMinutes(10), false);
+		addCookie(response, "oauthEmail", b64(email), Duration.ofMinutes(10), false);
+		addCookie(response, "oauthProvider", b64(oauthProvider), Duration.ofMinutes(10), false);
 
-		response.sendRedirect("https://www.grabpt.com/signup");
+		response.sendRedirect(FRONT_SIGNUP);
 	}
 }

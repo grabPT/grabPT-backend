@@ -89,6 +89,12 @@ public class SecurityConfig {
 				.requestMatchers("/api/**").permitAll()
 				.anyRequest().permitAll()
 			)
+			.headers(h -> h
+				.frameOptions(f -> f.disable()) // X-Frame-Options 제거
+				.contentSecurityPolicy(csp -> csp
+					.policyDirectives("frame-ancestors https://www.grabpt.com https://grabpt.com")
+				)
+			)
 			.authenticationProvider(authenticationProvider())
 			.oauth2Login(oauth2 -> oauth2
 				.userInfoEndpoint(userInfo -> userInfo.userService(principalOauth2UserService))

@@ -42,7 +42,7 @@ public class AlarmServiceImpl implements AlarmService {
 			.build();
 		alarmRepository.save(alarm);
 
-		messagingTemplate.convertAndSend("/subscribe/alarm/"+user.getId(), findAllUnReadAlarmByUserId(userId).size());
+		messagingTemplate.convertAndSend("/subscribe/alarm/"+user.getId(), countUnReadAlarmByUserId(userId));
 		log.info("Alarm sent to user: {}", user.getId());
 	}
 
@@ -53,14 +53,20 @@ public class AlarmServiceImpl implements AlarmService {
 		Alarm alarm = alarmRepository.findById(alarmId).orElseThrow(
 			()->new AlarmHandler(ErrorStatus.ALARM_NOT_FOUND)
 		);
+		Long userId = alarm.getUser().getId();
 		alarm.setRead(true);
-		alarmRepository.save(alarm);
+		messagingTemplate.convertAndSend("/subscribe/alarm/"+userId, countUnReadAlarmByUserId(userId));
 		return AlarmConverter.toAlarmResponseDto(alarm);
 	}
 
 	@Override
 	public List<Alarm> findAllUnReadAlarmByUserId(Long userId){
 		return alarmRepository.findAllUnReadAlarmByUserId(userId);
+	}
+
+	@Override
+	public Long countUnReadAlarmByUserId(Long userId){
+		return alarmRepository.countUnReadAlarmByUserId(userId);
 	}
 
 }

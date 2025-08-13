@@ -12,4 +12,6 @@ public interface AlarmService {
 	public AlarmResponseDto readAlarm(Long alarmId);
 
 	public List<Alarm> findAllUnReadAlarmByUserId(Long userId);
+
+	public Long countUnReadAlarmByUserId(Long userId);
 }

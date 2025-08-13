@@ -91,9 +91,10 @@ public class SuggestionServiceImpl implements SuggestionService {
 				suggestion.addPhoto(suggestionPhoto); // 양방향 연관관계 처리
 			}
 		}
+		Suggestions save = suggestionRepository.save(suggestion);
 		alarmService.sendAlarm(requestion.getUser().getId(), "SUGGESTION", "제안서 도착",
 			user.getNickname()+" 님이 제안서를 보냈습니다", "/api/suggestion/"+suggestion.getId());
-		return suggestionRepository.save(suggestion);
+		return save;
 	}
 
 	@Override

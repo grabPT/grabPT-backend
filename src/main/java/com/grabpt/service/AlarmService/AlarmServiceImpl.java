@@ -41,7 +41,8 @@ public class AlarmServiceImpl implements AlarmService {
 			.redirectUrl(redirectUrl)
 			.build();
 		alarmRepository.save(alarm);
-		messagingTemplate.convertAndSend("/subscribe/alarm/"+user.getId(), AlarmConverter.toAlarmResponseDto(alarm));
+
+		messagingTemplate.convertAndSend("/subscribe/alarm/"+user.getId(), findAllUnReadAlarmByUserId(userId).size());
 		log.info("Alarm sent to user: {}", user.getId());
 	}
 

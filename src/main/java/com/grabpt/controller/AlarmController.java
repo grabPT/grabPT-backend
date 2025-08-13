@@ -10,6 +10,7 @@ import com.grabpt.dto.response.UserResponseDto;
 import com.grabpt.repository.AlarmRepository.AlarmRepository;
 import com.grabpt.service.AlarmService.AlarmService;
 import com.grabpt.service.UserService.UserQueryService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -25,6 +26,7 @@ public class AlarmController {
 	private final AlarmService alarmService;
 	private final UserQueryService userQueryService;
 
+	@Operation(summary = "로그인 유저의 읽지 않은 알림을 모두 조회합니다")
 	@GetMapping("/api/alarmList")
 	@ResponseBody
 	public ApiResponse<List<AlarmResponseDto>> getAlarmList(HttpServletRequest request) throws IllegalAccessException {
@@ -34,6 +36,7 @@ public class AlarmController {
 		return ApiResponse.onSuccess(list);
 	}
 
+	@Operation(summary = "알림 읽음 처리 API")
 	@PatchMapping("/api/alarm/{alarmId}/read")
 	@ResponseBody
 	public ApiResponse<AlarmResponseDto> readAlarm(@PathVariable(name = "alarmId") Long alarmId){

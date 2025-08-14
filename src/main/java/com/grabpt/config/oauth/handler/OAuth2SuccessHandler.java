@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import com.grabpt.config.jwt.JwtTokenProvider;
 import com.grabpt.domain.entity.Users;
+import com.grabpt.domain.enums.Role;
 import com.grabpt.repository.UserRepository.UserRepository;
 
 import jakarta.servlet.ServletException;
@@ -102,7 +103,8 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 			addCookie(response, "accessToken", accessToken, Duration.ofMinutes(30), true);
 			addCookie(response, "refreshToken", refreshToken, Duration.ofDays(7), true);
 			// role 쿠키 추가 (Base64 인코딩)
-			addCookie(response, "role", b64(oauthUser.getRole().name()), Duration.ofMinutes(30), false);
+			String roleValue = oauthUser.getRole() == Role.PRO ? "EXPERT" : oauthUser.getRole().name();
+			addCookie(response, "role", b64(roleValue), Duration.ofMinutes(30), false);
 
 			if (oauthUser.getRole() == com.grabpt.domain.enums.Role.PRO) { // Role enum의 경로를 명확히 해주세요.
 				response.sendRedirect("https://www.grabpt.com/authcallback"); // 전문가 페이지로 리디렉션

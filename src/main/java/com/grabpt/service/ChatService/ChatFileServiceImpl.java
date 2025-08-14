@@ -38,6 +38,7 @@ public class ChatFileServiceImpl implements ChatFileService{
 		String messageType = file.getContentType() != null && file.getContentType()
 				.startsWith("image/") ? "IMAGE" : "FILE";
 
+
 		log.info("message Type: {}",messageType);
 		return ChatRequest.MessageRequestDto.builder()
 			.content(fileUrl)

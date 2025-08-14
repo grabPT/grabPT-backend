@@ -1,10 +1,7 @@
 package com.grabpt.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import com.grabpt.service.ContractService.ContractPhotoServiceImpl;
+import org.springframework.web.bind.annotation.*;
 
 import com.grabpt.apiPayload.ApiResponse;
 import com.grabpt.converter.ContractConverter;
@@ -15,12 +12,14 @@ import com.grabpt.service.ContractService.ContractService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
 public class ContractController {
 
 	private final ContractService contractService;
+	private final ContractPhotoServiceImpl contractPhotoService;
 
 	@Operation(
 		description = "계약서 Id를 통해 계약서에 대한 정보를 조회합니다",
@@ -68,4 +67,17 @@ public class ContractController {
 			return ApiResponse.onFailure("PDF_PROCESSING_ERROR", e.getMessage(), null);
 		}
 	}
+
+	@PostMapping("/contract/{contractId}/uploadUserSign")
+	public ApiResponse<String> uploadUserSign(@PathVariable(name = "contractId") Long contractId, @RequestPart("file") MultipartFile file) {
+		contractPhotoService.uploadUserSign(contractId,file);
+		return ApiResponse.onSuccess("수강생 전자서명 upload");
+	}
+
+	@PostMapping("/contract/{contractId}/uploadProSign")
+	public ApiResponse<String> uploadProSign(@PathVariable(name = "contractId") Long contractId, @RequestPart("file") MultipartFile file) {
+		contractPhotoService.uploadProSign(contractId,file);
+		return ApiResponse.onSuccess("전문가 전자서명 upload");
+	}
+
 }

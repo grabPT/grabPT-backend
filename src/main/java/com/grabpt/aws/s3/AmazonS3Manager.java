@@ -63,6 +63,10 @@ public class AmazonS3Manager {
 		return amazonConfig.getSuggestionPhoto() + '/' + uuid.getUuid();
 	}
 
+	public String generateContractPhotoKeyName(Uuid uuid) {
+		return amazonConfig.getContractPhoto() + '/' + uuid.getUuid();
+	}
+
 	public String generateChatRoomImageKeyName(Long roomId, Uuid uuid, String originalFilename) {
 		LocalDate now = LocalDate.now(ZONE_SEOUL);
 

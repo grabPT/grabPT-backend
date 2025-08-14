@@ -121,6 +121,7 @@ cloud:
         userPhoto: userPhoto
         profilePhoto: profilePhoto
         suggestionPhoto: suggestionPhoto
+        contractPhoto: contractPhoto
         test: test
     region:
       static: ap-northeast-2

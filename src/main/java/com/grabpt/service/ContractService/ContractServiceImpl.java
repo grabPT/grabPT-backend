@@ -8,6 +8,7 @@ import java.util.Map;
 import com.grabpt.apiPayload.code.status.ErrorStatus;
 import com.grabpt.apiPayload.exception.handler.ContractHandler;
 import com.grabpt.aws.s3.AmazonS3Manager;
+import com.grabpt.config.AmazonConfig;
 import com.grabpt.domain.entity.*;
 import com.grabpt.domain.enums.Gender;
 import com.grabpt.domain.enums.MatchingStatus;
@@ -16,11 +17,9 @@ import com.grabpt.repository.ContractRepository.ContractRepository;
 import com.grabpt.service.AlarmService.AlarmService;
 import com.grabpt.service.PdfService.PdfGenerateService;
 
-import com.nimbusds.openid.connect.sdk.claims.UserInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.TemplateEngine;
@@ -34,6 +33,7 @@ public class ContractServiceImpl implements ContractService {
 	private final PdfGenerateService pdfGenerateService;
 	private final TemplateEngine templateEngine;
 	private final AmazonS3Manager amazonS3Manager;
+	private final AmazonConfig amazonConfig;
 
 
 	@Override

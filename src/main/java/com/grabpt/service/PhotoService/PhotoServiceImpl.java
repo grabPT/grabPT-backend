@@ -24,6 +24,8 @@ public class PhotoServiceImpl implements PhotoService {
 	@Transactional
 	public void updateProPhotos(ProProfile proProfile, List<MultipartFile> photoFiles) {
 
+		proProfile.getPhotos().clear();
+
 		if (photoFiles != null && !photoFiles.isEmpty()) {
 			photoFiles.forEach(file -> {
 				// 1. UUID 생성 및 S3 키 이름 생성

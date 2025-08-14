@@ -69,7 +69,7 @@ public class ProfileResponseDTO {
 
 
 		private String description;
-		private String centerName;
+		private String centerDescription;
 
 		// 소개 이미지
 		private List<MyProProfileDTO.PhotoDTO> photos;

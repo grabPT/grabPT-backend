@@ -2,6 +2,10 @@ package com.grabpt.aws.s3;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.ZoneId;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,6 +26,8 @@ public class AmazonS3Manager {
 	private final AmazonS3 amazonS3;
 
 	private final AmazonConfig amazonConfig;
+
+	private static final ZoneId ZONE_SEOUL = ZoneId.of("Asia/Seoul");
 
 	public String uploadFile(String keyName, MultipartFile file) {
 		ObjectMetadata metadata = new ObjectMetadata();
@@ -55,6 +61,34 @@ public class AmazonS3Manager {
 
 	public String generateSuggestionPhotoKeyName(Uuid uuid) {
 		return amazonConfig.getSuggestionPhoto() + '/' + uuid.getUuid();
+	}
+
+	public String generateChatRoomImageKeyName(String roomId, Uuid uuid, String originalFilename) {
+		LocalDate now = LocalDate.now(ZONE_SEOUL);
+
+		String basePrefix = "chatRoomsImages"; // 필요 시 amazonConfig에서 읽어오도록 변경 가능
+		String safe = safeFilename(originalFilename);
+
+		// 확장자 분리
+		String namePart = safe;
+		String ext = "";
+		int dot = safe.lastIndexOf('.');
+		if (dot > -1) {
+			namePart = safe.substring(0, dot);
+			ext = safe.substring(dot); // ".jpg" 포함
+		}
+
+		return String.format("%s/%s/images/%04d/%02d/%02d/%s-%s%s",
+			basePrefix, roomId,
+			now.getYear(), now.getMonthValue(), now.getDayOfMonth(),
+			uuid.getUuid(), namePart, ext);
+	}
+
+	private String safeFilename(String filename) {
+		if (filename == null || filename.isBlank())
+			return "file";
+		String cleaned = filename.replaceAll("\\s+", "_");
+		return URLEncoder.encode(cleaned, StandardCharsets.UTF_8);
 	}
 
 	/**

@@ -4,14 +4,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
-import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
+import com.grabpt.config.auth.PrincipalDetails;
 import com.grabpt.config.oauth.provider.GoogleUserInfo;
 import com.grabpt.config.oauth.provider.KakaoUserInfo;
 import com.grabpt.config.oauth.provider.NaverUserInfo;
@@ -70,22 +69,40 @@ public class PrincipalOauth2UserService extends DefaultOAuth2UserService {
 		Optional<Users> userOptional =
 			userRepository.findByOauthProviderAndOauthId(oAuth2UserInfo.getProvider(), oAuth2UserInfo.getProviderId());
 
-		Users user = userOptional.orElse(
-			Users.builder()
-				.nickname(oAuth2UserInfo.getName())
-				.email(oAuth2UserInfo.getEmail())
-				.role(Role.USER)
-				.authRole(AuthRole.ROLE_USER)
-				.oauthProvider(oAuth2UserInfo.getProvider())
-				.oauthId(oAuth2UserInfo.getProviderId())
-				.build()
-		);
+		// Users user = userOptional.orElse(
+		// 	Users.builder()
+		// 		.nickname(oAuth2UserInfo.getName())
+		// 		.email(oAuth2UserInfo.getEmail())
+		// 		.role(Role.USER)
+		// 		.authRole(AuthRole.ROLE_USER)
+		// 		.oauthProvider(oAuth2UserInfo.getProvider())
+		// 		.oauthId(oAuth2UserInfo.getProviderId())
+		// 		.build()
+		// );
+		//
+		// return new DefaultOAuth2User(
+		// 	java.util.Collections.singleton(new SimpleGrantedAuthority(user.getRole().name())),
+		// 	oAuth2User.getAttributes(),
+		// 	userNameAttributeName
+		// );
 
-		return new DefaultOAuth2User(
-			java.util.Collections.singleton(new SimpleGrantedAuthority(user.getRole().name())),
-			oAuth2User.getAttributes(),
-			userNameAttributeName
-		);
+		String email1 = oAuth2UserInfo.getEmail();
+		if (email1 == null || email1.isBlank()) {
+			// 공급자가 이메일을 주지 않을 때 생성할 대체 이메일
+			email1 = "oauth_" + UUID.randomUUID() + "@placeholder.local";
+		}
+
+		Users temp = Users.builder()
+			.username(oAuth2UserInfo.getName())
+			.email(email1)
+			.role(Role.USER)
+			.authRole(AuthRole.ROLE_USER)
+			.oauthProvider(oAuth2UserInfo.getProvider())
+			.oauthId(String.valueOf(oAuth2UserInfo.getProviderId()))
+			.build();
+
+		// PrincipalDetails로 통일
+		return new PrincipalDetails(temp, oAuth2User.getAttributes());
 	}
 }
 

@@ -7,8 +7,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.grabpt.config.jwt.properties.Constants;
-
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,35 +26,37 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		FilterChain filterChain)
 		throws ServletException, IOException {
 
-		String token = resolveToken(request);
+		String token = JwtTokenProvider.resolveToken(request);
 
-		if (!StringUtils.hasText(token)) {
-			filterChain.doFilter(request, response);
-			return;
-		}
+		// if (!StringUtils.hasText(token)) {
+		// 	filterChain.doFilter(request, response);
+		// 	return;
+		// }
 
 		if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
 			Authentication authentication = jwtTokenProvider.getAuthentication(token);
 			SecurityContextHolder.getContext().setAuthentication(authentication);
+
+			log.info("JWT 인증 객체 생성: {}", authentication);
+			log.info("Authorities: {}", authentication.getAuthorities());
+			log.info("isAuthenticated: {}", authentication.isAuthenticated());
+
 		}
 
-		Authentication authentication = jwtTokenProvider.getAuthentication(token);
-		log.info("JWT 인증 객체 생성: {}", authentication);
-		log.info("Authorities: {}", authentication.getAuthorities());
-		log.info("isAuthenticated: {}", authentication.isAuthenticated());
+		// Authentication authentication = jwtTokenProvider.getAuthentication(token);
 
 		filterChain.doFilter(request, response);
 
 		log.info("SecurityContext에 인증 저장 완료: {}", SecurityContextHolder.getContext().getAuthentication());
 	}
 
-	private String resolveToken(HttpServletRequest request) {
-		String bearerToken = request.getHeader(Constants.AUTH_HEADER);
-		if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(Constants.TOKEN_PREFIX)) {
-			return bearerToken.substring(Constants.TOKEN_PREFIX.length());
-		}
-		return null;
-	}
+	// private String resolveToken(HttpServletRequest request) {
+	// 	String bearerToken = request.getHeader(Constants.AUTH_HEADER);
+	// 	if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(Constants.TOKEN_PREFIX)) {
+	// 		return bearerToken.substring(Constants.TOKEN_PREFIX.length());
+	// 	}
+	// 	return null;
+	// }
 
 }
 

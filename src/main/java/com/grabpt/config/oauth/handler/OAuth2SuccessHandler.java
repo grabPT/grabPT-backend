@@ -82,7 +82,6 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 			oauthId = oauthProvider + "-" + attributes.get("id");
 		} else if (oauthProvider.equals("naver")) {
 			Map<String, Object> responseMap = (Map<String, Object>)attributes.get("response");
-
 			email = responseMap.get("email") != null ? (String)responseMap.get("email") : null;
 			name = responseMap.get("name") != null ? (String)responseMap.get("name") : null;
 			oauthId = oauthProvider + "-" + responseMap.get("id");

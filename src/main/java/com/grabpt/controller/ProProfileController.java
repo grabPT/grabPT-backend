@@ -38,17 +38,17 @@ public class ProProfileController {
 		Page<ProProfileResponseDTO> proProfiles = profileService.findProProfilesByCategory(categoryCode, pageable);
 		return ApiResponse.onSuccess(proProfiles);
 	}
+
 	@Operation(
 		description = "특정 카테고리 전문가 프로필 출력",
 		summary = "특정 카테고리 전문가 프로필 출력"
 	)
-	@GetMapping("/{categoryCode}/{userCode}")
+	@GetMapping("category-proprofile/{categoryCode}/{userCode}")
 	public ApiResponse<ProProfileResponseDTO> getProProfile(@PathVariable String categoryCode,
 		@PathVariable(name = "userCode") Long userId) {
-		ProProfileResponseDTO proProfile = profileService.findProProfileByCategoryAndUser(categoryCode,userId);
+		ProProfileResponseDTO proProfile = profileService.findProProfileByCategoryAndUser(categoryCode, userId);
 		return ApiResponse.onSuccess(proProfile);
 	}
-
 
 	/**
 	 * 특정 전문가의 리뷰 목록을 조회하는 API

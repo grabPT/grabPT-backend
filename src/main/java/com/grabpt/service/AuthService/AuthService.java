@@ -2,10 +2,14 @@ package com.grabpt.service.AuthService;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -32,7 +36,6 @@ import com.grabpt.repository.TermsRepository.TermsRepository;
 import com.grabpt.repository.UserRepository.UserRepository;
 import com.grabpt.repository.UserTermsAgreementRepository;
 
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -203,6 +206,13 @@ public class AuthService {
 		}
 	}
 
+	private static String b64(String s) {
+		if (s == null)
+			return "";
+		return Base64.getEncoder()
+			.encodeToString(s.getBytes(StandardCharsets.UTF_8));
+	}
+
 	private Role mapToRole(int userTypeCode) {
 		switch (userTypeCode) {
 			case 1:
@@ -214,9 +224,25 @@ public class AuthService {
 		}
 	}
 
+	private static final String SHARED_DOMAIN = "grabpt.com";
+
+	private static void addCookie(HttpServletResponse res, String name, String value,
+		Duration maxAge, boolean httpOnly) {
+		ResponseCookie c = ResponseCookie.from(name, value == null ? "" : value)
+			.domain(SHARED_DOMAIN)   // 앞에 점(.) 금지
+			.path("/")
+			.maxAge(maxAge)
+			.secure(true)            // HTTPS 전제
+			.httpOnly(httpOnly)      // 프론트에서 읽을 값(role)은 false
+			.sameSite("None")        // 서브도메인 간 쿠키 공유를 위해 필수
+			.build();
+		res.addHeader(HttpHeaders.SET_COOKIE, c.toString());
+	}
+
 	private void createTokenAndSetCookie(Users user, HttpServletResponse response) {
 		String accessToken = jwtTokenProvider.generateToken(user);
 		String refreshToken = jwtTokenProvider.createRefreshToken(user.getEmail());
+		String role = user.getRole().name();
 
 		log.info("JWT 토큰 생성: {}", accessToken);
 
@@ -224,118 +250,14 @@ public class AuthService {
 		userRepository.save(user);
 
 		// 쿠키 생성
-		Cookie accessCookie = new Cookie("accessToken", accessToken);
-		accessCookie.setHttpOnly(true);
-		accessCookie.setSecure(true);
-		accessCookie.setPath("/");
-		accessCookie.setMaxAge(60 * 30); // 30분
+		// 1) accessToken (HttpOnly)
+		addCookie(response, "accessToken", accessToken, Duration.ofMinutes(30), true);
 
-		Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
-		refreshCookie.setHttpOnly(true);
-		refreshCookie.setSecure(true);
-		refreshCookie.setPath("/");
-		refreshCookie.setMaxAge(60 * 60 * 24 * 7); // 7일
+		// 2) refreshToken (HttpOnly)
+		addCookie(response, "refreshToken", refreshToken, Duration.ofDays(7), true);
 
-		response.addCookie(accessCookie);
-		response.addCookie(refreshCookie);
+		// 3) role (Base64, 프론트에서 읽어야 하므로 HttpOnly=false)
+		addCookie(response, "role", b64(role), Duration.ofMinutes(30), false);
 	}
 
-	// public void registerUser(SignupRequest.UserSignupRequestDto req, HttpServletResponse response) {
-	//
-	// 	Category userCategory = categoryRepository.findById(req.getCategoryId())
-	// 		.orElseThrow(() -> new CategoryHandler(ErrorStatus.CATEGORY_NOT_FOUND));
-	//
-	// 	// UserProfile 생성
-	// 	UserProfile userPrprofile = UserProfile.builder()
-	// 		.category(userCategory)
-	// 		.build();
-	//
-	// 	SignupRequest.UserSignupRequestDto.AddressRequest addressDto = req.getAddress();
-	// 	Address address = Address.builder()
-	// 		.city(addressDto.getCity())
-	// 		.district(addressDto.getDistrict())
-	// 		.street(addressDto.getStreet())
-	// 		.zipcode(addressDto.getZipcode())
-	// 		.streetCode(addressDto.getStreetCode())
-	// 		.specAddress(addressDto.getSpecAddress())
-	// 		.build();
-	//
-	// 	// Users 생성 및 연관관계 설정
-	// 	Users user = Users.builder()
-	// 		.username(req.getUsername())
-	// 		.email(req.getEmail())
-	// 		.phone_number(req.getPhoneNum())
-	// 		.address(address)
-	// 		.nickname(req.getNickname())
-	// 		.role(mapToRole(req.getRole()))
-	// 		.authRole(AuthRole.ROLE_USER)
-	// 		.profileImageUrl(req.getProfileImageUrl())
-	// 		.agreeMarketing(req.getAgreeMarketing())
-	// 		.agreeMarketingAt(req.getAgreeMarketing() ? LocalDateTime.now() : null)
-	// 		.oauthId(URLDecoder.decode(req.getOauthId(), StandardCharsets.UTF_8)) // 디코딩 해서 db 저장
-	// 		.oauthProvider(URLDecoder.decode(req.getOauthProvider(), StandardCharsets.UTF_8)) // 디코딩 해서 db 저장
-	// 		.userProfile(userPrprofile)  // 연관관계 연결
-	// 		.build();
-	//
-	// 	userPrprofile.setUser(user);
-	// 	address.setUser(user);
-	// 	Users savedUser = userRepository.save(user);
-	//
-	// 	// 필수 약관 동의 내역 저장
-	// 	saveUserAgreements(savedUser, req.getAgreedTermsIds());
-	//
-	// 	createTokenAndSetCookie(savedUser, response);
-	// }
-	//
-	// public void registerPro(SignupRequest.ProSignupRequestDto req, HttpServletResponse response) {
-	//
-	// 	// 카테고리 조회
-	// 	Category proCategory = categoryRepository.findById(req.getCategoryId())
-	// 		.orElseThrow(() -> new CategoryHandler(ErrorStatus.CATEGORY_NOT_FOUND));
-	//
-	// 	//  ProProfile 생성 및 Users 연관 설정
-	// 	ProProfile proProfile = ProProfile.builder()
-	// 		.center(req.getCenter())
-	// 		.career(req.getCareer())
-	// 		.category(proCategory)
-	// 		.age(req.getAge())
-	// 		.build();
-	//
-	// 	SignupRequest.ProSignupRequestDto.AddressRequest addressDto = req.getAddress();
-	// 	Address address = Address.builder()
-	// 		.city(addressDto.getCity())
-	// 		.district(addressDto.getDistrict())
-	// 		.street(addressDto.getStreet())
-	// 		.zipcode(addressDto.getZipcode())
-	// 		.streetCode(addressDto.getStreetCode())
-	// 		.specAddress(addressDto.getSpecAddress())
-	// 		.build();
-	//
-	// 	// Users 생성 및 연관관계 설정
-	// 	Users user = Users.builder()
-	// 		.username(req.getUsername())
-	// 		.email(req.getEmail())
-	// 		.phone_number(req.getPhoneNum())
-	// 		.address(address)
-	// 		.nickname(req.getNickname())
-	// 		.role(mapToRole(req.getRole())) // Role.PRO
-	// 		.gender(mapToGender(req.getGender()))
-	// 		.authRole(AuthRole.ROLE_USER)
-	// 		.profileImageUrl(req.getProfileImageUrl())
-	// 		.agreeMarketing(req.getAgreeMarketing())
-	// 		.agreeMarketingAt(req.getAgreeMarketing() ? LocalDateTime.now() : null)
-	// 		.oauthId(URLDecoder.decode(req.getOauthId(), StandardCharsets.UTF_8))
-	// 		.oauthProvider(URLDecoder.decode(req.getOauthProvider(), StandardCharsets.UTF_8))
-	// 		.proProfile(proProfile)
-	// 		.build();
-	//
-	// 	proProfile.setUser(user);
-	// 	address.setUser(user);
-	// 	Users savedUser = userRepository.save(user);
-	//
-	// 	// 필수 약관 동의 내역 저장
-	// 	saveUserAgreements(savedUser, req.getAgreedTermsIds());
-	//
-	// 	createTokenAndSetCookie(savedUser, response);
-	// }
 }

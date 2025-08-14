@@ -87,9 +87,6 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 			oauthId = oauthProvider + "-" + responseMap.get("id");
 		}
 
-		/// 이미 존재하는 회원 검증
-		log.info("findEmail = " + email);
-
 		Users oauthUser = userRepository.findByOauthProviderAndOauthId(oauthProvider, oauthId).orElse(null);
 		if (oauthUser != null) {
 			log.info("기존 존재 회원 로직에 들어옴");
@@ -104,9 +101,8 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 			// 쿠키로 토큰 전달
 			addCookie(response, "accessToken", accessToken, Duration.ofMinutes(30), true);
 			addCookie(response, "refreshToken", refreshToken, Duration.ofDays(7), true);
-
-			// 기존 코드
-			// response.sendRedirect("https://www.grabpt.com/"); // 환경에 맞게 수정\
+			// role 쿠키 추가 (Base64 인코딩)
+			addCookie(response, "role", b64(oauthUser.getRole().name()), Duration.ofMinutes(30), false);
 
 			if (oauthUser.getRole() == com.grabpt.domain.enums.Role.PRO) { // Role enum의 경로를 명확히 해주세요.
 				response.sendRedirect("https://www.grabpt.com/expert"); // 전문가 페이지로 리디렉션

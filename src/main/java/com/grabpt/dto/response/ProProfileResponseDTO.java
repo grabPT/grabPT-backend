@@ -1,10 +1,6 @@
 package com.grabpt.dto.response;
 
-import com.grabpt.domain.entity.Address;
-import com.grabpt.domain.entity.ProCertification;
-import com.grabpt.domain.entity.ProPhoto;
-import com.grabpt.domain.entity.Review;
-import com.grabpt.domain.entity.Users;
+import com.grabpt.domain.entity.*;
 import com.grabpt.domain.enums.CertificationType;
 
 import jakarta.persistence.Column;
@@ -36,6 +32,7 @@ public class ProProfileResponseDTO {
 	private String programDescription;
 	private Integer pricePerSession;
 	private Integer totalSessions;
+	private List<PtPrice> ptPrices;
 
 	// 이용자 후기
 	private List<ReviewDTO> reviews;

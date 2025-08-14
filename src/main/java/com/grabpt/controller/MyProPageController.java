@@ -2,6 +2,7 @@ package com.grabpt.controller;
 
 import java.util.List;
 
+import com.grabpt.dto.request.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -19,12 +20,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.grabpt.apiPayload.ApiResponse;
-import com.grabpt.dto.request.CenterUpdateRequestDTO;
-import com.grabpt.dto.request.CertificationUpdateRequestDTO;
-import com.grabpt.dto.request.DescriptionUpdateRequestDTO;
-import com.grabpt.dto.request.ProLocationUpdateRequestDTO;
-import com.grabpt.dto.request.PtPriceUpdateRequestDTO;
-import com.grabpt.dto.request.PtProgramUpdateRequestDTO;
 import com.grabpt.dto.response.CertificationResponseDTO;
 import com.grabpt.dto.response.MyReviewListDTO;
 import com.grabpt.dto.response.ProfileResponseDTO;
@@ -125,7 +120,7 @@ public class MyProPageController {
 	@Operation(summary = "pt 가격 수정")
 	public ApiResponse<String> updateProPtPrice(
 		@AuthenticationPrincipal(expression = "user.id") Long userId,
-		@Valid @RequestBody PtPriceUpdateRequestDTO request) {
+		@Valid @RequestBody PtPriceRequest.PtPriceUpdateRequestList request) {
 		profileService.updateProPtPrice(userId, request);
 		return ApiResponse.onSuccess("PT 가격 정보가 수정되었습니다.");
 	}

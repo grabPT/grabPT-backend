@@ -28,4 +28,7 @@ public interface UserChatRoomRepository extends JpaRepository<UserChatRoom, Long
 
 	@Query("SELECT u.otherUser.id FROM UserChatRoom u WHERE u.chatRoom.id = :roomId AND u.user.id = :userId")
 	Long getOtherUserId(@Param("userId") Long userId, @Param("roomId") Long roomId);
+
+//	@Query("SELECT SUM(ucr.unreadCount) FROM UserChatRoom ucr WHERE ucr.user.id = :userId")
+//	Long sumUnreadCountByUserId(@Param("userId") Long userIdZZ);
 }

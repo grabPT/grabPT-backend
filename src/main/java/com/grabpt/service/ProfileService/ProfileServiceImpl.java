@@ -2,6 +2,9 @@ package com.grabpt.service.ProfileService;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
+import com.grabpt.domain.entity.*;
+import com.grabpt.dto.request.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -9,23 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import com.grabpt.apiPayload.code.status.ErrorStatus;
 import com.grabpt.apiPayload.exception.GeneralException;
-import com.grabpt.converter.CategoryConverter;
 import com.grabpt.converter.ProfileConverter;
-import com.grabpt.domain.entity.Address;
-import com.grabpt.domain.entity.ProProfile;
-import com.grabpt.domain.entity.Requestions;
-import com.grabpt.domain.entity.Review;
-import com.grabpt.domain.entity.Users;
 import com.grabpt.domain.enums.Role;
-import com.grabpt.dto.request.CenterUpdateRequestDTO;
-import com.grabpt.dto.request.CertificationUpdateRequestDTO;
-import com.grabpt.dto.request.DeletedRequestDTO;
-import com.grabpt.dto.request.DescriptionUpdateRequestDTO;
-import com.grabpt.dto.request.ProLocationUpdateRequestDTO;
-import com.grabpt.dto.request.PtPriceUpdateRequestDTO;
-import com.grabpt.dto.request.PtProgramUpdateRequestDTO;
-import com.grabpt.dto.request.UserProfileUpdateRequestDTO;
-import com.grabpt.dto.response.CategoryResponse;
 import com.grabpt.dto.response.CertificationResponseDTO;
 import com.grabpt.dto.response.MyRequestListDTO;
 import com.grabpt.dto.response.MyReviewListDTO;
@@ -213,10 +201,23 @@ public class ProfileServiceImpl implements ProfileService {
 
 	@Override
 	@Transactional
-	public void updateProPtPrice(Long userId, PtPriceUpdateRequestDTO request) {
+	public void updateProPtPrice(Long userId, PtPriceRequest.PtPriceUpdateRequestList request) {
 		ProProfile proProfile = findUserById(userId).getProProfile();
-		proProfile.setPricePerSession(request.getPricePerSession());
-		proProfile.setTotalSessions(request.getTotalSessions());
+		proProfile.getPtPrices().clear(); // 기존 ptPrices 삭제
+
+		List<PtPriceRequest.PtPriceUpdateRequestDto> requestDtos = request.getPtPriceUpdateRequestDtoList();
+		for(int i=0; i<requestDtos.size(); i++) {
+			PtPriceRequest.PtPriceUpdateRequestDto requestDto = requestDtos.get(i);
+			if(i==0){
+				proProfile.setTotalSessions(requestDto.getTotalSessions());
+				proProfile.setPricePerSession(requestDto.getPricePerSession());
+			}else{
+				PtPrice ptPrice = new PtPrice();
+				ptPrice.setSessionCount(requestDto.getTotalSessions());
+				ptPrice.setPrice(requestDto.getPricePerSession());
+				proProfile.getPtPrices().add(ptPrice);
+			}
+		}
 	}
 
 	@Override

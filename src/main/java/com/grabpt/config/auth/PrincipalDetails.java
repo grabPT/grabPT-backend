@@ -79,7 +79,16 @@ public class PrincipalDetails implements UserDetails, OAuth2User {
 	// User의 PrimaryKey
 	@Override
 	public String getName() {
-		return user.getId() + "";
+		// 가장 안정적인 건 이메일
+		if (user.getEmail() != null && !user.getEmail().isBlank()) {
+			return user.getEmail();
+		}
+		// 이메일이 없다면 provider + "-" + oauthId 조합
+		if (user.getOauthProvider() != null && user.getOauthId() != null) {
+			return user.getOauthProvider() + "-" + user.getOauthId();
+		}
+		// 최후의 수단: 임시 UUID(하지만 가급적 위 둘 중 하나를 보장하세요)
+		return java.util.UUID.randomUUID().toString();
 	}
 
 }

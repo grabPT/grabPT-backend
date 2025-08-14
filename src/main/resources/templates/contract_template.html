@@ -1,145 +1,484 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8"/>
+<!-- prettier-ignore -->
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
     <title>PT(퍼스널 트레이닝) 계약서</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
-        /* PDF 생성 시 적용될 스타일 */
-        body {
-            font-family: "Malgun Gothic", sans-serif; /* 한글 폰트 지정 */
-            margin: 0;
-            padding: 0;
-            background-color: #fff;
-            font-size: 11px;
-            color: #333;
-        }
-        .container {
-            width: 100%;
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 30px;
-            border: 1px solid #eee;
-        }
-        h1 {
-            text-align: center;
-            font-size: 24px;
-            margin-bottom: 20px;
-            color: #000;
-        }
-        h3 {
-            font-size: 16px;
-            border-bottom: 2px solid #333;
-            padding-bottom: 5px;
-            margin-top: 30px;
-            margin-bottom: 15px;
-        }
-        p {
-            line-height: 1.7;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-        th, td {
-            border: 1px solid #ccc;
-            padding: 10px;
-            text-align: left;
-            vertical-align: top;
-        }
-        th {
-            background-color: #f2f2f2;
-            width: 120px;
-            font-weight: bold;
-        }
-        .info-table td {
-            line-height: 1.6;
-        }
-        .info-table strong {
-            display: inline-block;
-            width: 80px;
-        }
-        .date-section {
-            text-align: right;
-            margin-bottom: 20px;
-        }
-        .signature-section {
-            margin-top: 60px;
-            text-align: right;
-        }
-        .signature-section p {
-            margin-bottom: 20px;
-        }
+      /* ===== A4/PDF ===== */
+      @page {
+        size: A4;
+        /* margin: 16mm; */
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 100px;
+        font-family: "Pretendard Variable", "Apple SD Gothic Neo",
+          "Noto Sans KR", sans-serif;
+        color: black;
+        line-height: 1.4286;
+        font-size: 0.875rem;
+        font-weight: 300;
+        background: white;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* ===== 전체 컨테이너(스크린샷 느낌) ===== */
+      .wrap {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+      .panel {
+        width: 1077px;
+        background: #efefef;
+        padding: 32px 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      /* ===== 헤더 ===== */
+      .header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 30px;
+      }
+      .logo {
+        height: 37px;
+        object-fit: contain;
+      }
+      h1 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 800;
+      }
+      hr {
+        width: 100%;
+        border: 0;
+        border-top: 1px solid #929292;
+        margin: 0;
+    }
+    h2 {
+        margin: 0;
+    }
+    .tophr {
+        margin: 32px 0 0 0;
+      }
+
+      /* ===== 섹션/카드 ===== */
+      .article {
+        display: flex;
+        flex-direction: column;
+        
+        white-space: pre-line;
+        width: 691.63px;
+      }
+      .card {
+        background: #efefef;
+        border-left-width: 2px;
+        border-left-style: solid;
+        border-radius: 8px;
+        padding: 0 12px;
+      }
+      .card.blue {
+        border-left-color: #003efb;
+      }
+      .card.red {
+        border-left-color: #ff1010;
+      }
+      .card h2 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 100%;
+      }
+      .car hr {
+        margin: 0;
+      }
+      .card .inner {
+        padding: 0 8px;
+      }
+
+      /* ===== 그리드 ===== */
+      .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+      }
+      .grid-info {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 10px 16px;
+      }
+      .label {
+        align-self: center;
+      }
+      .value {
+        background: #fff;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        min-height: 34px;
+        padding: 8px 10px;
+        display: flex;
+        align-items: center;
+      }
+      .grid-3 {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 14px;
+      }
+
+      /* ===== 본문 타이틀 ===== */
+      .title {
+        font-size: 13px;
+        font-weight: 800;
+        line-height: 0;
+        margin: 0;
+        margin-top: 20px;
+      }
+
+      /* ===== 서명 ===== */
+      .sign-area {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        margin-top: 8px;
+      }
+      .sign-box {
+        background: #fff;
+        /* border: 2px dashed #9ca3af; */
+        border-radius: 10px;
+        height: 160px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+      .sign-box .caption {
+        margin-bottom: 6px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+      .sign-box img {
+        max-height: 100px;
+        max-width: 90%;
+        object-fit: contain;
+      }
+
+      /* ===== 하단 날짜 ===== */
+      .footer-date {
+        text-align: center;
+        font-size: 12px;
+        font-weight: 700;
+        margin-top: 28px;
+      }
+
+      /* ===== 하단 안내 ===== */
+      .note {
+        text-align: center;
+        font-size: 14px;
+        font-weight: 600;
+        margin-top: 8px;
+      }
+
+      .muted {
+        color: #6b7280;
+      }
+      .mono {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+          "Liberation Mono", monospace;
+      }
     </style>
-</head>
-<body>
-<div class="container">
-    <h1>PT(퍼스널 트레이닝) 계약서</h1>
+  </head>
+  <body>
+    <div class="wrap">
+      <section class="panel">
+        <!-- 상단 -->
+        <div class="header">
+          <!-- 로고: 정적 경로 또는 Base64 가능 -->
+          <img
+            class="logo"
+            th:if="${appLogoUrl != null}"
+            src="https://grabpt-image-bucket-2.s3.ap-northeast-2.amazonaws.com/AppLogo.png/2025-08-14T01%3A38%3A19.770886374"
+            alt="로고"
+          />
+          <h1>PT(퍼스널 트레이닝) 계약서</h1>
+        </div>
 
-    <div class="date-section">
-        <p><strong>계약일:</strong> <span th:text="${contractDate}">미지정</span></p>
+        <hr class="tophr"/>
+
+        <!-- 안내문 (Header 텍스트 하드코딩) -->
+        <article class="article">
+          <p>
+            grabPT는 이용자와 트레이너 간의 건강하고 신뢰할 수 있는 운동 환경을
+            지향합니다. 
+            서비스 이용 시 아래 정책을 준수해주시기 바랍니다. 
+            - 이용자는 본인의 건강 상태를 정확히 전달해야 하며, 트레이너의운동지도에 성실히 임해야 합니다. 
+            - 트레이너는 이용자의 목적에 맞춘 맞춤형 PT 프로그램을 성실하게 제공해야 합니다. 
+            - 무단 결석 또는 일방적인 일정 변경은 사전에 상대방과 협의해야 합니다. 
+            - grabPT는 플랫폼 제공자로서, 개별 PT 진행 과정에는 직접 개입하지 않습니다. 
+            
+            본 계약서는 PT 전문가와 회원 간의 개인 트레이닝 서비스 제공에 관한 권리와 의무를 명확히 하여 
+            상호 신뢰를 바탕으로 한 원활한 서비스 이용을 목적으로 합니다.
+          </p>
+
+          <!-- 회원/전문 정보 -->
+          <div>
+            <div class="grid-2">
+              <!-- 회원 정보 -->
+              <div class="card blue">
+                <h2>회원 정보</h2>
+                <hr/>
+                <div class="inner">
+                  <div class="grid-info">
+                    <div class="label">성명</div>
+                    <div class="value">
+                      <span th:text="${member.name}">입력 전</span>
+                    </div>
+
+                    <div class="label">생년월일</div>
+                    <div class="value">
+                      <span th:text="${member.birth}">입력 전</span>
+                    </div>
+
+                    <div class="label">연락처</div>
+                    <div class="value">
+                      <span th:text="${member.phoneNumber}">입력 전</span>
+                    </div>
+
+                    <div class="label">성별</div>
+                    <div class="value">
+                      <span
+                        th:text="${member.gender == 'MALE' ? '남' : (member.gender == 'FEMALE' ? '여' : '')}"
+                        >입력 전</span
+                      >
+                    </div>
+
+                    <div class="label">주소</div>
+                    <div class="value">
+                      <span th:text="${member.address}">입력 전</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 전문가 정보 -->
+              <div class="card red">
+                <h2>전문 정보</h2>
+                <hr />
+                <div class="inner">
+                  <div class="grid-info">
+                    <div class="label">성명</div>
+                    <div class="value">
+                      <span th:text="${trainer.name}">입력 전</span>
+                    </div>
+
+                    <div class="label">생년월일</div>
+                    <div class="value">
+                      <span th:text="${trainer.birth}">입력 전</span>
+                    </div>
+
+                    <div class="label">연락처</div>
+                    <div class="value">
+                      <span th:text="${trainer.phoneNumber}">입력 전</span>
+                    </div>
+
+                    <div class="label">성별</div>
+                    <div class="value">
+                      <span
+                        th:text="${trainer.gender == 'MALE' ? '남' : (trainer.gender == 'FEMALE' ? '여' : '')}"
+                        >입력 전</span
+                      >
+                    </div>
+
+                    <div class="label">주소</div>
+                    <div class="value">
+                      <span th:text="${trainer.address}">입력 전</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 서비스 이용 정보 -->
+            <div style="margin-top: 14px">
+              <div class="card blue">
+                <h2>서비스 이용 정보</h2>
+                <hr />
+                <div class="inner">
+                  <div class="grid-3">
+                    <div>
+                      <div class="label">총 회차</div>
+                      <div class="value">
+                        <span th:text="${service.totalSession} + '회'"
+                          >입력 전</span
+                        >
+                      </div>
+                    </div>
+                    <div>
+                      <div class="label">회당 금액</div>
+                      <div class="value mono">
+                        <span
+                          th:text="${#numbers.formatInteger(service.price, 3, 'COMMA')} + '원'"
+                          >입력 전</span
+                        >
+                      </div>
+                    </div>
+                    <div>
+                      <div class="label">총 금액</div>
+                      <div class="value mono">
+                        <span
+                          th:text="${#numbers.formatInteger(service.totalPrice, 3, 'COMMA')} + '원'"
+                          >입력 전</span
+                        >
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="grid-3" style="margin-top: 8px">
+                    <div>
+                      <div class="label">시작일</div>
+                      <div class="value">
+                        <span th:text="${service.startDate}">입력 전</span>
+                      </div>
+                    </div>
+                    <div>
+                      <div class="label">유효기간</div>
+                      <div class="value">
+                        <span th:text="${service.endDate}">입력 전</span>
+                      </div>
+                    </div>
+                    <div>
+                      <div class="label">이용 장소</div>
+                      <div class="value">
+                        <span th:text="${service.ptAddress}">입력 전</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 환불 및 취소 규정 -->
+          <p class="title">환불 및 취소 규정</p>
+          <p>
+            환불 및 취소는 다음과 같은 기준에 따라 처리됩니다. 
+            [수업 시작 전] 
+            - 결제 후 수업 시작 전 24시간 이전: 100% 환불 
+            - 수업 시작 24시간 이내
+            취소: 첫 회차 비용 차감 후 환불 
+            [수업 시작 후] 
+            - 1회 이상 수업 진행 후 취소 요청 시: 
+            → 잔여 회차 기준 *90% 환불* (10% 위약금 공제)
+            [트레이너 귀책 사유] 
+            - 트레이너의 일방적 일정 취소, 중도 이탈 시: 
+            → 이용자에게 전액 환불 
+            [기타] 
+            - 환불 요청은 ‘마이페이지 > 결제 내역 > 환불 요청’ 메뉴를 통해 신청하실 수 있습니다. 
+            - 정기 결제 해지는 결제일 기준 최소 3일 전에 요청해주셔야 정상 처리됩니다. 
+            [계약 이행 의무] 
+            양 당사자는 위에 명시된 '서비스 이용 조건'을 성실히 이행할 의무가 있습니다. 
+            전문가는 약정된 횟수와 품질로 서비스를 제공해야 합니다. 
+            계약 조건 위반 시 상대방은 계약 해지를 요구할 수 있습니다.
+          </p>
+
+          <!-- 회원의 권리 및 의무 -->
+          <p class="title">회원의 권리 및 의무</p>
+          <p>
+            - grabPT는 매칭된 트레이너의 신원, 자격, 전문성을 최대한 확인한 후 등록합니다.
+            - 플랫폼을 통해 이뤄지는 PT 활동의 직접적인 결과(부상, 건강 문제 등)에 대해서는 트레이너 개인에게 1차적인 책임이 있습니다.
+            - 이용자는 건강상 문제가 있는 경우 사전에 고지해야 하며, 이를 숨긴 경우 발생한 사고에 대해 플랫폼은 책임지지 않습니다.
+            - 트레이너는 이용자의 신체적 한계를 존중하며 무리한 훈련을 강요해서는 안 됩니다.
+          </p>
+
+          <!-- 개인정보 처리 방침 -->
+          <p class="title">개인정보 처리 방침</p>
+          <p>
+            수집하는 개인정보: 성명, 생년월일, 연락처, 주소, 성별 등
+            수집 목적: PT 서비스 제공, 계약 이행, 안전 관리, 서비스 품질 향상
+            보유 기간: 서비스 이용 중 + 서비스 종료 후 1년간
+            제3자 제공: 원칙적으로 제공하지 않으며, 법령에 의한 경우에만 제공
+          </p>
+        </article>
+
+        <!-- 동의 여부 표기 (체크박스를 PDF에선 텍스트로) -->
+        <div
+          style="display: flex; align-items:start; gap: 8px; margin-top: 6px"
+        >
+          <div
+            style="
+              width: 16px;
+              height: 16px;
+              border: 1px solid black;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin-bottom: 10px;
+            "
+          >
+            <span th:if="${agreements != null and agreements.termsAccepted}"
+              >✔</span
+            >
+          </div>
+          <div style="font-size: 14px; font-weight: 600">
+            (필수) 개인정보 수집,이용에 동의합니다
+          </div>
+        </div>
+
+        <hr />
+
+        <!-- 서명 -->
+        <div>
+          <p style="text-align: center; font-size: 14px; font-weight: 700">
+            상기 계약 내용을 충분히 이해하고 상호 합의하여 계약을 체결합니다.
+          </p>
+
+          <div class="sign-area">
+            <!-- 회원 서명 -->
+            <div class="sign-box">
+              <div class="caption">회원</div>
+              <img
+                th:if="${memberSign != null}"
+                th:src="'data:image/png;base64,' + ${memberSign}"
+                alt="회원 서명"
+              />
+              <div class="muted" th:if="${memberSign == null}">
+                서명 이미지 없음
+              </div>
+            </div>
+
+            <!-- 전문가 서명 -->
+            <div class="sign-box">
+              <div class="caption">전문가</div>
+              <img
+                th:if="${trainerSign != null}"
+                th:src="'data:image/png;base64,' + ${trainerSign}"
+                alt="전문가 서명"
+              />
+              <div class="muted" th:if="${trainerSign == null}">
+                서명 이미지 없음
+              </div>
+            </div>
+          </div>
+
+          <!-- 계약일자: 페이지 맨 하단 -->
+          <p
+            class="footer-date"
+            th:text="${#temporals.format(#temporals.parseISO(contractDate), 'yyyy년 M월 d일')}"
+          >
+            2025년 8월 14일
+          </p>
+        </div>
+      </section>
     </div>
-
-    <h3>제 1조 (계약 당사자)</h3>
-    <table class="info-table">
-        <tr>
-            <th>회원 (갑)</th>
-            <td>
-                <strong>성명:</strong> <span th:text="${userName}">입력 전</span><br/>
-                <strong>생년월일:</strong> <span th:text="${userBirth}">-</span><br/>
-                <strong>연락처:</strong> <span th:text="${userPhoneNumber}">-</span><br/>
-                <strong>주소:</strong> <span th:text="${userAddress}">-</span>
-            </td>
-        </tr>
-        <tr>
-            <th>트레이너 (을)</th>
-            <td>
-                <strong>성명:</strong> <span th:text="${proName}">입력 전</span><br/>
-                <strong>생년월일:</strong> <span th:text="${proBirth}">-</span><br/>
-                <strong>연락처:</strong> <span th:text="${proPhoneNumber}">-</span><br/>
-                <strong>주소:</strong> <span th:text="${proAddress}">-</span>
-            </td>
-        </tr>
-    </table>
-
-    <h3>제 2조 (서비스 내용)</h3>
-    <table>
-        <tr>
-            <th>총 세션 횟수</th>
-            <td><span th:text="${totalSession}">-</span> 회</td>
-        </tr>
-        <tr>
-            <th>총 계약 금액</th>
-            <td><span th:text="${#numbers.formatInteger(price, 3, 'COMMA')}">0</span> 원</td>
-        </tr>
-        <tr>
-            <th>운동 시작일</th>
-            <td th:text="${startDate}">-</td>
-        </tr>
-        <tr>
-            <th>운동 장소</th>
-            <td th:text="${ptAddress}">-</td>
-        </tr>
-    </table>
-
-    <h3>제 3조 (환불 및 취소 규정)</h3>
-    <p>
-        1. 수업 시작 전: 총 결제 금액의 10%를 위약금으로 공제한 후 환불됩니다.<br/>
-        2. 수업 시작 후: [총 결제 금액 - (위약금 10% + 이용한 세션의 정상가)] 기준으로 환불됩니다.<br/>
-        3. 수업 연기 및 취소는 최소 24시간 전에 트레이너에게 통보해야 하며, 그렇지 않을 경우 해당 세션은 이용한 것으로 간주합니다.
-    </p>
-
-    <h3>제 4조 (권리 및 의무)</h3>
-    <p>
-        "갑"과 "을"은 상호 신뢰를 바탕으로 본 계약의 내용을 성실히 이행할 의무가 있습니다. "을"은 전문적인 지식을 바탕으로 "갑"의 운동 목표 달성을 위해 최선을 다하며, "갑"은 "을"의 지도에 적극적으로 따라야 합니다.
-    </p>
-
-    <div class="signature-section">
-        <p>상기 계약 내용을 충분히 숙지하고 동의하며, 이에 서명합니다.</p>
-        <p><strong>갑 (회원) :</strong> <span th:text="${userName}"></span> (서명)</p>
-        <p><strong>을 (트레이너) :</strong> <span th:text="${proName}"></span> (서명)</p>
-    </div>
-
-</div>
-</body>
+  </body>
 </html>

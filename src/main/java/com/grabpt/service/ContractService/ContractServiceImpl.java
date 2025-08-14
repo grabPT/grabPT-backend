@@ -3,11 +3,13 @@ package com.grabpt.service.ContractService;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
+import java.util.Map;
 
 import com.grabpt.apiPayload.code.status.ErrorStatus;
 import com.grabpt.apiPayload.exception.handler.ContractHandler;
 import com.grabpt.aws.s3.AmazonS3Manager;
 import com.grabpt.domain.entity.*;
+import com.grabpt.domain.enums.Gender;
 import com.grabpt.domain.enums.MatchingStatus;
 import com.grabpt.dto.request.ContractRequest;
 import com.grabpt.repository.ContractRepository.ContractRepository;
@@ -95,58 +97,76 @@ public class ContractServiceImpl implements ContractService {
 			.orElseThrow(() -> new ContractHandler(ErrorStatus.CONTRACT_NOT_FOUND));
 	}
 
-	/**
-	 * 계약서 PDF를 생성하여 S3에 업로드하고, 파일 URL을 DB에 저장하는 최종 메소드
-	 * @param contractId 계약서 ID
-	 * @return S3에 저장된 파일의 URL
-	 */
+
 	@Transactional
 	public String generateAndSavePdfToS3(Long contractId) {
 		Contract contract = contractRepository.findById(contractId)
 			.orElseThrow(() -> new RuntimeException("계약 정보를 찾을 수 없습니다. ID: " + contractId));
 
 		Context context = new Context();
-		DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy년 MM월 dd일");
+		DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy년 M월 d일");
 
-		// --- Null 안전한 데이터 처리 ---
-		if (contract.getUserInfo() != null) {
-			context.setVariable("userName", contract.getUserInfo().getName());
-			context.setVariable("userBirth", contract.getUserInfo().getBirth() != null ? contract.getUserInfo().getBirth().format(dateFormatter) : "-");
-			context.setVariable("userPhoneNumber", contract.getUserInfo().getPhoneNumber());
-			context.setVariable("userAddress", contract.getUserInfo().getAddress());
-		} else {
-			context.setVariable("userName", "입력 전");
-			context.setVariable("userBirth", "-");
-			context.setVariable("userPhoneNumber", "-");
-			context.setVariable("userAddress", "-");
+		// --- 1. 회원(member) 정보 설정 ---
+		ContractInfo userInfo = contract.getUserInfo();
+		Map<String, Object> member = Map.of(
+			"name", userInfo != null ? userInfo.getName() : "입력 전",
+			"birth", userInfo != null && userInfo.getBirth() != null ? userInfo.getBirth().format(dateFormatter) : "-",
+			"phoneNumber", userInfo != null ? userInfo.getPhoneNumber() : "-",
+			"gender", userInfo != null ? userInfo.getGender() : Gender.FEMALE, // HTML에서 'MALE'/'FEMALE'로 분기 처리
+			"address", userInfo != null ? userInfo.getAddress() : "-",
+			"signImageUrl", userInfo != null ? userInfo.getSignUrl() : null // 서명 이미지 URL
+		);
+		context.setVariable("member", member);
+
+		// --- 2. 트레이너(trainer) 정보 설정 ---
+		ContractInfo proInfo = contract.getProInfo();
+		Map<String, Object> trainer = Map.of(
+			"name", proInfo != null ? proInfo.getName() : "입력 전",
+			"birth", proInfo != null && proInfo.getBirth() != null ? proInfo.getBirth().format(dateFormatter) : "-",
+			"phoneNumber", proInfo != null ? proInfo.getPhoneNumber() : "-",
+			"gender", proInfo != null ? proInfo.getGender() : Gender.MALE,
+			"address", proInfo != null ? proInfo.getAddress() : "-",
+			"signImageUrl", proInfo != null ? proInfo.getSignUrl() : null // 서명 이미지 URL
+		);
+		context.setVariable("trainer", trainer);
+
+		// --- 3. 서비스(service) 정보 설정 ---
+		Integer totalSession = contract.getTotalSession() != null ? contract.getTotalSession() : 0;
+		Integer pricePerSession = contract.getPrice() != null ? contract.getPrice() : 0;
+		long totalPrice = (long) totalSession * pricePerSession;
+
+		// 유효기간 (예: 시작일로부터 3개월) - 정책에 맞게 수정 필요
+		String endDateStr = "-";
+		if (contract.getStartDate() != null) {
+			endDateStr = contract.getStartDate().plusMonths(3).format(dateFormatter);
 		}
 
-		if (contract.getProInfo() != null) {
-			context.setVariable("proName", contract.getProInfo().getName());
-			context.setVariable("proBirth", contract.getProInfo().getBirth() != null ? contract.getProInfo().getBirth().format(dateFormatter) : "-");
-			context.setVariable("proPhoneNumber", contract.getProInfo().getPhoneNumber());
-			context.setVariable("proAddress", contract.getProInfo().getAddress());
-		} else {
-			context.setVariable("proName", "입력 전");
-			context.setVariable("proBirth", "-");
-			context.setVariable("proPhoneNumber", "-");
-			context.setVariable("proAddress", "-");
-		}
+		Map<String, Object> service = Map.of(
+			"totalSession", totalSession,
+			"price", pricePerSession,
+			"totalPrice", totalPrice,
+			"startDate", contract.getStartDate() != null ? contract.getStartDate().format(dateFormatter) : "-",
+			"endDate", endDateStr,
+			"ptAddress", contract.getPtAddress() != null ? contract.getPtAddress() : "-"
+		);
+		context.setVariable("service", service);
 
-		context.setVariable("totalSession", contract.getTotalSession() != null ? contract.getTotalSession() : "-");
-		context.setVariable("price", contract.getPrice() != null ? contract.getPrice() : 0);
-		context.setVariable("startDate", contract.getStartDate() != null ? contract.getStartDate().format(dateFormatter) : "-");
-		context.setVariable("ptAddress", contract.getPtAddress() != null ? contract.getPtAddress() : "-");
-		context.setVariable("contractDate", contract.getContractDate() != null ? contract.getContractDate().format(dateFormatter) : "미지정");
+		// --- 4. 기타 정보 설정 ---
+		context.setVariable("agreements", Map.of("termsAccepted", true)); // 필수 약관은 항상 동의했다고 가정
+		context.setVariable("contractDate", contract.getCreatedAt().format(DateTimeFormatter.ISO_LOCAL_DATE)); // 계약 생성일
+		context.setVariable("appLogoUrl", "https://grabpt-image-bucket-2.s3.ap-northeast-2.amazonaws.com/AppLogo.png/2025-08-14T01%3A38%3A19.770886374");
 
+
+		// --- 5. PDF 생성 및 S3 업로드 ---
 		try {
-			String html = templateEngine.process("contract_template", context);
+			// 템플릿 파일명을 정확하게 지정합니다.
+			String html = templateEngine.process("contract_template.html", context);
 			ByteArrayInputStream pdfInputStream = pdfGenerateService.generatePdfFromHtml(html);
 			long contentLength = pdfInputStream.available();
 			String objectKey = "contracts/contract_" + contract.getId() + ".pdf";
 
-			String fileUrl = amazonS3Manager.uploadInputStream(objectKey, pdfInputStream, contentLength, MediaType.APPLICATION_PDF_VALUE);
-			contract.setContractFileUrl(fileUrl);
+			String fileUrl = amazonS3Manager.uploadInputStream(objectKey, pdfInputStream, contentLength, "application/pdf");
+			contract.setContractFileUrl(fileUrl); // 생성된 PDF의 URL을 DB에 저장
 
 			return fileUrl;
 		} catch (IOException e) {

@@ -3,7 +3,9 @@ package com.grabpt.controller;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,6 +23,7 @@ import com.grabpt.apiPayload.ApiResponse;
 import com.grabpt.apiPayload.code.status.ErrorStatus;
 import com.grabpt.apiPayload.exception.handler.AuthHandler;
 import com.grabpt.config.jwt.JwtTokenProvider;
+import com.grabpt.config.jwt.properties.CookieSupport;
 import com.grabpt.domain.entity.Users;
 import com.grabpt.dto.request.RefreshTokenRequestDto;
 import com.grabpt.dto.request.SignupRequest;
@@ -32,7 +35,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -190,37 +193,38 @@ public class AuthController {
 		return ApiResponse.onSuccess(data);
 	}
 
+	@PostMapping("/cookie-refresh")
+	public ResponseEntity<Void> refresh(HttpServletRequest request, HttpServletResponse response) {
+		String refresh = null;
+		var cookies = request.getCookies();
+		if (cookies != null) {
+			for (var c : cookies) {
+				if ("refreshToken".equals(c.getName())) {
+					refresh = c.getValue();
+					break;
+				}
+			}
+		}
+		if (refresh == null || !jwtTokenProvider.validateToken(refresh)) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
+		String email = jwtTokenProvider.getUserEmail(refresh);
+		var user = userRepository.findByEmail(email).orElse(null);
+		if (user == null)
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+		String newAccess = jwtTokenProvider.generateToken(user);
+		response.addHeader("Set-Cookie", CookieSupport.accessCookie(newAccess).toString());
+		return ResponseEntity.noContent().build();
+	}
+
 	private void addTokenCookies(String accessToken, String refreshToken, HttpServletResponse response) {
-		Cookie accessCookie = new Cookie("accessToken", accessToken);
-		accessCookie.setHttpOnly(true);
-		accessCookie.setSecure(true);
-		accessCookie.setPath("/");
-		accessCookie.setMaxAge(60 * 30); // 30분
-
-		Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
-		refreshCookie.setHttpOnly(true);
-		refreshCookie.setSecure(true);
-		refreshCookie.setPath("/");
-		refreshCookie.setMaxAge(60 * 60 * 24 * 7); // 7일
-
-		response.addCookie(accessCookie);
-		response.addCookie(refreshCookie);
+		response.addHeader("Set-Cookie", CookieSupport.accessCookie(accessToken).toString());
+		response.addHeader("Set-Cookie", CookieSupport.refreshCookie(refreshToken).toString());
 	}
 
 	private void deleteTokenCookies(HttpServletResponse response) {
-		Cookie accessTokenCookie = new Cookie("accessToken", null);
-		accessTokenCookie.setHttpOnly(true);
-		accessTokenCookie.setSecure(true);
-		accessTokenCookie.setPath("/");
-		accessTokenCookie.setMaxAge(0); // 즉시 삭제
-
-		Cookie refreshTokenCookie = new Cookie("refreshToken", null);
-		refreshTokenCookie.setHttpOnly(true);
-		refreshTokenCookie.setSecure(true);
-		refreshTokenCookie.setPath("/");
-		refreshTokenCookie.setMaxAge(0); // 즉시 삭제
-
-		response.addCookie(accessTokenCookie);
-		response.addCookie(refreshTokenCookie);
+		response.addHeader("Set-Cookie", CookieSupport.deleteCookie("accessToken").toString());
+		response.addHeader("Set-Cookie", CookieSupport.deleteCookie("refreshToken").toString());
 	}
 }

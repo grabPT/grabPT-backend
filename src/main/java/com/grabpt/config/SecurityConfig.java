@@ -21,6 +21,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
 import com.grabpt.config.auth.PrincipalDetailsService;
+import com.grabpt.config.jwt.CsrfOriginFilter;
 import com.grabpt.config.jwt.JwtAuthenticationFilter;
 import com.grabpt.config.jwt.JwtTokenProvider;
 import com.grabpt.config.oauth.HttpCookieOAuth2AuthorizationRequestRepository;
@@ -76,6 +77,7 @@ public class SecurityConfig {
 			.cors(cors -> cors.configurationSource(corsConfigurationSource()))  // 여기가 핵심
 			.csrf(csrf -> csrf.disable())
 			.formLogin(AbstractHttpConfigurer::disable)
+			.addFilterBefore(new CsrfOriginFilter(), UsernamePasswordAuthenticationFilter.class)
 			.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)  //  유지
 			.authorizeHttpRequests(auth -> auth
 				.requestMatchers("/auth/api/temp-info").permitAll() // 소셜로그인 get 요청 엔드포인트
@@ -92,7 +94,8 @@ public class SecurityConfig {
 			.headers(h -> h
 				.frameOptions(f -> f.disable()) // X-Frame-Options 제거
 				.contentSecurityPolicy(csp -> csp
-					.policyDirectives("frame-ancestors https://www.grabpt.com https://grabpt.com https://api.grabpt.com")
+					.policyDirectives(
+						"frame-ancestors https://www.grabpt.com https://grabpt.com https://api.grabpt.com")
 				)
 			)
 			.authenticationProvider(authenticationProvider())
@@ -114,7 +117,6 @@ public class SecurityConfig {
 			"http://grabpt.com",
 			"https://grabpt.com",
 			"https://www.grabpt.com",
-			"wws://api.grabpt.com",
 			"https://api.grabpt.com"    // 여기에 추가 필요
 		));
 		configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));

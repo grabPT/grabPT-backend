@@ -63,7 +63,7 @@ public class AmazonS3Manager {
 		return amazonConfig.getSuggestionPhoto() + '/' + uuid.getUuid();
 	}
 
-	public String generateChatRoomImageKeyName(String roomId, Uuid uuid, String originalFilename) {
+	public String generateChatRoomImageKeyName(Long roomId, Uuid uuid, String originalFilename) {
 		LocalDate now = LocalDate.now(ZONE_SEOUL);
 
 		String basePrefix = "chatRoomsImages"; // 필요 시 amazonConfig에서 읽어오도록 변경 가능

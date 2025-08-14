@@ -21,4 +21,11 @@ public class ContractResponse {
 		String ptAddress;
 		MatchingStatus status;
 	}
+
+	@Getter
+	@Builder
+	public static class CreateMatchingAndContractResponseDto {
+		Long matchingId;
+		Long contractId;
+	}
 }

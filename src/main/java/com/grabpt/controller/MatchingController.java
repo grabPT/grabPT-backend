@@ -1,5 +1,6 @@
 package com.grabpt.controller;
 
+import com.grabpt.dto.response.ContractResponse;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,10 +24,10 @@ public class MatchingController {
 	private final MatchingService matchingService;
 
 	@PostMapping
-	@Operation(summary = "요청-제안 매칭 API", description = "요청서와 제안서 기반으로 매칭 생성")
-	public ApiResponse<String> createMatching(@RequestParam Long requestionId, @RequestParam Long suggestionId) {
-		Matching matched = matchingService.createMatching(requestionId, suggestionId);
-		return ApiResponse.onSuccess("매칭 완료 (ID: " + matched.getId() + ")");
+	@Operation(summary = "요청-제안 매칭 API", description = "요청서와 제안서 기반으로 매칭 생성(matchingId, contractId 반환)")
+	public ApiResponse<ContractResponse.CreateMatchingAndContractResponseDto> createMatching(@RequestParam Long requestionId, @RequestParam Long suggestionId) {
+		matchingService.createMatching(requestionId, suggestionId);
+		return ApiResponse.onSuccess(matchingService.createMatching(requestionId, suggestionId));
 	}
 
 	@PostMapping("/{matchingId}/status")

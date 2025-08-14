@@ -77,7 +77,7 @@ public class ContractServiceImpl implements ContractService {
 			.price(sug.getPrice())
 			.ptAddress(sug.getLocation())
 			.startDate(req.getStartPreference())
-			.totalSession(req.getSessionCount())
+			.totalSession(sug.getSessionCount())
 			.build();
 
 		return contractRepository.save(contract);

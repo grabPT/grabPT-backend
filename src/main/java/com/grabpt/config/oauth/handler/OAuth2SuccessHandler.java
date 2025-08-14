@@ -105,9 +105,9 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 			addCookie(response, "role", b64(oauthUser.getRole().name()), Duration.ofMinutes(30), false);
 
 			if (oauthUser.getRole() == com.grabpt.domain.enums.Role.PRO) { // Role enum의 경로를 명확히 해주세요.
-				response.sendRedirect("https://www.grabpt.com/expert"); // 전문가 페이지로 리디렉션
+				response.sendRedirect("https://www.grabpt.com/authcallback"); // 전문가 페이지로 리디렉션
 			} else {
-				response.sendRedirect("https://www.grabpt.com/"); // 그 외 사용자는 메인 페이지로 리디렉션
+				response.sendRedirect("https://www.grabpt.com/authcallback"); // 그 외 사용자는 메인 페이지로 리디렉션
 			}
 
 			return;
@@ -130,6 +130,6 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 		log.info("신규 회원 소셜 로그인 - provider: {}, email: {}, name: {}",
 			oauthProvider, email, name);
 
-		response.sendRedirect("https://www.grabpt.com/signup");
+		response.sendRedirect("https://www.grabpt.com/authcallback");
 	}
 }

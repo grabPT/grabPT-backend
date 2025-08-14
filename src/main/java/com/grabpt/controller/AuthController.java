@@ -64,7 +64,7 @@ public class AuthController {
 
 		// 일반 회원은 메인 페이지로 redirect
 		response.setStatus(HttpServletResponse.SC_SEE_OTHER); // 303
-		response.setHeader("Location", "https://www.grabpt.com/");
+		response.setHeader("Location", "https://www.grabpt.com/authcallback");
 	}
 
 	@Operation(summary = "Pro 회원가입 요청 (Multipart)",
@@ -79,7 +79,7 @@ public class AuthController {
 
 		// 전문가 회원은 /expert로 redirect
 		response.setStatus(HttpServletResponse.SC_SEE_OTHER); // 303
-		response.setHeader("Location", "https://www.grabpt.com/expert");
+		response.setHeader("Location", "https://www.grabpt.com/authcallback");
 	}
 
 	// JWT 토큰 재발행

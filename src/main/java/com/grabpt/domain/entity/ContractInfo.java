@@ -24,4 +24,6 @@ public class ContractInfo {
 	private Gender gender;
 
 	private String address;
+
+	private String signUrl;
 }

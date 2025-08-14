@@ -28,5 +28,8 @@ public class ContractRequest {
 
 		@Schema(description = "주소", example = "서울시 강남구")
 		private String address;
+
+		@Schema(description = "전자서명 이미지")
+		private String signUrl;
 	}
 }

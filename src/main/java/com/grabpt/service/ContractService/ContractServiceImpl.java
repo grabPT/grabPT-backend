@@ -14,6 +14,7 @@ import com.grabpt.repository.ContractRepository.ContractRepository;
 import com.grabpt.service.AlarmService.AlarmService;
 import com.grabpt.service.PdfService.PdfGenerateService;
 
+import com.nimbusds.openid.connect.sdk.claims.UserInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -39,13 +40,12 @@ public class ContractServiceImpl implements ContractService {
 		Contract contract = contractRepository.findById(contractId).orElseThrow(() -> new ContractHandler(ErrorStatus.CONTRACT_NOT_FOUND));
 		contract.getMatching().setStatus(MatchingStatus.USERWROTE);
 
-		ContractInfo userInfo = new ContractInfo();
-		userInfo.setAddress(request.getAddress());
-		userInfo.setName(request.getName());
-		userInfo.setBirth(request.getBirth());
-		userInfo.setGender(request.getGender());
-		userInfo.setPhoneNumber(request.getPhoneNumber());
-		contract.setUserInfo(userInfo);
+		ContractInfo contractInfo = toContractInfo(request);
+		contract.setUserInfo(contractInfo);
+
+		Long proId = contract.getMatching().getSuggestion().getProProfile().getUser().getId();
+		alarmService.sendAlarm(proId, "CONTRACT", "수강생 계약서 작성 완료",
+			contractInfo.getName()+"님이 계약서 작성을 완료했습니다. 계약서를 작성해주세요.", "/contract/"+contractId);
 		return contract;
 	}
 
@@ -55,18 +55,24 @@ public class ContractServiceImpl implements ContractService {
 		Contract contract = contractRepository.findById(contractId).orElseThrow(() -> new ContractHandler(ErrorStatus.CONTRACT_NOT_FOUND));
 		contract.getMatching().setStatus(MatchingStatus.COMPLETED);
 
+		ContractInfo contractInfo = toContractInfo(request);
+		contract.setProInfo(contractInfo);
+
+		Long userId = contract.getMatching().getRequestion().getUser().getId(); //너무 길긴 함
+		alarmService.sendAlarm(userId, "PAYMENT", "전문가 계약서 작성 완료",
+			contractInfo.getName()+"님의 계약서 작성이 완료되었어요. 결제를 진행해주세요", "/contract/"+contractId);
+		return contract;
+	}
+
+	private ContractInfo toContractInfo(ContractRequest.ContractInfoDto request) {
 		ContractInfo userInfo = new ContractInfo();
 		userInfo.setAddress(request.getAddress());
 		userInfo.setName(request.getName());
 		userInfo.setBirth(request.getBirth());
 		userInfo.setGender(request.getGender());
 		userInfo.setPhoneNumber(request.getPhoneNumber());
-		contract.setProInfo(userInfo); //수정
-
-		Long userId = contract.getMatching().getRequestion().getUser().getId(); //너무 길긴 함
-		alarmService.sendAlarm(userId, "CONTRACT", "계약서 작성 완료",
-			"계약서 작성이 완료되었어요. 결제를 진행해주세요", "/contract/"+contractId);
-		return contract;
+		userInfo.setSignUrl(request.getSignUrl());
+		return userInfo;
 	}
 
 	@Override

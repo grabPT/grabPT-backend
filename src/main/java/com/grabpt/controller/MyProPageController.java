@@ -24,8 +24,10 @@ import com.grabpt.dto.response.CertificationResponseDTO;
 import com.grabpt.dto.response.MyReviewListDTO;
 import com.grabpt.dto.response.ProfileResponseDTO;
 import com.grabpt.service.ProfileService.ProfileService;
+import com.grabpt.service.UserService.UserQueryService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -36,21 +38,24 @@ public class MyProPageController {
 
 	private final ProfileService profileService;
 	private final ObjectMapper objectMapper;
+	private final UserQueryService userQueryService;
 
 	@GetMapping
 	@Operation(summary = "내 전문가 프로필을 조회합니다")
 	public ApiResponse<ProfileResponseDTO.MyProProfileDTO> getMyProUserProfile(
-		@AuthenticationPrincipal(expression = "user.id") Long userId) {
+		HttpServletRequest request) throws IllegalAccessException {
+		Long userId = userQueryService.getUserId(request);
 		return ApiResponse.onSuccess(profileService.findMyProUserProfile(userId));
 	}
 
 	@GetMapping("/reviews")
 	@Operation(summary = "나(전문가) 한테 달린 리뷰를 확인합니다.")
 	public ApiResponse<Page<MyReviewListDTO>> getProReviews(
-		@AuthenticationPrincipal(expression = "user.id") Long userId,
+		HttpServletRequest request,
 		@RequestParam(defaultValue = "1") int page,
-		@RequestParam(defaultValue = "10") int size) {
+		@RequestParam(defaultValue = "10") int size) throws IllegalAccessException {
 
+		Long userId = userQueryService.getUserId(request);
 		Pageable pageable = PageRequest.of(Math.max(page - 1, 0), size);
 		Page<MyReviewListDTO> reviews = profileService.findProReviews(userId, pageable);
 		return ApiResponse.onSuccess(reviews);
@@ -59,7 +64,8 @@ public class MyProPageController {
 	@GetMapping("/certification")
 	@Operation(summary = "전문가 자격증/이력 조회 API")
 	public ApiResponse<CertificationResponseDTO> getProCertifications(
-		@AuthenticationPrincipal(expression = "user.id") Long userId) {
+		HttpServletRequest request) throws IllegalAccessException {
+		Long userId = userQueryService.getUserId(request);
 		CertificationResponseDTO certifications = profileService.findMyCertifications(userId);
 		return ApiResponse.onSuccess(certifications);
 	}
@@ -74,10 +80,11 @@ public class MyProPageController {
 		+ "  ]\n"
 		+ "}\n")
 	public ApiResponse<String> registerProCertifications(
-		@AuthenticationPrincipal(expression = "user.id") Long userId,
+		HttpServletRequest requests,
 		@RequestParam("request") String requestJson, // DTO를 String으로 받음
 		@RequestPart(value = "images", required = false) List<MultipartFile> images) throws Exception {
 
+		Long userId = userQueryService.getUserId(requests);
 		// JSON 문자열을 DTO 객체로 변환
 		CertificationUpdateRequestDTO request = objectMapper.readValue(requestJson, CertificationUpdateRequestDTO.class);
 
@@ -88,9 +95,10 @@ public class MyProPageController {
 	@PatchMapping("/center")
 	@Operation(summary = "센터명을 수정합니다")
 	public ApiResponse<String> updateProCenter(
-		@AuthenticationPrincipal(expression = "user.id") Long userId,
-		@Valid @RequestBody CenterUpdateRequestDTO request) {
+		HttpServletRequest requests,
+		@Valid @RequestBody CenterUpdateRequestDTO request) throws IllegalAccessException {
 
+		Long userId = userQueryService.getUserId(requests);
 		profileService.updateProCenter(userId, request);
 		return ApiResponse.onSuccess("센터 정보 수정이 완료되었습니다.");
 	}
@@ -98,8 +106,9 @@ public class MyProPageController {
 	@PatchMapping("/description")
 	@Operation(summary = "프로 설명 고치기")
 	public ApiResponse<String> updateProDescription(
-		@AuthenticationPrincipal(expression = "user.id") Long userId,
-		@Valid @RequestBody DescriptionUpdateRequestDTO request) {
+		HttpServletRequest requests,
+		@Valid @RequestBody DescriptionUpdateRequestDTO request) throws IllegalAccessException {
+		Long userId = userQueryService.getUserId(requests);
 		profileService.updateProDescription(userId, request);
 		return ApiResponse.onSuccess("전문가 소개가 수정되었습니다.");
 	}
@@ -107,9 +116,10 @@ public class MyProPageController {
 	@PatchMapping(value = "/photos", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
 	@Operation(summary = "프로 사진 변경")
 	public ApiResponse<String> updateProPhotos(
-		@AuthenticationPrincipal(expression = "user.id") Long userId,
-		@RequestPart(value = "photos") List<MultipartFile> photoFiles) {
+		HttpServletRequest request,
+		@RequestPart(value = "photos") List<MultipartFile> photoFiles) throws IllegalAccessException {
 
+		Long userId = userQueryService.getUserId(request);
 		// profileService의 public 메서드를 호출합니다.
 		profileService.updateProPhotos(userId, photoFiles);
 
@@ -119,8 +129,9 @@ public class MyProPageController {
 	@PatchMapping("/ptPrice")
 	@Operation(summary = "pt 가격 수정")
 	public ApiResponse<String> updateProPtPrice(
-		@AuthenticationPrincipal(expression = "user.id") Long userId,
-		@Valid @RequestBody PtPriceRequest.PtPriceUpdateRequestList request) {
+		HttpServletRequest requests,
+		@Valid @RequestBody PtPriceRequest.PtPriceUpdateRequestList request) throws IllegalAccessException {
+		Long userId = userQueryService.getUserId(requests);
 		profileService.updateProPtPrice(userId, request);
 		return ApiResponse.onSuccess("PT 가격 정보가 수정되었습니다.");
 	}
@@ -128,8 +139,9 @@ public class MyProPageController {
 	@PatchMapping("/ptProgram")
 	@Operation(summary = "pt 프로그램 수정")
 	public ApiResponse<String> updateProProgram(
-		@AuthenticationPrincipal(expression = "user.id") Long userId,
-		@Valid @RequestBody PtProgramUpdateRequestDTO request) {
+		HttpServletRequest requests,
+		@Valid @RequestBody PtProgramUpdateRequestDTO request) throws IllegalAccessException {
+		Long userId = userQueryService.getUserId(requests);
 		profileService.updateProProgram(userId, request);
 		return ApiResponse.onSuccess("PT 프로그램 정보가 수정되었습니다.");
 	}
@@ -137,9 +149,10 @@ public class MyProPageController {
 	@PatchMapping("/location")
 	@Operation(summary = "전문가 위치 정보 수정 API", description = "전문가의 센터 및 대표 주소 정보를 수정합니다.")
 	public ApiResponse<String> updateProLocation(
-		@AuthenticationPrincipal(expression = "user.id") Long userId,
-		@RequestBody @Valid ProLocationUpdateRequestDTO request) {
+		HttpServletRequest requests,
+		@RequestBody @Valid ProLocationUpdateRequestDTO request) throws IllegalAccessException {
 
+		Long userId = userQueryService.getUserId(requests);
 		profileService.updateProLocation(userId, request);
 		return ApiResponse.onSuccess("위치 정보가 성공적으로 수정되었습니다.");
 	}

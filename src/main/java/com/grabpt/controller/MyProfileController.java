@@ -28,8 +28,10 @@ import com.grabpt.dto.response.MyRequestListDTO;
 import com.grabpt.dto.response.MyReviewListDTO;
 import com.grabpt.dto.response.ProfileResponseDTO;
 import com.grabpt.service.ProfileService.ProfileService;
+import com.grabpt.service.UserService.UserQueryService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -39,23 +41,27 @@ public class MyProfileController {
 
 	private final ProfileService profileService;
 	private final ObjectMapper objectMapper;
+	private final UserQueryService userQueryService;
 
 	@Operation(
 		description = "유저의 프로필을 조회합니다.",
 		summary = "유저의 프로필을 조회합니다."
 	)
 	@GetMapping
-	public ApiResponse<ProfileResponseDTO.MyProfileDTO> getMyUserProfile(@AuthenticationPrincipal(expression = "user.id") Long userId) {
+	public ApiResponse<ProfileResponseDTO.MyProfileDTO> getMyUserProfile(HttpServletRequest request) throws
+		IllegalAccessException {
+		Long userId = userQueryService.getUserId(request);
 		return ApiResponse.onSuccess(profileService.findMyUserProfile(userId));
 	}
 
 	@PatchMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@Operation(summary = "기본 프로필 수정", description = "{ \"nickname\": \"test\", \"address\": { \"city\": \"test\", \"district\": \"test\", \"street\": \"test\", \"zipcode\": \"test\", \"specAddress\" : \"test\"  } }")
 	public ApiResponse<String> updateMyUserProfile(
-		@AuthenticationPrincipal(expression = "user.id") Long userId,
+		HttpServletRequest requests,
 		@RequestParam("request") String requestJson,
-		@RequestPart(value = "image", required = false) MultipartFile profileImage) { // 이미지는 선택사항으로 처리
+		@RequestPart(value = "image", required = false) MultipartFile profileImage) throws IllegalAccessException { // 이미지는 선택사항으로 처리
 
+		Long userId = userQueryService.getUserId(requests);
 		// JSON 문자열을 DTO 객체로 변환
 		UserProfileUpdateRequestDTO request;
 
@@ -75,9 +81,11 @@ public class MyProfileController {
 	@GetMapping("/reviews")
 	@Operation(summary = "리뷰(review) 확인 API")
 	public ApiResponse<Page<MyReviewListDTO>> getMyReviewList(
-		@AuthenticationPrincipal(expression = "user.id") Long userId,
+		HttpServletRequest request,
 		@RequestParam(defaultValue = "1") int page,
-		@RequestParam(defaultValue = "10") int size) {
+		@RequestParam(defaultValue = "10") int size) throws IllegalAccessException {
+
+		Long userId = userQueryService.getUserId(request);
 
 		Pageable pageable = PageRequest.of(Math.max(page - 1, 0), size);
 		return ApiResponse.onSuccess(profileService.findMyReviews(userId, pageable));
@@ -86,10 +94,11 @@ public class MyProfileController {
 	@GetMapping("/requests")
 	@Operation(summary = "요청서(request) 확인 API")
 	public ApiResponse<Page<MyRequestListDTO>> getMyRequestList(
-		@AuthenticationPrincipal(expression = "user.id") Long userId,
+		HttpServletRequest request,
 		@RequestParam(defaultValue = "1") int page,
-		@RequestParam(defaultValue = "10") int size) {
+		@RequestParam(defaultValue = "10") int size) throws IllegalAccessException {
 
+		Long userId = userQueryService.getUserId(request);
 		Pageable pageable = PageRequest.of(Math.max(page - 1, 0), size);
 		return ApiResponse.onSuccess(profileService.findMyRequests(userId, pageable));
 	}
@@ -97,9 +106,10 @@ public class MyProfileController {
 	@PatchMapping(value = "/image", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
 	@Operation(summary = "이미지(Image) 변경")
 	public ApiResponse<String> updateUserProfileImage(
-		@AuthenticationPrincipal(expression = "user.id") Long userId,
-		@RequestPart(value = "image") MultipartFile profileImage) {
+		HttpServletRequest request,
+		@RequestPart(value = "image") MultipartFile profileImage) throws IllegalAccessException {
 
+		Long userId = userQueryService.getUserId(request);
 		profileService.updateUserProfileImage(userId, profileImage);
 
 		return ApiResponse.onSuccess("프로필 이미지가 성공적으로 수정되었습니다.");
@@ -107,9 +117,10 @@ public class MyProfileController {
 
 	@DeleteMapping
 	@Operation(summary = "회원 탈퇴 API", description = "현재 로그인된 사용자의 계정을 비활성화합니다.")
-	public ApiResponse<String> withdrawUser(@AuthenticationPrincipal(expression = "user.id") Long userId,
+	public ApiResponse<String> withdrawUser(HttpServletRequest request,
 		@RequestBody DeletedRequestDTO deletedRequest
-		) {
+		) throws IllegalAccessException {
+		Long userId = userQueryService.getUserId(request);
 		profileService.deleteUser(userId, deletedRequest);
 		return ApiResponse.onSuccess("회원 탈퇴가 성공적으로 처리되었습니다.");
 	}

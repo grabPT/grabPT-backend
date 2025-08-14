@@ -1,15 +1,11 @@
 package com.grabpt.dto.response;
 
+import com.grabpt.domain.entity.*;
 import lombok.Builder;
 import lombok.Getter;
 
 
 import java.util.List;
-
-import com.grabpt.domain.entity.Address;
-import com.grabpt.domain.entity.ProPhoto;
-import com.grabpt.domain.entity.Review;
-import com.grabpt.domain.entity.Users;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -84,6 +80,7 @@ public class ProfileResponseDTO {
 		private String programDescription;
 		private Integer pricePerSession;
 		private Integer totalSessions;
+		private List<PtPrice> ptPrices;
 
 		// location
 		private List<AddressDTO> address;

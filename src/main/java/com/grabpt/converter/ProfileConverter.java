@@ -67,6 +67,7 @@ public class ProfileConverter {
 				.programDescription(proProfile.getProgramDescription())
 				.pricePerSession(proProfile.getPricePerSession())
 				.totalSessions(proProfile.getTotalSessions())
+				.ptPrices(proProfile.getPtPrices())
 				.address(Collections.emptyList())
 				.center(proProfile.getCenter())
 				.build();
@@ -97,6 +98,7 @@ public class ProfileConverter {
 			.programDescription(proProfile.getProgramDescription())
 			.pricePerSession(proProfile.getPricePerSession())
 			.totalSessions(proProfile.getTotalSessions())
+			.ptPrices(proProfile.getPtPrices())
 			.address(addressDTOS)
 			.center(proProfile.getCenter())
 			.build();
@@ -127,6 +129,7 @@ public class ProfileConverter {
 			.programDescription(proProfile.getProgramDescription())
 			.pricePerSession(proProfile.getPricePerSession())
 			.totalSessions(proProfile.getTotalSessions())
+			.ptPrices(proProfile.getPtPrices())
 			.center(proProfile.getCenter())
 			.address(addressDTOS)
 			.build();
@@ -155,6 +158,7 @@ public class ProfileConverter {
 			.programDescription(proProfile.getProgramDescription())
 			.pricePerSession(proProfile.getPricePerSession())
 			.totalSessions(proProfile.getTotalSessions())
+			.ptPrices(proProfile.getPtPrices())
 			.center(proProfile.getCenter())
 			.address(addressDTOS)
 			.build();

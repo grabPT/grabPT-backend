@@ -3,19 +3,11 @@ package com.grabpt.service.ProfileService;
 import java.util.List;
 
 import com.grabpt.domain.entity.ProProfile;
+import com.grabpt.dto.request.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.grabpt.dto.request.CenterUpdateRequestDTO;
-import com.grabpt.dto.request.CertificationUpdateRequestDTO;
-import com.grabpt.dto.request.DeletedRequestDTO;
-import com.grabpt.dto.request.DescriptionUpdateRequestDTO;
-
-import com.grabpt.dto.request.ProLocationUpdateRequestDTO;
-import com.grabpt.dto.request.PtPriceUpdateRequestDTO;
-import com.grabpt.dto.request.PtProgramUpdateRequestDTO;
-import com.grabpt.dto.request.UserProfileUpdateRequestDTO;
 import com.grabpt.dto.response.CategoryResponse;
 import com.grabpt.dto.response.CertificationResponseDTO;
 import com.grabpt.dto.response.MyRequestListDTO;
@@ -47,7 +39,7 @@ public interface ProfileService {
 	void updateProCenter(Long userId, CenterUpdateRequestDTO request);
 	void updateProDescription(Long userId, DescriptionUpdateRequestDTO request);
 	void updateProPhotos(Long userId, List<MultipartFile> photoFiles);
-	void updateProPtPrice(Long userId, PtPriceUpdateRequestDTO request);
+	void updateProPtPrice(Long userId, PtPriceRequest.PtPriceUpdateRequestList request);
 	void updateProProgram(Long userId, PtProgramUpdateRequestDTO request);
 	void updateUserProfileImage(Long userId, MultipartFile profileImage);
 	CertificationResponseDTO findMyCertifications(Long userId);

@@ -2,7 +2,7 @@ package com.grabpt.dto.response;
 
 import java.util.List;
 
-import com.grabpt.domain.enums.RequestStatus;
+import com.grabpt.domain.enums.MatchingStatus;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -59,7 +59,7 @@ public class SuggestionResponseDto {
 		private String requestionNickname;
 		private Integer price;
 		private Integer sessionCount;
-		private RequestStatus status;
+		private MatchingStatus status;
 		private String profileImageUrl;
 		private Long requestionId;
 		private Long suggestionId;

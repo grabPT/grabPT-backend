@@ -100,7 +100,7 @@ public class ProfileConverter {
 			.totalSessions(proProfile.getTotalSessions())
 			.ptPrices(proProfile.getPtPrices())
 			.address(addressDTOS)
-			.center(proProfile.getCenter())
+			.centerDescription(proProfile.getCenterDescription())
 			.build();
 	}
 

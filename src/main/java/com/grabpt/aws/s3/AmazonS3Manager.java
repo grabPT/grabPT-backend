@@ -57,6 +57,10 @@ public class AmazonS3Manager {
 		return amazonConfig.getSuggestionPhoto() + '/' + uuid.getUuid();
 	}
 
+	public String generateContractPhotoKeyName(Uuid uuid){
+		return amazonConfig.getContractPhoto() + '/' + uuid.getUuid();
+	}
+
 	/**
 	 * 서버에서 생성된 파일 스트림(InputStream)을 S3에 업로드합니다.
 	 * @param keyName S3에 저장될 파일의 전체 경로 및 이름

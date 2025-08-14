@@ -21,11 +21,13 @@ import com.grabpt.apiPayload.exception.handler.UserHandler;
 import com.grabpt.aws.s3.AmazonS3Manager;
 import com.grabpt.aws.s3.Uuid;
 import com.grabpt.converter.SuggestionConverter;
+import com.grabpt.domain.entity.Matching;
 import com.grabpt.domain.entity.ProProfile;
 import com.grabpt.domain.entity.Requestions;
 import com.grabpt.domain.entity.SuggestionPhoto;
 import com.grabpt.domain.entity.Suggestions;
 import com.grabpt.domain.entity.Users;
+import com.grabpt.domain.enums.MatchingStatus;
 import com.grabpt.dto.request.SuggestionRequestDto;
 import com.grabpt.dto.response.SuggestionResponseDto;
 import com.grabpt.dto.response.UserResponseDto;
@@ -34,6 +36,7 @@ import com.grabpt.repository.RequestionRepository.RequestionRepository;
 import com.grabpt.repository.SuggestionRepository.SuggestionRepository;
 import com.grabpt.repository.UserRepository.UserRepository;
 import com.grabpt.service.AlarmService.AlarmService;
+import com.grabpt.service.MatchingService.MatchingService;
 import com.grabpt.service.UserService.UserQueryService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -50,6 +53,7 @@ public class SuggestionServiceImpl implements SuggestionService {
 	private final UserQueryService userQueryService;
 	private final AmazonS3Manager amazonS3Manager;
 	private final AlarmService alarmService;
+	private final MatchingService matchingService;
 
 	@Override
 	public Suggestions save(SuggestionRequestDto dto, String email, List<MultipartFile> photos) {
@@ -93,7 +97,7 @@ public class SuggestionServiceImpl implements SuggestionService {
 		}
 		Suggestions save = suggestionRepository.save(suggestion);
 		alarmService.sendAlarm(requestion.getUser().getId(), "SUGGESTION", "제안서 도착",
-			user.getNickname()+" 님이 제안서를 보냈습니다", "/api/suggestion/"+suggestion.getId());
+			user.getNickname() + " 님이 제안서를 보냈습니다", "/api/suggestion/" + suggestion.getId());
 		return save;
 	}
 
@@ -151,15 +155,20 @@ public class SuggestionServiceImpl implements SuggestionService {
 		PageRequest pageable = PageRequest.of(Math.max(page - 1, 0), 8); // 1부터 시작, 8개씩 페이징
 		Page<Suggestions> suggestionsPage = suggestionRepository.findByProProfile_User_Email(email, pageable);
 
-		return suggestionsPage.map(s -> SuggestionResponseDto.MySuggestionPagingDto.builder()
-			.requestionNickname(s.getRequestion().getUser().getNickname())
-			.price(s.getRequestion().getPrice())
-			.sessionCount(s.getRequestion().getSessionCount())
-			.status(s.getRequestion().getStatus())
-			.requestionId(s.getRequestion().getId())
-			.suggestionId(s.getId())
-			.profileImageUrl(s.getProProfile().getUser().getProfileImageUrl())
-			.build());
+		return suggestionsPage.map(s -> {
+			Matching matching = matchingService.findMatchingBySuggestionId(s.getId());
+			MatchingStatus status = (matching != null) ? matching.getStatus() : MatchingStatus.WAITING;
+
+			return SuggestionResponseDto.MySuggestionPagingDto.builder()
+				.requestionNickname(s.getRequestion().getUser().getNickname())
+				.price(s.getRequestion().getPrice())
+				.sessionCount(s.getRequestion().getSessionCount())
+				.status(status)
+				.requestionId(s.getRequestion().getId())
+				.suggestionId(s.getId())
+				.profileImageUrl(s.getProProfile().getUser().getProfileImageUrl())
+				.build();
+		});
 	}
 
 	@Override

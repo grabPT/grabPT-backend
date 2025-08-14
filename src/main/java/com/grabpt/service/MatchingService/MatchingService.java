@@ -7,4 +7,6 @@ public interface MatchingService {
 	Matching createMatching(Long requestionId, Long suggestionId);
 
 	Matching updateStatus(Long matchingId, MatchingStatus newStatus);
+
+	Matching findMatchingBySuggestionId(Long suggestionId);
 }

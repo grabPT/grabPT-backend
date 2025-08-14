@@ -15,4 +15,6 @@ public interface MatchingRepository extends JpaRepository<Matching, Long> {
 		"AND m.status = :status")
 	Long getActiveClients(@Param("proProfileId") Long proProfileId,
 		@Param("status") MatchingStatus status);
+
+	Matching findMatchingBySuggestionId(Long suggestionId);
 }

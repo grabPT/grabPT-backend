@@ -85,4 +85,9 @@ public class MatchingServiceImpl implements MatchingService {
 
 		return matchingRepository.save(matching);
 	}
+
+	@Override
+	public Matching findMatchingBySuggestionId(Long suggestionId) {
+		return matchingRepository.findMatchingBySuggestionId(suggestionId);
+	}
 }

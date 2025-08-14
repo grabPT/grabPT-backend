@@ -2,6 +2,8 @@ package com.grabpt.service.MatchingService;
 
 import java.time.LocalDateTime;
 
+import com.grabpt.domain.entity.Contract;
+import com.grabpt.dto.response.ContractResponse;
 import org.springframework.stereotype.Service;
 
 import com.grabpt.apiPayload.code.status.ErrorStatus;
@@ -29,7 +31,7 @@ public class MatchingServiceImpl implements MatchingService {
 	private final ContractService contractService;
 
 	@Override
-	public Matching createMatching(Long requestionId, Long suggestionId) {
+	public ContractResponse.CreateMatchingAndContractResponseDto createMatching(Long requestionId, Long suggestionId) {
 
 		Requestions requestion = requestionRepository.findById(requestionId)
 			.orElseThrow(() -> new RequestionHandler(ErrorStatus.REQUESTION_NOT_FOUND));
@@ -55,10 +57,12 @@ public class MatchingServiceImpl implements MatchingService {
 
 		matchingRepository.save(matching);
 		requestionRepository.save(requestion); // 상태 저장 반영
-		contractService.createContract(matching, requestion, suggestion);
+		Contract contract = contractService.createContract(matching, requestion, suggestion);
 
-		return matching;
-
+		return ContractResponse.CreateMatchingAndContractResponseDto.builder()
+			.matchingId(matching.getId())
+			.contractId(contract.getId())
+			.build();
 	}
 
 	@Override

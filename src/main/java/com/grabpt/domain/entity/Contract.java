@@ -43,7 +43,8 @@ public class Contract extends BaseEntity {
 		@AttributeOverride(name = "birth", column = @Column(name = "user_birth")),
 		@AttributeOverride(name = "phoneNumber", column = @Column(name = "user_phone_number")),
 		@AttributeOverride(name = "gender", column = @Column(name = "user_gender")),
-		@AttributeOverride(name = "address", column = @Column(name = "user_address"))
+		@AttributeOverride(name = "address", column = @Column(name = "user_address")),
+		@AttributeOverride(name = "signUrl", column = @Column(name = "user_signUrl"))
 	})
 	private ContractInfo userInfo;
 
@@ -53,7 +54,8 @@ public class Contract extends BaseEntity {
 		@AttributeOverride(name = "birth", column = @Column(name = "pro_birth")),
 		@AttributeOverride(name = "phoneNumber", column = @Column(name = "pro_phone_number")),
 		@AttributeOverride(name = "gender", column = @Column(name = "pro_gender")),
-		@AttributeOverride(name = "address", column = @Column(name = "pro_address"))
+		@AttributeOverride(name = "address", column = @Column(name = "pro_address")),
+		@AttributeOverride(name = "signUrl", column = @Column(name = "pro_signUrl"))
 	})
 	private ContractInfo proInfo;
 

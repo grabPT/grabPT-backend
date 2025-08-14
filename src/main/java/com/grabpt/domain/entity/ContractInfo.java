@@ -26,4 +26,5 @@ public class ContractInfo {
 	private String address;
 
 	private String signUrl;
+
 }

@@ -36,7 +36,7 @@ public class MatchingServiceImpl implements MatchingService {
 		Requestions requestion = requestionRepository.findById(requestionId)
 			.orElseThrow(() -> new RequestionHandler(ErrorStatus.REQUESTION_NOT_FOUND));
 
-		if (requestion.getStatus() == RequestStatus.MATCHED) {
+		if (requestion.getStatus() != RequestStatus.MATCHING) {
 			throw new RequestionHandler(ErrorStatus.REQUESTION_ALREADY_MATCHED);
 		}
 
@@ -57,6 +57,7 @@ public class MatchingServiceImpl implements MatchingService {
 		// 요청서 상태 변경
 		requestion.setStatus(RequestStatus.MATCHED);
 		requestionRepository.save(requestion); // 상태 저장 반영
+
 		Contract contract = contractService.createContract(matching, requestion, suggestion);
 
 		return ContractResponse.CreateMatchingAndContractResponseDto.builder()

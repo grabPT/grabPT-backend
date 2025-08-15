@@ -145,10 +145,13 @@ public class AuthController {
 	@PostMapping("/logout")
 	public ApiResponse<String> logout(@RequestBody(required = false) RefreshTokenRequestDto request,
 		HttpServletResponse response) {
-		// 쿠키 삭제 (클라이언트 브라우저에서 삭제됨)
-		deleteTokenCookies(response);
 
-		// optional: DB의 refreshToken도 삭제
+		// 쿠키 삭제 세트
+		for (var c : CookieSupport.logoutDeletionSet()) {
+			response.addHeader("Set-Cookie", c.toString());
+		}
+
+		// DB의 refreshToken도 삭제
 		if (request != null && request.getRefreshToken() != null) {
 			String email = jwtTokenProvider.getUserEmail(request.getRefreshToken());
 			Users user = userRepository.findByEmail(email).orElse(null);

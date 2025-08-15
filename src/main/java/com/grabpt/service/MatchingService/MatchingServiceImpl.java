@@ -52,12 +52,12 @@ public class MatchingServiceImpl implements MatchingService {
 			.status(MatchingStatus.WAITING)  //대기중으로 변경
 			.build();
 
-		// 요청서 상태 변경
-		requestion.setStatus(RequestStatus.MATCHED);
-
 		matchingRepository.save(matching);
 		requestionRepository.save(requestion); // 상태 저장 반영
 		Contract contract = contractService.createContract(matching, requestion, suggestion);
+
+		// 요청서 상태 변경
+		requestion.setStatus(RequestStatus.MATCHED);
 
 		return ContractResponse.CreateMatchingAndContractResponseDto.builder()
 			.matchingId(matching.getId())

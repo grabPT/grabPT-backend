@@ -8,7 +8,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,8 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.grabpt.apiPayload.ApiResponse;
-import com.grabpt.apiPayload.code.status.ErrorStatus;
-import com.grabpt.apiPayload.exception.handler.AuthHandler;
 import com.grabpt.config.jwt.JwtTokenProvider;
 import com.grabpt.config.jwt.properties.CookieSupport;
 import com.grabpt.domain.entity.Users;
@@ -87,47 +84,56 @@ public class AuthController {
 		summary = "JWT Refresh Token으로 인증 토큰 재발행",
 		description = "유효한 Refresh Token 전달 시 인증 토큰 재발행, access, refresh 토큰은 쿠키로 전달"
 	)
-	@io.swagger.v3.oas.annotations.parameters.RequestBody(
-		description = "리프레시 토큰을 담은 요청 body",
-		required = true,
-		content = @Content(
-			mediaType = "application/json",
-			schema = @Schema(implementation = RefreshTokenRequestDto.class)
-		)
-	)
 	@PostMapping("/reissue")
-	public ApiResponse<String> reissueToken(@RequestBody RefreshTokenRequestDto request,
-		HttpServletResponse response) {
-		String refreshToken = request.getRefreshToken();
-
-		// 검증 단계
-		if (!jwtTokenProvider.validateToken(refreshToken)) {
-			throw new AuthHandler(ErrorStatus.INVALID_JWT_ISSUE);
+	public ResponseEntity<Void> reissueToken(HttpServletRequest request, HttpServletResponse response) {
+		String refreshToken = null;
+		var cookies = request.getCookies();
+		if (cookies != null) {
+			for (var c : cookies) {
+				if ("refreshToken".equals(c.getName())) {
+					refreshToken = c.getValue();
+					break;
+				}
+			}
+		}
+		if (refreshToken == null || !jwtTokenProvider.validateToken(refreshToken)) {
+			return unauthorizedAndClear(response);
 		}
 
 		String email = jwtTokenProvider.getUserEmail(refreshToken);
-		Users user = userRepository.findByEmail(email).orElseThrow();
+		Users user = userRepository.findByEmail(email).orElse(null);
+		if (user == null)
+			return unauthorizedAndClear(response);
 
+		// 문자열 동일 비교로 안전하게 회전
 		if (!refreshToken.equals(user.getRefreshToken())) {
-			throw new AuthHandler(ErrorStatus.INVALID_JWT_ISSUE_REFRESH);
+			return unauthorizedAndClear(response);
 		}
 
-		// 재발급
-		UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-		Authentication authentication = new UsernamePasswordAuthenticationToken(
+		// 재발급 (회전)
+		var userDetails = userDetailsService.loadUserByUsername(email);
+		var authentication = new UsernamePasswordAuthenticationToken(
 			userDetails, null, userDetails.getAuthorities());
+
 		String newAccessToken = jwtTokenProvider.generateToken(authentication);
 		String newRefreshToken = jwtTokenProvider.createRefreshToken(email);
-		log.info("재발급된 accessToken = " + newAccessToken);
-		log.info("재발급된 refreshToken = " + newRefreshToken);
 
+		// DB 교체(회전)
 		user.setRefreshToken(newRefreshToken);
 		userRepository.save(user);
 
-		// 쿠키로 저장
-		addTokenCookies(newAccessToken, newRefreshToken, response);
+		// 쿠키 세팅
+		response.addHeader("Set-Cookie", CookieSupport.accessCookie(newAccessToken).toString());
+		response.addHeader("Set-Cookie", CookieSupport.refreshCookie(newRefreshToken).toString());
 
-		return ApiResponse.onSuccess("토큰 저장 완료");
+		return ResponseEntity.noContent().build();
+	}
+
+	private ResponseEntity<Void> unauthorizedAndClear(HttpServletResponse res) {
+		res.addHeader("Set-Cookie", CookieSupport.deleteCookie("accessToken", "/").toString());
+		res.addHeader("Set-Cookie", CookieSupport.deleteCookie("refreshToken", "/").toString());
+		res.addHeader("Set-Cookie", CookieSupport.deleteCookie("refreshToken", "/api/auth/reissue").toString());
+		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 	}
 
 	@Operation(
@@ -231,38 +237,14 @@ public class AuthController {
 		return ApiResponse.onSuccess(data);
 	}
 
-	@PostMapping("/cookie-refresh")
-	public ResponseEntity<Void> refresh(HttpServletRequest request, HttpServletResponse response) {
-		String refresh = null;
-		var cookies = request.getCookies();
-		if (cookies != null) {
-			for (var c : cookies) {
-				if ("refreshToken".equals(c.getName())) {
-					refresh = c.getValue();
-					break;
-				}
-			}
-		}
-		if (refresh == null || !jwtTokenProvider.validateToken(refresh)) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-		}
-		String email = jwtTokenProvider.getUserEmail(refresh);
-		var user = userRepository.findByEmail(email).orElse(null);
-		if (user == null)
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-
-		String newAccess = jwtTokenProvider.generateToken(user);
-		response.addHeader("Set-Cookie", CookieSupport.accessCookie(newAccess).toString());
-		return ResponseEntity.noContent().build();
-	}
-
 	private void addTokenCookies(String accessToken, String refreshToken, HttpServletResponse response) {
 		response.addHeader("Set-Cookie", CookieSupport.accessCookie(accessToken).toString());
 		response.addHeader("Set-Cookie", CookieSupport.refreshCookie(refreshToken).toString());
 	}
 
 	private void deleteTokenCookies(HttpServletResponse response) {
-		response.addHeader("Set-Cookie", CookieSupport.deleteCookie("accessToken").toString());
-		response.addHeader("Set-Cookie", CookieSupport.deleteCookie("refreshToken").toString());
+		response.addHeader("Set-Cookie", CookieSupport.deleteCookie("accessToken", "/").toString());
+		response.addHeader("Set-Cookie", CookieSupport.deleteCookie("refreshToken", "/").toString());
+		response.addHeader("Set-Cookie", CookieSupport.deleteCookie("refreshToken", "/api/auth/reissue").toString());
 	}
 }

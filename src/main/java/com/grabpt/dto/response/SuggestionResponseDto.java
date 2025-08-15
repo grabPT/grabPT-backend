@@ -34,7 +34,7 @@ public class SuggestionResponseDto {
 
 		private Long expertId;
 		private Long userId;
-		private Long matchId;
+		private Long matchingId;
 	}
 
 	@Getter

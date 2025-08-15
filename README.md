@@ -1,5 +1,8 @@
 ## grabPT-backend
 
+# 서버 아키텍처 다이어그램
+<img width="1319" height="689" alt="Image" src="https://github.com/user-attachments/assets/3d90601c-b10e-446d-a9ae-037cd6876785" />
+
 # grabPT
 
 **grabPT**는 트레이너와 일반 회원을 연결하는 PT 매칭 플랫폼입니다.  

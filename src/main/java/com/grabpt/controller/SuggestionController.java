@@ -40,27 +40,6 @@ public class SuggestionController {
 	private final SuggestionService suggestionService;
 	private final UserQueryService userQueryService;
 
-	// @Operation(
-	// 	summary = "제안서 저장 API",
-	// 	description = "트레이너가 보낸 제안서를 저장합니다."
-	// )
-	// @PostMapping
-	// public ApiResponse<SuggestionResponseDto.SuggestionSaveResponseDto> setSuggestion(
-	// 	@RequestBody SuggestionRequestDto dto,
-	// 	HttpServletRequest request) throws IllegalAccessException {
-	//
-	// 	UserResponseDto.UserInfoDTO userInfo = userQueryService.getUserInfo(request);
-	// 	String email = userInfo.getEmail();  // 현재 로그인한 트레이너 이메일
-	//
-	// 	Suggestions saved = suggestionService.save(dto, email);
-	//
-	// 	return ApiResponse.onSuccess(
-	// 		SuggestionResponseDto.SuggestionSaveResponseDto.builder()
-	// 			.suggestionId(saved.getId())
-	// 			.build()
-	// 	);
-	// }
-
 	@Operation(
 		summary = "제안서 저장 API (Multipart)",
 		description = "트레이너가 보낸 제안서를 저장합니다. JSON + 이미지 리스트 형식으로 전송하세요."

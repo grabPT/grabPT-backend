@@ -24,7 +24,7 @@ public final class CookieSupport {
 			.secure(true)
 			.sameSite("Lax")
 			.domain("grabpt.com")
-			.path("/auth")         // 리프레시 전용 경로로 좁히기 권장
+			.path("/")         // 리프레시 전용 경로로 좁히기 권장
 			.maxAge(60L * 60 * 24 * 7) // 7일
 			.build();
 	}
@@ -36,7 +36,7 @@ public final class CookieSupport {
 			.secure(true)
 			.sameSite("None")
 			.domain("grabpt.com")
-			.path("/auth")
+			.path("/")
 			.maxAge(60 * 30) // 30분 (액세스 토큰 수명과 유사)
 			.build();
 	}

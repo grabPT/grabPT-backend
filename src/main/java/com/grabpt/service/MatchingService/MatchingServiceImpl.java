@@ -2,6 +2,7 @@ package com.grabpt.service.MatchingService;
 
 import java.time.LocalDateTime;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import com.grabpt.apiPayload.code.status.ErrorStatus;
@@ -20,9 +21,11 @@ import com.grabpt.repository.SuggestionRepository.SuggestionRepository;
 import com.grabpt.service.ContractService.ContractService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MatchingServiceImpl implements MatchingService {
 
 	private final RequestionRepository requestionRepository;
@@ -33,31 +36,58 @@ public class MatchingServiceImpl implements MatchingService {
 	@Override
 	public ContractResponse.CreateMatchingAndContractResponseDto createMatching(Long requestionId, Long suggestionId) {
 
-		Requestions requestion = requestionRepository.findById(requestionId)
+		log.info("[MATCH] reqId={}", requestionId);
+
+		// 1) 잠금 걸고 가져오기
+		Requestions requestion = requestionRepository.findByIdForUpdate(requestionId)
 			.orElseThrow(() -> new RequestionHandler(ErrorStatus.REQUESTION_NOT_FOUND));
 
+		log.info("[MATCH] req.status={} (enumName={})",
+			requestion.getStatus(),
+			requestion.getStatus() != null ? requestion.getStatus().name() : "null");
+
+		// 2) 매칭 가능 상태만 허용
 		if (requestion.getStatus() != RequestStatus.MATCHING) {
+			log.warn("[MATCH] BLOCK: status is not MATCHING. actual={}", requestion.getStatus());
 			throw new RequestionHandler(ErrorStatus.REQUESTION_ALREADY_MATCHED);
 		}
 
+		// 3) 제안서 로드 + 연결 검증
 		Suggestions suggestion = suggestionRepository.findById(suggestionId)
 			.orElseThrow(() -> new SuggestionHandler(ErrorStatus.SUGGESTION_NOT_FOUND));
+		if (!suggestion.getRequestion().getId().equals(requestionId)) {
+			log.warn("[MATCH] suggestion {} belongs to requestion {}, not {}",
+				suggestionId, suggestion.getRequestion().getId(), requestionId);
+			throw new SuggestionHandler(ErrorStatus.INVALID_SUGGESTION_FOR_REQUESTION);
+		}
 
-		// Matching 생성
+		// 4) 선중복 체크
+		if (matchingRepository.existsByRequestionId(requestionId)) {
+			throw new RequestionHandler(ErrorStatus.REQUESTION_ALREADY_MATCHED);
+		}
+		if (matchingRepository.existsBySuggestionId(suggestionId)) {
+			throw new SuggestionHandler(ErrorStatus.SUGGESTION_ALREADY_MATCHED);
+		}
+
+		// 5) 매칭 생성/저장 (최후 방어 포함)
 		Matching matching = Matching.builder()
 			.requestion(requestion)
 			.suggestion(suggestion)
 			.agreedPrice(suggestion.getPrice())
 			.matchedAt(LocalDateTime.now())
-			.status(MatchingStatus.WAITING)  //대기중으로 변경
+			.status(MatchingStatus.WAITING)
 			.build();
 
-		matchingRepository.save(matching);
+		try {
+			matchingRepository.save(matching);
+		} catch (DataIntegrityViolationException e) {
+			throw new RequestionHandler(ErrorStatus.REQUESTION_ALREADY_MATCHED);
+		}
 
-		// 요청서 상태 변경
+		// 6) 요청서 상태 변경
 		requestion.setStatus(RequestStatus.MATCHED);
-		requestionRepository.save(requestion); // 상태 저장 반영
 
+		// 7) 계약 생성
 		Contract contract = contractService.createContract(matching, requestion, suggestion);
 
 		return ContractResponse.CreateMatchingAndContractResponseDto.builder()

@@ -17,4 +17,9 @@ public interface MatchingRepository extends JpaRepository<Matching, Long> {
 		@Param("status") MatchingStatus status);
 
 	Matching findMatchingBySuggestionId(Long suggestionId);
+
+	boolean existsByRequestionId(Long requestionId);
+
+	boolean existsBySuggestionId(Long suggestionId);
+
 }

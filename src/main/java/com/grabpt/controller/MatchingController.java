@@ -29,7 +29,6 @@ public class MatchingController {
 	@Operation(summary = "요청-제안 매칭 API", description = "요청서와 제안서 기반으로 매칭 생성(matchingId, contractId 반환)")
 	public ApiResponse<ContractResponse.CreateMatchingAndContractResponseDto> createMatching(
 		@RequestParam Long requestionId, @RequestParam Long suggestionId) {
-		matchingService.createMatching(requestionId, suggestionId);
 		return ApiResponse.onSuccess(matchingService.createMatching(requestionId, suggestionId));
 	}
 

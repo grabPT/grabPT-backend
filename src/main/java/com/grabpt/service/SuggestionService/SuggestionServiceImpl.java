@@ -121,6 +121,10 @@ public class SuggestionServiceImpl implements SuggestionService {
 			.map(photo -> photo.getImageUrl())
 			.collect(Collectors.toList());
 
+		// Matching 조회 (없으면 null)
+		Matching matching = matchingService.findMatchingBySuggestionId(suggestionId);
+		Long matchId = (matching != null) ? matching.getId() : null;
+
 		return SuggestionResponseDto.SuggestionDetailResponseDto.builder()
 			.nickname(user.getNickname())
 			.center(pro.getCenter())
@@ -132,6 +136,9 @@ public class SuggestionServiceImpl implements SuggestionService {
 			.message(suggestion.getMessage())
 			.location(suggestion.getLocation())
 			.photoUrls(photoUrls) // 사진 포함
+			.expertId(pro.getId())  // 트레이너 ID
+			.userId(user.getId())  // 요청자 ID
+			.matchId(matchId)  // 매칭 ID (없으면 null)
 			.build();
 	}
 

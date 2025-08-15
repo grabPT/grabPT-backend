@@ -53,11 +53,11 @@ public class MatchingServiceImpl implements MatchingService {
 			.build();
 
 		matchingRepository.save(matching);
-		requestionRepository.save(requestion); // 상태 저장 반영
-		Contract contract = contractService.createContract(matching, requestion, suggestion);
 
 		// 요청서 상태 변경
 		requestion.setStatus(RequestStatus.MATCHED);
+		requestionRepository.save(requestion); // 상태 저장 반영
+		Contract contract = contractService.createContract(matching, requestion, suggestion);
 
 		return ContractResponse.CreateMatchingAndContractResponseDto.builder()
 			.matchingId(matching.getId())

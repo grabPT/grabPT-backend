@@ -148,6 +148,8 @@ public class AuthController {
 		HttpServletResponse res,
 		Authentication authentication) {
 
+		log.info("쿠키 삭제 진입");
+
 		// 1) 쿠키 삭제 세트
 		for (var c : CookieSupport.logoutDeletionSet()) {
 			res.addHeader("Set-Cookie", c.toString());

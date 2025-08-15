@@ -148,9 +148,12 @@ public class AuthController {
 		HttpServletResponse res,
 		Authentication authentication) {
 
+		log.info("쿠키 삭제 진입");
+
 		// 1) 쿠키 삭제 세트
 		for (var c : CookieSupport.logoutDeletionSet()) {
 			res.addHeader("Set-Cookie", c.toString());
+			log.info("[LOGOUT] Set-Cookie -> {}", c.toString());
 		}
 
 		// 2) refresh 토큰 확보: 바디 > 쿠키
@@ -175,6 +178,7 @@ public class AuthController {
 			userRepository.findByEmail(email).ifPresent(u -> {
 				u.setRefreshToken(null);
 				userRepository.save(u);
+				log.info("[LOGOUT] refreshToken removed for user: {}", email);
 			});
 			revoked = true;
 		}
@@ -192,8 +196,8 @@ public class AuthController {
 		if (session != null)
 			session.invalidate();
 		org.springframework.security.core.context.SecurityContextHolder.clearContext();
+		log.info("[LOGOUT] Logout process completed");
 
-		log.info("로그아웃 완료 (refresh 토큰 제공: {})", refresh != null);
 		return ApiResponse.onSuccess("로그아웃 완료");
 	}
 

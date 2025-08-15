@@ -31,6 +31,10 @@ public class SuggestionResponseDto {
 		private String message;
 		private String location;
 		private List<String> photoUrls; // 트레이너 제안 사진들
+
+		private Long expertId;
+		private Long userId;
+		private Long matchId;
 	}
 
 	@Getter

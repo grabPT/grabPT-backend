@@ -68,7 +68,11 @@ public enum ErrorStatus implements BaseErrorCode {
 
 	NOT_IMAGE(HttpStatus.BAD_REQUEST, "IMG4001", "이미지가 없습니다."),
 
-	ALARM_NOT_FOUND(HttpStatus.BAD_REQUEST, "ALA4001", "알림이 존재하지 않습니다.");
+	ALARM_NOT_FOUND(HttpStatus.BAD_REQUEST, "ALA4001", "알림이 존재하지 않습니다."),
+
+	INVALID_SUGGESTION_FOR_REQUESTION(HttpStatus.BAD_REQUEST, "SUGG4001", "유효한 제안서가 아닙니다."),
+
+	SUGGESTION_ALREADY_MATCHED(HttpStatus.BAD_REQUEST, "SUGG4005", "이미 매칭된 제안서입니다.");
 
 	private final HttpStatus httpStatus;
 	private final String code;

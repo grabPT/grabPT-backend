@@ -21,6 +21,7 @@ public class CertificationResponseDTO {
 	public static class CertificationItem {
 		private CertificationType certificationType;
 		private String description;
+		private String imageUrl;
 	}
 
 	public static CertificationResponseDTO from(List<ProCertification> certifications) {
@@ -32,6 +33,7 @@ public class CertificationResponseDTO {
 			.map(cert -> CertificationItem.builder()
 				.certificationType(cert.getCertificationType())
 				.description(cert.getDescription())
+				.imageUrl(cert.getImageUrl())
 				.build())
 			.collect(Collectors.toList());
 		return CertificationResponseDTO.builder()

@@ -1,5 +1,7 @@
 package com.grabpt.config.jwt.properties;
 
+import java.time.Duration;
+
 import org.springframework.http.ResponseCookie;
 
 public final class CookieSupport {
@@ -22,10 +24,10 @@ public final class CookieSupport {
 		return ResponseCookie.from("refreshToken", token)
 			.httpOnly(true)
 			.secure(true)
-			.sameSite("Lax")
-			.domain("grabpt.com")
-			.path("/")         // 리프레시 전용 경로로 좁히기 권장
-			.maxAge(60L * 60 * 24 * 7) // 7일
+			.sameSite("None")
+			.domain("grabpt.com")      // 이미 사용 중인 도메인과 동일하게
+			.path("/api/auth/reissue")
+			.maxAge(Duration.ofDays(7)) // 현재 유효기간 정책 유지
 			.build();
 	}
 
@@ -41,13 +43,13 @@ public final class CookieSupport {
 			.build();
 	}
 
-	public static ResponseCookie deleteCookie(String name) {
+	public static ResponseCookie deleteCookie(String name, String path) {
 		return ResponseCookie.from(name, "")
 			.httpOnly(true)
 			.secure(true)
 			.sameSite("None")
 			.domain("grabpt.com")
-			.path("/")
+			.path(path)
 			.maxAge(0)
 			.build();
 	}
@@ -56,11 +58,11 @@ public final class CookieSupport {
 	public static ResponseCookie[] logoutDeletionSet() {
 		return new ResponseCookie[] {
 			// accessToken (path=/)
-			deleteCookie("accessToken"),
+			deleteCookie("accessToken", "/"),
 			// refreshToken (path=/api/auth 로 발급했으니 동일 path 로 삭제)
-			deleteCookie("refreshToken"),
+			deleteCookie("refreshToken", "/api/auth/reissue"),
 			// role, oauth* (프론트에서 읽던 것들: httpOnly=false 로 내려도 되고 true 여도 삭제됨)
-			deleteCookie("role")
+			deleteCookie("role", "/")
 		};
 	}
 }

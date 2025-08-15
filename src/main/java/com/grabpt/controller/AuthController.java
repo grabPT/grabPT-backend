@@ -144,25 +144,56 @@ public class AuthController {
 	)
 	@PostMapping("/logout")
 	public ApiResponse<String> logout(@RequestBody(required = false) RefreshTokenRequestDto request,
-		HttpServletResponse response) {
+		HttpServletRequest req,
+		HttpServletResponse res,
+		Authentication authentication) {
 
-		// 쿠키 삭제 세트
+		// 1) 쿠키 삭제 세트
 		for (var c : CookieSupport.logoutDeletionSet()) {
-			response.addHeader("Set-Cookie", c.toString());
+			res.addHeader("Set-Cookie", c.toString());
 		}
 
-		// DB의 refreshToken도 삭제
-		if (request != null && request.getRefreshToken() != null) {
-			String email = jwtTokenProvider.getUserEmail(request.getRefreshToken());
-			Users user = userRepository.findByEmail(email).orElse(null);
-			if (user != null) {
-				user.setRefreshToken(null);
-				userRepository.save(user);
+		// 2) refresh 토큰 확보: 바디 > 쿠키
+		String refresh = null;
+		if (request != null && request.getRefreshToken() != null && !request.getRefreshToken().isBlank()) {
+			refresh = request.getRefreshToken();
+		} else if (req.getCookies() != null) {
+			for (var c : req.getCookies()) {
+				if ("refreshToken".equals(c.getName())) {
+					refresh = c.getValue();
+					break;
+				}
 			}
 		}
 
-		log.info("로그아웃 완료");
+		// 3) DB refreshToken 무효화 (가능한 모든 루트로 시도)
+		boolean revoked = false;
 
+		// 3-1) refresh 토큰이 있고 검증되면 이메일로 무효화
+		if (refresh != null && !refresh.isBlank() && jwtTokenProvider.validateToken(refresh)) {
+			String email = jwtTokenProvider.getUserEmail(refresh);
+			userRepository.findByEmail(email).ifPresent(u -> {
+				u.setRefreshToken(null);
+				userRepository.save(u);
+			});
+			revoked = true;
+		}
+
+		// 3-2) (보조) 인증 정보가 있다면 그 유저의 refreshToken 도 제거
+		if (!revoked && authentication != null &&
+			authentication.getPrincipal() instanceof com.grabpt.config.auth.PrincipalDetails pd) {
+			Users u = pd.getUser();
+			u.setRefreshToken(null);
+			userRepository.save(u);
+		}
+
+		// 4) 세션 & 시큐리티 컨텍스트 정리
+		var session = req.getSession(false);
+		if (session != null)
+			session.invalidate();
+		org.springframework.security.core.context.SecurityContextHolder.clearContext();
+
+		log.info("로그아웃 완료 (refresh 토큰 제공: {})", refresh != null);
 		return ApiResponse.onSuccess("로그아웃 완료");
 	}
 

@@ -7,6 +7,5 @@ import lombok.Getter;
 @Getter
 public class PhotoUpdateRequestDTO {
 
-	@Valid
-	private List<PhotoRequestDTO> photos;
+	private List<String> existingPhotoUrls;
 }

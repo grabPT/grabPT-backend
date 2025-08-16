@@ -256,7 +256,7 @@ public class ProfileServiceImpl implements ProfileService {
 		if (proProfile == null) {
 			throw new GeneralException(ErrorStatus.MEMBER_NOT_FOUND);
 		}
-		certificationService.updateCertifications(proProfile, request.getCertifications(), images);
+		certificationService.updateCertifications(proProfile, request, images);
 	}
 
 	@Override

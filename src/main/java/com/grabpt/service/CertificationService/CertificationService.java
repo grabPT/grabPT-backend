@@ -6,7 +6,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.grabpt.domain.entity.ProProfile;
 import com.grabpt.dto.request.CertificationRequestDTO;
+import com.grabpt.dto.request.CertificationUpdateRequestDTO;
 
 public interface CertificationService {
-	void updateCertifications(ProProfile proProfile, List<CertificationRequestDTO> certificationDTOs, List<MultipartFile> images);
+	void updateCertifications(ProProfile proProfile, CertificationUpdateRequestDTO request,
+		List<MultipartFile> newImages);
 }

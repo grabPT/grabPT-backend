@@ -38,7 +38,7 @@ public interface ProfileService {
 	List<ProProfile> findAllProByCategoryCodeAndRegion(String categoryCode, String region);
 	void updateProCenter(Long userId, CenterUpdateRequestDTO request);
 	void updateProDescription(Long userId, DescriptionUpdateRequestDTO request);
-	void updateProPhotos(Long userId, List<MultipartFile> photoFiles);
+	void updateProPhotos(Long userId, PhotoUpdateRequestDTO updateRequest, List<MultipartFile> newPhotoFiles);
 	void updateProPtPrice(Long userId, PtPriceRequest.PtPriceUpdateRequestList request);
 	void updateProProgram(Long userId, PtProgramUpdateRequestDTO request);
 	void updateUserProfileImage(Long userId, MultipartFile profileImage);

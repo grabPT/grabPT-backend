@@ -190,12 +190,12 @@ public class ProfileServiceImpl implements ProfileService {
 
 	@Override
 	@Transactional
-	public void updateProPhotos(Long userId, List<MultipartFile> photoFiles) {
+	public void updateProPhotos(Long userId, PhotoUpdateRequestDTO updateRequest, List<MultipartFile> newPhotoFiles) {
 		ProProfile proProfile = findUserById(userId).getProProfile();
 		if (proProfile == null) {
 			throw new GeneralException(ErrorStatus.MEMBER_NOT_FOUND);
 		}
-		photoService.updateProPhotos(proProfile, photoFiles);
+		photoService.updateProPhotos(proProfile,updateRequest, newPhotoFiles);
 	}
 
 

@@ -121,14 +121,19 @@ public class MyProPageController {
 	}
 
 	@PatchMapping(value = "/photos", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-	@Operation(summary = "프로 사진 변경")
+	@Operation(summary = "프로 사진 변경", description = "{\n"
+		+ "  \"existingPhotoUrls\": [\n"
+		+ "    \"test\"\n"
+		+ "  ]\n"
+		+ "}")
 	public ApiResponse<String> updateProPhotos(
 		HttpServletRequest request,
-		@RequestPart(value = "photos") List<MultipartFile> photoFiles) throws IllegalAccessException {
+		@RequestPart(value = "request") String requestJson, // JSON 데이터를 DTO로 받음
+		@RequestPart(value = "newPhotos", required = false) List<MultipartFile> newPhotoFiles) throws Exception {
 
 		Long userId = userQueryService.getUserId(request);
-		// profileService의 public 메서드를 호출합니다.
-		profileService.updateProPhotos(userId, photoFiles);
+		PhotoUpdateRequestDTO updateRequest = objectMapper.readValue(requestJson, PhotoUpdateRequestDTO.class);
+		profileService.updateProPhotos(userId, updateRequest, newPhotoFiles);
 
 		return ApiResponse.onSuccess("사진이 성공적으로 수정되었습니다.");
 	}

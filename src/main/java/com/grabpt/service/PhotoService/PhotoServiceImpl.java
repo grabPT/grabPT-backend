@@ -4,6 +4,7 @@ import com.grabpt.aws.s3.AmazonS3Manager;
 import com.grabpt.aws.s3.Uuid;
 import com.grabpt.domain.entity.ProPhoto;
 import com.grabpt.domain.entity.ProProfile;
+import com.grabpt.dto.request.PhotoUpdateRequestDTO;
 import com.grabpt.repository.UuidRepository.UuidRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -11,7 +12,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -22,12 +26,17 @@ public class PhotoServiceImpl implements PhotoService {
 
 	@Override
 	@Transactional
-	public void updateProPhotos(ProProfile proProfile, List<MultipartFile> photoFiles) {
+	public void updateProPhotos(ProProfile proProfile, PhotoUpdateRequestDTO request, List<MultipartFile> newPhotoFiles) {
 
-		proProfile.getPhotos().clear();
+		Set<String> urlsToKeep = new HashSet<>(request.getExistingPhotoUrls());
 
-		if (photoFiles != null && !photoFiles.isEmpty()) {
-			photoFiles.forEach(file -> {
+		List<ProPhoto> photosToDelete = proProfile.getPhotos().stream()
+			.filter(photo -> !urlsToKeep.contains(photo.getImageUrl()))
+			.collect(Collectors.toList());
+
+
+		if (newPhotoFiles != null && !newPhotoFiles.isEmpty()) {
+			newPhotoFiles.forEach(file -> {
 				// 1. UUID 생성 및 S3 키 이름 생성
 				Uuid uuid = Uuid.builder().uuid(java.util.UUID.randomUUID().toString()).build();
 				uuidRepository.save(uuid);

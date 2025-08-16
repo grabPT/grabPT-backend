@@ -1,13 +1,18 @@
 package com.grabpt.dto.request;
 
-import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
+
 import jakarta.validation.Valid;
 import lombok.Getter;
-import java.util.List;
+
 
 @Getter
 public class CertificationUpdateRequestDTO {
 
 	@Valid
-	private List<CertificationRequestDTO> certifications;
+	private List<ExistingCertificationDTO> existingCertifications;
+
+	@Valid
+	private List<NewCertificationDTO> newCertifications;
 }
+

@@ -72,23 +72,30 @@ public class MyProPageController {
 
 	@PostMapping(value = "/certification", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
 	@Operation(summary = "전문가 자격증/이력 등록 API", description = "{\n"
-		+ "  \"certifications\": [\n"
+		+ "  \"existingCertifications\": [\n"
 		+ "    {\n"
-		+ "      \"description\": \"생활스포츠지도사 2급\",\n"
+		+ "      \"imageUrl\": \"https://s3.bucket/path/to/existing-image.jpg\",\n"
+		+ "      \"description\": \"수정된 설명\",\n"
 		+ "      \"certificationType\": 0\n"
 		+ "    }\n"
+		+ "  ],\n"
+		+ "  \"newCertifications\": [\n"
+		+ "    {\n"
+		+ "      \"description\": \"새로 추가하는 자격증\",\n"
+		+ "      \"certificationType\": 1\n"
+		+ "    }\n"
 		+ "  ]\n"
-		+ "}\n")
+		+ "}")
 	public ApiResponse<String> registerProCertifications(
 		HttpServletRequest requests,
 		@RequestParam("request") String requestJson, // DTO를 String으로 받음
-		@RequestPart(value = "images", required = false) List<MultipartFile> images) throws Exception {
+		@RequestPart(value = "newImages", required = false) List<MultipartFile> newImages) throws Exception {
 
 		Long userId = userQueryService.getUserId(requests);
 		// JSON 문자열을 DTO 객체로 변환
 		CertificationUpdateRequestDTO request = objectMapper.readValue(requestJson, CertificationUpdateRequestDTO.class);
 
-		profileService.updateProCertifications(userId, request, images);
+		profileService.updateProCertifications(userId, request, newImages);
 		return ApiResponse.onSuccess("자격증 정보가 성공적으로 등록되었습니다.");
 	}
 

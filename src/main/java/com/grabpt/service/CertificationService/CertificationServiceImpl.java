@@ -1,6 +1,9 @@
 package com.grabpt.service.CertificationService;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.springframework.stereotype.Service;
@@ -14,6 +17,9 @@ import com.grabpt.aws.s3.Uuid;
 import com.grabpt.domain.entity.ProCertification;
 import com.grabpt.domain.entity.ProProfile;
 import com.grabpt.dto.request.CertificationRequestDTO;
+import com.grabpt.dto.request.CertificationUpdateRequestDTO;
+import com.grabpt.dto.request.ExistingCertificationDTO;
+import com.grabpt.dto.request.NewCertificationDTO;
 import com.grabpt.repository.UuidRepository.UuidRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -27,14 +33,34 @@ public class CertificationServiceImpl implements CertificationService {
 
 	@Override
 	@Transactional
-	public void updateCertifications(ProProfile proProfile, List<CertificationRequestDTO> certificationDTOs, List<MultipartFile> images) {
+	public void updateCertifications(ProProfile proProfile, CertificationUpdateRequestDTO request,
+		List<MultipartFile> newImages) {
 
-		proProfile.getCertifications().clear();
+		// 클라이언트가 유지하겠다고 보낸 기존 이미지 URL 목록
+		Set<String> urlsToKeep = request.getExistingCertifications().stream()
+			.map(ExistingCertificationDTO::getImageUrl)
+			.collect(Collectors.toSet());
 
-		if (certificationDTOs != null) {
-			IntStream.range(0, certificationDTOs.size()).forEach(i -> {
-				CertificationRequestDTO dto = certificationDTOs.get(i);
-				MultipartFile image = (images != null && i < images.size()) ? images.get(i) : null;
+		// DB에 저장된 자격증 중, 유지 목록에 없는 것은 삭제
+		proProfile.getCertifications().removeIf(cert -> !urlsToKeep.contains(cert.getImageUrl()));
+
+		/// 유지하기로 한 기존 자격증들의 정보(설명 등) 업데이트
+		Map<String, ExistingCertificationDTO> existingCertMap = request.getExistingCertifications().stream()
+			.collect(Collectors.toMap(ExistingCertificationDTO::getImageUrl, dto -> dto));
+
+		proProfile.getCertifications().forEach(cert -> {
+			ExistingCertificationDTO dto = existingCertMap.get(cert.getImageUrl());
+			if (dto != null) {
+				cert.setDescription(dto.getDescription());
+				cert.setCertificationType(dto.getCertificationType());
+			}
+		});
+
+		// 새로 추가된 이미지들을 업로드하고 DB에 저장
+		if (request.getNewCertifications() != null && newImages != null) {
+			IntStream.range(0, request.getNewCertifications().size()).forEach(i -> {
+				NewCertificationDTO dto = request.getNewCertifications().get(i);
+				MultipartFile image = newImages.get(i);
 				String imageUrl = null;
 
 				if (image != null && !image.isEmpty()) {
@@ -42,9 +68,6 @@ public class CertificationServiceImpl implements CertificationService {
 					uuidRepository.save(uuid);
 					String keyName = s3Manager.generateProPhotoKeyName(uuid);
 					imageUrl = s3Manager.uploadFile(keyName, image);
-				}
-				else{
-					throw new UserHandler(ErrorStatus.NOT_IMAGE);
 				}
 
 				ProCertification certification = ProCertification.builder()

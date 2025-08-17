@@ -100,7 +100,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 			oauthUser.setRefreshToken(refreshToken);
 
 			// 쿠키로 토큰 전달
-			addCookie(response, "accessToken", accessToken, Duration.ofSeconds(30), true);
+			addCookie(response, "accessToken", accessToken, Duration.ofMinutes(30), true);
 			addCookie(response, "refreshToken", refreshToken, Duration.ofDays(7), true);
 
 			// role 쿠키 추가 (Base64 인코딩)

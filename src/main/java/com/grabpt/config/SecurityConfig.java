@@ -78,7 +78,6 @@ public class SecurityConfig {
 			.csrf(AbstractHttpConfigurer::disable)
 			.formLogin(AbstractHttpConfigurer::disable)
 
-			// ⚠️ CsrfOriginFilter 안에서 request body 를 읽지 않도록 구현하세요.
 			.addFilterBefore(new CsrfOriginFilter(), UsernamePasswordAuthenticationFilter.class)
 			.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
 
@@ -95,6 +94,13 @@ public class SecurityConfig {
 					"/api/auth/check-nickname",
 					"/api/auth/api/temp-info"
 				).permitAll()
+
+				// 스웨거
+				.requestMatchers("/swagger", "/swagger-ui.html", "/swagger-ui/**",
+					"/api-docs", "/api-docs/**", "/v3/api-docs/**").permitAll()
+
+				// 웹소켓
+				.requestMatchers("/ws-connect/**").permitAll()
 
 				// 메인/공개 API들 (실제 공개 정책에 맞춰 조정)
 				.requestMatchers(
@@ -155,3 +161,4 @@ public class SecurityConfig {
 		return source;
 	}
 }
+

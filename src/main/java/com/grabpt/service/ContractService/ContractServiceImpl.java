@@ -80,13 +80,14 @@ public class ContractServiceImpl implements ContractService {
 	@Override
 	@Transactional
 	public Contract createContract(Matching matching, Requestions req, Suggestions sug){
-		Contract contract = Contract.builder()
-			.matching(matching)
-			.price(sug.getPrice())
-			.ptAddress(sug.getLocation())
-			.startDate(req.getStartPreference())
-			.totalSession(sug.getSessionCount())
-			.build();
+		Contract contract = new Contract(); // 기본 생성자 사용
+		contract.setMatching(matching);
+		contract.setPrice(sug.getPrice());
+		contract.setPtAddress(sug.getLocation());
+		contract.setStartDate(req.getStartPreference());
+		contract.setTotalSession(sug.getSessionCount());
+		contract.setUserInfo(new ContractInfo());
+		contract.setProInfo(new ContractInfo());
 
 		return contractRepository.save(contract);
 	}

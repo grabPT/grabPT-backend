@@ -1,6 +1,7 @@
 package com.grabpt.controller;
 
 import com.grabpt.service.ContractService.ContractPhotoServiceImpl;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import com.grabpt.apiPayload.ApiResponse;
@@ -68,14 +69,14 @@ public class ContractController {
 		}
 	}
 
-	@PostMapping("/contract/{contractId}/uploadUserSign")
-	public ApiResponse<String> uploadUserSign(@PathVariable(name = "contractId") Long contractId, @RequestPart("file") MultipartFile file) {
+	@PostMapping(value = "/contract/{contractId}/uploadUserSign", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+	public ApiResponse<String> uploadUserSign(@PathVariable(name = "contractId") Long contractId, @RequestPart MultipartFile file) {
 		contractPhotoService.uploadUserSign(contractId,file);
 		return ApiResponse.onSuccess("수강생 전자서명 upload");
 	}
 
 	@PostMapping("/contract/{contractId}/uploadProSign")
-	public ApiResponse<String> uploadProSign(@PathVariable(name = "contractId") Long contractId, @RequestPart("file") MultipartFile file) {
+	public ApiResponse<String> uploadProSign(@PathVariable(name = "contractId") Long contractId, @RequestPart MultipartFile file) {
 		contractPhotoService.uploadProSign(contractId,file);
 		return ApiResponse.onSuccess("전문가 전자서명 upload");
 	}

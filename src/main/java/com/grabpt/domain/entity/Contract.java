@@ -25,7 +25,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor(access = AccessLevel.PUBLIC)
 @AllArgsConstructor
 public class Contract extends BaseEntity {
 

@@ -3,14 +3,14 @@ server:
   address: 0.0.0.0
   forward-headers-strategy: framework
 
-  servlet:
-    session:
-      cookie:
-        domain: grabpt.com         # 상위 도메인으로 공유
-        same-site: none            # 서브도메인 간 전송을 위해 None
-        secure: true               # HTTPS 필수
-        http-only: true            # JS 접근 차단
-        name: OAUTHLOGINSESSION
+#  servlet:
+#    session:
+#      cookie:
+#        domain: grabpt.com         # 상위 도메인으로 공유
+#        same-site: none            # 서브도메인 간 전송을 위해 None
+#        secure: true               # HTTPS 필수
+#        http-only: true            # JS 접근 차단
+#        name: OAUTHLOGINSESSION
 
 springdoc:
   default-produces-media-type: application/json

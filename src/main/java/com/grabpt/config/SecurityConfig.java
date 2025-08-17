@@ -73,7 +73,11 @@ public class SecurityConfig {
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http
-			.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+			.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+			.securityContext(sc -> sc
+				.securityContextRepository(new org.springframework.security.web.context.NullSecurityContextRepository())
+			)
+
 			.cors(cors -> cors.configurationSource(corsConfigurationSource()))
 			.csrf(AbstractHttpConfigurer::disable)
 			.formLogin(AbstractHttpConfigurer::disable)
@@ -123,7 +127,9 @@ public class SecurityConfig {
 						"frame-ancestors https://www.grabpt.com https://grabpt.com https://api.grabpt.com")
 				)
 			)
+
 			.authenticationProvider(authenticationProvider())
+			
 			.oauth2Login(oauth2 -> oauth2
 				.userInfoEndpoint(userInfo -> userInfo.userService(principalOauth2UserService))
 				.authorizationEndpoint(a -> a.authorizationRequestRepository(authorizationRequestRepository()))

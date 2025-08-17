@@ -118,6 +118,11 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 			response.addHeader(HttpHeaders.SET_COOKIE,
 				userIdCookie(b64(oauthUser.getId().toString())).toString());
 
+			org.springframework.security.core.context.SecurityContextHolder.clearContext();
+			var session = request.getSession(false);
+			if (session != null)
+				session.invalidate();
+
 			response.sendRedirect("https://www.grabpt.com/authcallback");
 			return;
 		}

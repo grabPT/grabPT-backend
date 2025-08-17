@@ -86,6 +86,9 @@ public class AuthController {
 	)
 	@PostMapping("/reissue")
 	public ResponseEntity<Void> reissueToken(HttpServletRequest request, HttpServletResponse response) {
+
+		log.info("reissue 진입");
+
 		String refreshToken = null;
 		var cookies = request.getCookies();
 		if (cookies != null) {

@@ -19,7 +19,6 @@ import com.grabpt.config.jwt.properties.JwtProperties;
 import com.grabpt.domain.entity.Users;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -64,29 +63,29 @@ public class JwtTokenProvider {
 	}
 
 	public boolean validateToken(String token) {
+		if (!StringUtils.hasText(token))
+			return false;  // null/empty 즉시 false
 		try {
-			Jwts.parserBuilder()
-				.setSigningKey(getSigningKey())
-				.build()
-				.parseClaimsJws(token);
+			Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(token);
 			return true;
-		} catch (JwtException | IllegalArgumentException e) {
+		} catch (io.jsonwebtoken.ExpiredJwtException e) {
+			// 만료도 false (필터/EntryPoint가 401 처리)
+			return false;
+		} catch (io.jsonwebtoken.JwtException | IllegalArgumentException e) {
 			return false;
 		}
 	}
 
 	public Authentication getAuthentication(String token) {
-		Claims claims = Jwts.parserBuilder()
-			.setSigningKey(getSigningKey())
-			.build()
-			.parseClaimsJws(token)
-			.getBody();
+		if (!StringUtils.hasText(token)) {
+			// 컨트롤러 등에서 직접 호출돼도 500 안 나게 방어
+			throw new org.springframework.security.authentication.BadCredentialsException("Missing token");
+		}
+		Claims claims = Jwts.parserBuilder().setSigningKey(getSigningKey()).build()
+			.parseClaimsJws(token).getBody();
 
 		String email = claims.getSubject();
-		String role = claims.get("role", String.class);
-
 		UserDetails userDetails = principalDetailsService.loadUserByUsername(email);
-		log.info("Authorities 검증" + userDetails.getAuthorities().toString());
 		return new UsernamePasswordAuthenticationToken(userDetails, token, userDetails.getAuthorities());
 
 	}
@@ -109,6 +108,8 @@ public class JwtTokenProvider {
 
 	public Authentication extractAuthentication(HttpServletRequest request) {
 		String accessToken = resolveToken(request);
+		if (!validateToken(accessToken))
+			return null;  // 무효/없음이면 null
 		return getAuthentication(accessToken);
 	}
 

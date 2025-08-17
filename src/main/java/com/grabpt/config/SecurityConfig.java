@@ -88,7 +88,7 @@ public class SecurityConfig {
 				.requestMatchers("/api/auth/user-signup", "/api/auth/pro-signup").permitAll()
 				.requestMatchers("/api/auth/check-nickname").permitAll()
 				.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-				.requestMatchers("/api/v1/", "/mypage").permitAll()
+				.requestMatchers("/api/v1/**", "/mypage").permitAll()
 
 				// 스웨거
 				.requestMatchers("/swagger", "/swagger-ui.html", "/swagger-ui/**",

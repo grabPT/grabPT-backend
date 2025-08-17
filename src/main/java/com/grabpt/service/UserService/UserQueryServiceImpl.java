@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.grabpt.apiPayload.code.status.ErrorStatus;
 import com.grabpt.apiPayload.exception.handler.UserHandler;
+import com.grabpt.config.SecurityUtils;
 import com.grabpt.config.auth.PrincipalDetails;
 import com.grabpt.config.jwt.JwtTokenProvider;
 import com.grabpt.converter.UserConverter;
@@ -46,13 +47,14 @@ public class UserQueryServiceImpl implements UserQueryService {
 	@Override
 	@Transactional
 	public Long getUserId(HttpServletRequest request) throws IllegalAccessException {
-		Authentication authentication = jwtTokenProvider.extractAuthentication(request);
-		Long userId = ((PrincipalDetails)authentication.getPrincipal()).getUser().getId();
-		if (userRepository.existsById(userId)) {
-			return userId;
-		} else {
-			throw new UserHandler(ErrorStatus.MEMBER_NOT_FOUND);
-		}
+		// Authentication authentication = jwtTokenProvider.extractAuthentication(request);
+		// Long userId = ((PrincipalDetails)authentication.getPrincipal()).getUser().getId();
+		// if (userRepository.existsById(userId)) {
+		// 	return userId;
+		// } else {
+		// 	throw new UserHandler(ErrorStatus.MEMBER_NOT_FOUND);
+		// }
+		return SecurityUtils.currentUserIdOrThrow();
 	}
 
 	@Override

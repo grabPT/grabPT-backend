@@ -2,6 +2,7 @@ package com.grabpt.service.UserService;
 
 import java.util.Optional;
 
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,8 +30,11 @@ public class UserQueryServiceImpl implements UserQueryService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public UserResponseDto.UserInfoDTO getUserInfo(HttpServletRequest request) throws IllegalAccessException {
+	public UserResponseDto.UserInfoDTO getUserInfo(HttpServletRequest request) {
 		Authentication authentication = jwtTokenProvider.extractAuthentication(request);
+		if (authentication == null || !authentication.isAuthenticated()) {
+			throw new AuthenticationCredentialsNotFoundException("Unauthorized");
+		}
 		log.info("authentication = " + authentication);
 		String email = ((PrincipalDetails)authentication.getPrincipal()).getUser().getEmail();
 

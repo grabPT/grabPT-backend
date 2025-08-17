@@ -92,18 +92,10 @@ public class SecurityConfig {
 					"/api/auth/user-signup",
 					"/api/auth/pro-signup",
 					"/api/auth/check-nickname",
-					"/api/auth/api/temp-info"
-				).permitAll()
-
-				// 스웨거
-				.requestMatchers("/swagger", "/swagger-ui.html", "/swagger-ui/**",
-					"/api-docs", "/api-docs/**", "/v3/api-docs/**").permitAll()
-
-				// 웹소켓
-				.requestMatchers("/ws-connect/**").permitAll()
-
-				// 메인/공개 API들 (실제 공개 정책에 맞춰 조정)
-				.requestMatchers(
+					"/api/auth/api/temp-info",
+					"/swagger", "/swagger-ui.html", "/swagger-ui/**",
+					"/api-docs", "/api-docs/**", "/v3/api-docs/**",
+					"/ws-connect/**",
 					"/api/v1/**",
 					"/api/users/**",
 					"/api/auth/**",
@@ -113,12 +105,7 @@ public class SecurityConfig {
 					"api/category-proprofile/",
 					"/api/*/reviews"
 				).permitAll()
-
-				// 2) 보호 엔드포인트 — /api/** 는 인증 필요
-				.requestMatchers("/**").authenticated()
-
-				// 3) 그 외는 기본 공개
-				.anyRequest().permitAll()
+				.anyRequest().authenticated()
 			)
 
 			// 401/403 명확화

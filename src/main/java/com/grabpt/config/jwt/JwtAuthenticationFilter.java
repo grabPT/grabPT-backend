@@ -35,19 +35,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		}
 
 		try {
-			Authentication authentication = jwtTokenProvider.getAuthentication(token);
-			SecurityContextHolder.getContext().setAuthentication(authentication);
-			log.debug("JWT 인증 완료: isAuthenticated={}, authorities={}",
-				authentication.isAuthenticated(), authentication.getAuthorities());
+			if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
+				Authentication authentication = jwtTokenProvider.getAuthentication(token);
+				SecurityContextHolder.getContext().setAuthentication(authentication);
+				log.debug("JWT 인증 완료: isAuthenticated={}, authorities={}",
+					authentication.isAuthenticated(), authentication.getAuthorities());
+			} else {
+				// 토큰 없음/무효 -> 인증 세팅 없이 통과 (예외/응답쓰기 금지)
+				log.debug("JWT 토큰 없음 또는 무효. 체인 계속.");
+			}
 		} catch (Exception e) {
-			// 토큰 파싱/로드 중 문제 → 인증 세팅하지 않고 통과
-			log.warn("JWT 인증 설정 중 예외 발생: {}", e.getMessage());
+			// 예외 발생 시 인증 컨텍스트 정리하고 그냥 체인 계속
+			SecurityContextHolder.clearContext();
+			log.warn("JWT 처리 중 예외: {}", e.getMessage());
+		} finally {
+			filterChain.doFilter(request, response);
 		}
-
-		Authentication after = SecurityContextHolder.getContext().getAuthentication();
-
-		log.debug("요청 종료 시 SecurityContext: {}", after);
 	}
-	
 }
 

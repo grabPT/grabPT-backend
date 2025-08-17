@@ -258,6 +258,9 @@ public class AuthService {
 
 		// 3) role (Base64, 프론트에서 읽어야 하므로 HttpOnly=false)
 		addCookie(response, "role", b64(role), Duration.ofMinutes(30), false);
+
+		// userId 쿠키 추가
+		addCookie(response, "userId", b64(user.getId().toString()), Duration.ofMinutes(30), false);
 	}
 
 }

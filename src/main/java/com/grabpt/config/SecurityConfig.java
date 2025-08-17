@@ -74,45 +74,50 @@ public class SecurityConfig {
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http
 			.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
-			.cors(cors -> cors.configurationSource(corsConfigurationSource()))  // 여기가 핵심
-			.csrf(csrf -> csrf.disable())
+			.cors(cors -> cors.configurationSource(corsConfigurationSource()))
+			.csrf(AbstractHttpConfigurer::disable)
 			.formLogin(AbstractHttpConfigurer::disable)
+
+			// ⚠️ CsrfOriginFilter 안에서 request body 를 읽지 않도록 구현하세요.
 			.addFilterBefore(new CsrfOriginFilter(), UsernamePasswordAuthenticationFilter.class)
-			.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)  //  유지
+			.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+
 			.authorizeHttpRequests(auth -> auth
-
-				// 허용 엔드포인트
-				// 온보딩
-				.requestMatchers("/api/auth/reissue").permitAll()
-				.requestMatchers("/api/auth/logout").permitAll()
-				.requestMatchers("/api/auth/user-signup", "/api/auth/pro-signup").permitAll()
-				.requestMatchers("/api/auth/check-nickname").permitAll()
+				// 1) 공개 엔드포인트(화이트리스트) — 반드시 위쪽에!
 				.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-				.requestMatchers("/api/v1/**", "/api/users/**", "/mypage").permitAll()
 
-				// 스웨거
-				.requestMatchers("/swagger", "/swagger-ui.html", "/swagger-ui/**",
-					"/api-docs", "/api-docs/**", "/v3/api-docs/**").permitAll()
+				// 온보딩/인증 관련
+				.requestMatchers(
+					"/api/auth/reissue",
+					"/api/auth/logout",
+					"/api/auth/user-signup",
+					"/api/auth/pro-signup",
+					"/api/auth/check-nickname",
+					"/api/auth/api/temp-info"
+				).permitAll()
 
-				// 웹소켓
-				.requestMatchers("/ws-connect/**").permitAll()
+				// 메인/공개 API들 (실제 공개 정책에 맞춰 조정)
+				.requestMatchers(
+					"/api/v1/**",
+					"/api/users/**"
+				).permitAll()
 
-				// 그 외 /api/** 는 인증 필요
+				// 2) 보호 엔드포인트 — /api/** 는 인증 필요
 				.requestMatchers("/**").authenticated()
-				.requestMatchers("/api/**").authenticated()
 
+				// 3) 그 외는 기본 공개
 				.anyRequest().permitAll()
 			)
 
-			// 401 설정
+			// 401/403 명확화
 			.exceptionHandling(ex -> ex
 				.authenticationEntryPoint(new org.springframework.security.web.authentication.HttpStatusEntryPoint(
-					org.springframework.http.HttpStatus.UNAUTHORIZED
-				))
+					org.springframework.http.HttpStatus.UNAUTHORIZED)) // 인증 없음 → 401
+				.accessDeniedHandler((req, res, e) -> res.setStatus(403)) // 인증됐지만 권한 없음 → 403
 			)
 
 			.headers(h -> h
-				.frameOptions(f -> f.disable()) // X-Frame-Options 제거
+				.frameOptions(f -> f.disable())
 				.contentSecurityPolicy(csp -> csp
 					.policyDirectives(
 						"frame-ancestors https://www.grabpt.com https://grabpt.com https://api.grabpt.com")
@@ -124,20 +129,22 @@ public class SecurityConfig {
 				.authorizationEndpoint(a -> a.authorizationRequestRepository(authorizationRequestRepository()))
 				.successHandler(oauth2SuccessHandler)
 			);
+
 		return http.build();
 	}
 
 	@Bean
 	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
-		configuration.setAllowedOrigins(List.of(
-			"http://localhost:5173",
-			"http://43.203.91.190",
-			"http://43.203.91.190:8080",
-			"http://grabpt.com",
+
+		// ✔ 패턴 기반(서브도메인/포트 허용)
+		configuration.setAllowedOriginPatterns(List.of(
+			"https://*.grabpt.com",
+			"http://*.grabpt.com",
 			"https://grabpt.com",
-			"https://www.grabpt.com",
-			"https://api.grabpt.com"    // 여기에 추가 필요
+			"http://grabpt.com",
+			"http://localhost:*",
+			"http://43.203.91.190:*"
 		));
 		configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
 		configuration.setAllowedHeaders(List.of("*"));

@@ -102,7 +102,7 @@ public class SecurityConfig {
 					"/matching/**",
 					"/payment/**",
 					"/api/sms/**",
-					"api/category-proprofile/**",
+					"/api/category-proprofile/**",
 					"/api/*/reviews"
 				).permitAll()
 				.requestMatchers("/mypage", "/mypage/**").authenticated()
@@ -139,12 +139,12 @@ public class SecurityConfig {
 
 		// ✔ 패턴 기반(서브도메인/포트 허용)
 		configuration.setAllowedOriginPatterns(List.of(
-			"https://*.grabpt.com",
-			"http://*.grabpt.com",
+			"https://www.grabpt.com",
+			"http://api.grabpt.com",
 			"https://grabpt.com",
 			"http://grabpt.com",
-			"http://localhost:*",
-			"http://43.203.91.190:*"
+			"http://localhost:5137",
+			"http://43.203.91.190:8080"
 		));
 		configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
 		configuration.setAllowedHeaders(List.of("*"));

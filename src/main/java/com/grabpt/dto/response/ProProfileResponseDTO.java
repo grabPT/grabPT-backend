@@ -27,6 +27,8 @@ public class ProProfileResponseDTO {
 	// 소개 이미지
 	private List<PhotoDTO> photos;
 
+	private String categoryName;
+
 
 	// PT 프로그램 과정
 	private String programDescription;

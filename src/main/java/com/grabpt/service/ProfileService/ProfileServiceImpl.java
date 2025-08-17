@@ -120,7 +120,7 @@ public class ProfileServiceImpl implements ProfileService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public Page<MyReviewListDTO> findReviewsByCategoryAndUserId(String categoryCode, Long userId, Pageable pageable) {
+	public Page<MyReviewListDTO> findReviewsByUserId(Long userId, Pageable pageable) {
 
 		Users user = userRepository.findById(userId) // userRepository를 주입받아야 함
 			.orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
@@ -129,9 +129,9 @@ public class ProfileServiceImpl implements ProfileService {
 			throw new GeneralException(ErrorStatus.MEMBER_NOT_FOUND);
 		}
 
-		Long proProfileId = user.getProProfile().getId();
+		Long proId = user.getProProfile().getId();
 
-		Page<Review> reviews = reviewRepository.findAllByProProfile_IdAndProProfile_Category_CodeOrderByCreatedAt(proProfileId, categoryCode, pageable);
+		Page<Review> reviews = reviewRepository.findAllByProProfile_IdOrderByCreatedAt(proId, pageable);
 
 
 		return reviews.map(MyReviewListDTO::from);
@@ -139,7 +139,7 @@ public class ProfileServiceImpl implements ProfileService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public ProProfileResponseDTO findProProfileByCategoryAndUser(String categoryCode, Long userId) {
+	public ProProfileResponseDTO findProProfileByUser(Long userId) {
 		ProProfile proProfile = proProfileRepository.findByUserId(userId);
 		if (proProfile == null) {
 			throw new GeneralException(ErrorStatus.MEMBER_NOT_FOUND);

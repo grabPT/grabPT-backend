@@ -43,32 +43,30 @@ public class ProProfileController {
 		description = "특정 카테고리 전문가 프로필 출력",
 		summary = "특정 카테고리 전문가 프로필 출력"
 	)
-	@GetMapping("category-proprofile/{categoryCode}/{userCode}")
-	public ApiResponse<ProProfileResponseDTO> getProProfile(@PathVariable String categoryCode,
+	@GetMapping("category-proprofile/{userCode}")
+	public ApiResponse<ProProfileResponseDTO> getProProfile(
 		@PathVariable(name = "userCode") Long userId) {
-		ProProfileResponseDTO proProfile = profileService.findProProfileByCategoryAndUser(categoryCode, userId);
+		ProProfileResponseDTO proProfile = profileService.findProProfileByUser(userId);
 		return ApiResponse.onSuccess(proProfile);
 	}
 
 	/**
 	 * 특정 전문가의 리뷰 목록을 조회하는 API
 	 * @param userId 전문가의 user ID
-	 * @param categoryCode 카테코리 코드
 	 * @return 페이징 처리된 리뷰 목록
 	 */
 	@Operation(
 		description = "해당 전문가의 리뷰 확인",
 		summary = "해당 전문가의 리뷰 확인"
 	)
-	@GetMapping("/{categoryCode}/{userId}/reviews")
+	@GetMapping("/{userId}/reviews")
 	public ApiResponse<Page<MyReviewListDTO>> getProReviews(
-		@PathVariable String categoryCode,
 		@PathVariable(name = "userId") Long userId,
 		@RequestParam(defaultValue = "1") int page,
 		@RequestParam(defaultValue = "10") int size) {
 
 		Pageable pageable = PageRequest.of(Math.max(page - 1, 0), size);
-		Page<MyReviewListDTO> reviews = profileService.findReviewsByCategoryAndUserId(categoryCode, userId, pageable);
+		Page<MyReviewListDTO> reviews = profileService.findProReviews(userId, pageable);
 		return ApiResponse.onSuccess(reviews);
 	}
 }

@@ -109,7 +109,9 @@ public class SecurityConfig {
 					"/api/auth/**",
 					"/matching/**",
 					"/payment/**",
-					"/api/sms/**"
+					"/api/sms/**",
+					"api/category-proprofile/",
+					"/api/*/reviews"
 				).permitAll()
 
 				// 2) 보호 엔드포인트 — /api/** 는 인증 필요

@@ -251,7 +251,7 @@ public class AuthService {
 
 		// 쿠키 생성
 		// 1) accessToken (HttpOnly)
-		addCookie(response, "accessToken", accessToken, Duration.ofMinutes(30), true);
+		addCookie(response, "accessToken", accessToken, Duration.ofSeconds(30), true);
 
 		// 2) refreshToken (HttpOnly)
 		addCookie(response, "refreshToken", refreshToken, Duration.ofDays(7), true);

@@ -34,6 +34,10 @@ public class PhotoServiceImpl implements PhotoService {
 			.filter(photo -> !urlsToKeep.contains(photo.getImageUrl()))
 			.collect(Collectors.toList());
 
+		if (!photosToDelete.isEmpty()) {
+			proProfile.getPhotos().removeAll(photosToDelete);
+		}
+
 
 		if (newPhotoFiles != null && !newPhotoFiles.isEmpty()) {
 			newPhotoFiles.forEach(file -> {

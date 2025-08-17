@@ -107,11 +107,8 @@ public class JwtTokenProvider {
 		return null;
 	}
 
-	public Authentication extractAuthentication(HttpServletRequest request) throws IllegalAccessException {
+	public Authentication extractAuthentication(HttpServletRequest request) {
 		String accessToken = resolveToken(request);
-		if (accessToken == null || !validateToken(accessToken)) {
-			throw new IllegalAccessException("token null");
-		}
 		return getAuthentication(accessToken);
 	}
 

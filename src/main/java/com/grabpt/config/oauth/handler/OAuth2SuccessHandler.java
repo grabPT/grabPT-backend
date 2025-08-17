@@ -1,5 +1,7 @@
 package com.grabpt.config.oauth.handler;
 
+import static com.grabpt.config.jwt.properties.CookieSupport.*;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -94,14 +96,14 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
 			// 토큰 직접 생성
 			String accessToken = jwtTokenProvider.generateToken(oauthUser);
-			String refreshToken = jwtTokenProvider.createRefreshToken(oauthUser.getEmail());
+			String refreshToken = oauthUser.getRefreshToken();
 
-			// DB에 refreshToken 저장
-			oauthUser.setRefreshToken(refreshToken);
-
-			// 쿠키로 토큰 전달
-			addCookie(response, "accessToken", accessToken, Duration.ofMinutes(30), true);
-			addCookie(response, "refreshToken", refreshToken, Duration.ofDays(7), true);
+			//  남아 있을 수 있는 루트 경로 refreshToken 제거
+			response.addHeader(HttpHeaders.SET_COOKIE, deleteRefreshCookieAtRoot().toString());
+			// 표준 경로(/api/auth/reissue) refresh 제거 후 재설정
+			response.addHeader(HttpHeaders.SET_COOKIE, deleteRefreshCookie().toString());
+			response.addHeader(HttpHeaders.SET_COOKIE, accessCookie(accessToken).toString());
+			response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie(refreshToken).toString());
 
 			// role 쿠키 추가 (Base64 인코딩)
 			String roleValue = oauthUser.getRole() == Role.PRO ? "EXPERT" : oauthUser.getRole().name();

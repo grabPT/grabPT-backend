@@ -79,4 +79,18 @@ public final class CookieSupport {
 			.domain("grabpt.com").path("/api/auth/reissue")
 			.maxAge(0).build();
 	}
+
+	public static ResponseCookie deleteRefreshCookieAtRoot() {
+		return ResponseCookie.from("refreshToken", "")
+			.httpOnly(true).secure(true).sameSite("None")
+			.domain("grabpt.com").path("/")
+			.maxAge(0).build();
+	}
+
+	public static ResponseCookie refreshCookieAtRoot(String token) {
+		return ResponseCookie.from("refreshToken", token)
+			.httpOnly(true).secure(true).sameSite("None")
+			.domain("grabpt.com").path("/")
+			.maxAge(Duration.ofDays(7)).build();
+	}
 }

@@ -80,17 +80,35 @@ public class SecurityConfig {
 			.addFilterBefore(new CsrfOriginFilter(), UsernamePasswordAuthenticationFilter.class)
 			.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)  //  유지
 			.authorizeHttpRequests(auth -> auth
-				.requestMatchers("/auth/api/temp-info").permitAll() // 소셜로그인 get 요청 엔드포인트
+
+				// 허용 엔드포인트
+				// 온보딩
+				.requestMatchers("/api/auth/reissue").permitAll()
+				.requestMatchers("/api/auth/logout").permitAll()
+				.requestMatchers("/api/auth/user-signup", "/api/auth/pro-signup").permitAll()
+				.requestMatchers("/api/auth/check-nickname").permitAll()
 				.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-				.requestMatchers("/ws-connect/**").permitAll()
-				.requestMatchers("/user/**").authenticated()
-				.requestMatchers("/admin/**").hasRole("ADMIN")
+
+				// 스웨거
 				.requestMatchers("/swagger", "/swagger-ui.html", "/swagger-ui/**",
 					"/api-docs", "/api-docs/**", "/v3/api-docs/**").permitAll()
-				.requestMatchers("/auth/api/temp-info").permitAll()
-				.requestMatchers("/api/**").permitAll()
+
+				// 웹소켓
+				.requestMatchers("/ws-connect/**").permitAll()
+
+				// 그 외 /api/** 는 인증 필요
+				.requestMatchers("/api/**").authenticated()
+
 				.anyRequest().permitAll()
 			)
+
+			// 401 설정
+			.exceptionHandling(ex -> ex
+				.authenticationEntryPoint(new org.springframework.security.web.authentication.HttpStatusEntryPoint(
+					org.springframework.http.HttpStatus.UNAUTHORIZED
+				))
+			)
+
 			.headers(h -> h
 				.frameOptions(f -> f.disable()) // X-Frame-Options 제거
 				.contentSecurityPolicy(csp -> csp

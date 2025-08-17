@@ -34,6 +34,13 @@ public class PhotoServiceImpl implements PhotoService {
 			.filter(photo -> !urlsToKeep.contains(photo.getImageUrl()))
 			.collect(Collectors.toList());
 
+		if (!photosToDelete.isEmpty()) {
+			photosToDelete.forEach(photo -> {
+				amazonS3Manager.deleteFileByUrl(photo.getImageUrl());
+			});
+			proProfile.getPhotos().removeAll(photosToDelete);
+		}
+
 
 		if (newPhotoFiles != null && !newPhotoFiles.isEmpty()) {
 			newPhotoFiles.forEach(file -> {

@@ -29,9 +29,9 @@ public interface ProfileService {
 
 	Page<MyReviewListDTO> findProReviews(Long userId, Pageable pageable);
 
-	ProProfileResponseDTO findProProfileByCategoryAndUser(String categoryCode, Long userId);
+	ProProfileResponseDTO findProProfileByUser(Long userId);
 
-	Page<MyReviewListDTO> findReviewsByCategoryAndUserId(String categoryCode, Long userId, Pageable pageable);
+	Page<MyReviewListDTO> findReviewsByUserId(Long userId, Pageable pageable);
 
 	Page<ProProfileResponseDTO> findProProfilesByCategory(String categoryCode, Pageable pageable);
 

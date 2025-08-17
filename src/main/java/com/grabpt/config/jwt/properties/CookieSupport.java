@@ -57,12 +57,26 @@ public final class CookieSupport {
 	/** 로그아웃 시 한번에 삭제할 세트 */
 	public static ResponseCookie[] logoutDeletionSet() {
 		return new ResponseCookie[] {
-			// accessToken (path=/)
-			deleteCookie("accessToken", "/"),
-			// refreshToken (path=/api/auth 로 발급했으니 동일 path 로 삭제)
-			deleteCookie("refreshToken", "/api/auth/reissue"),
-			// role, oauth* (프론트에서 읽던 것들: httpOnly=false 로 내려도 되고 true 여도 삭제됨)
-			deleteCookie("role", "/")
+			deleteAccessCookie(),
+			deleteRefreshCookie(),
+			// role은 프론트에서 읽는 쿠키: 발급 속성(sameSite=None, path="/")에 맞춰 삭제
+			ResponseCookie.from("role", "")
+				.httpOnly(false).secure(true).sameSite("None")
+				.domain("grabpt.com").path("/").maxAge(0).build()
 		};
+	}
+
+	public static ResponseCookie deleteAccessCookie() {
+		return ResponseCookie.from("accessToken", "")
+			.httpOnly(true).secure(true).sameSite("Lax")
+			.domain("grabpt.com").path("/")
+			.maxAge(0).build();
+	}
+
+	public static ResponseCookie deleteRefreshCookie() {
+		return ResponseCookie.from("refreshToken", "")
+			.httpOnly(true).secure(true).sameSite("None")
+			.domain("grabpt.com").path("/api/auth/reissue")
+			.maxAge(0).build();
 	}
 }

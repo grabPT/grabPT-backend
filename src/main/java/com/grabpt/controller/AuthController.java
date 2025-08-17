@@ -86,6 +86,9 @@ public class AuthController {
 	)
 	@PostMapping("/reissue")
 	public ResponseEntity<Void> reissueToken(HttpServletRequest request, HttpServletResponse response) {
+
+		log.info("reissue 진입");
+
 		String refreshToken = null;
 		var cookies = request.getCookies();
 		if (cookies != null) {
@@ -130,9 +133,8 @@ public class AuthController {
 	}
 
 	private ResponseEntity<Void> unauthorizedAndClear(HttpServletResponse res) {
-		res.addHeader("Set-Cookie", CookieSupport.deleteCookie("accessToken", "/").toString());
-		res.addHeader("Set-Cookie", CookieSupport.deleteCookie("refreshToken", "/").toString());
-		res.addHeader("Set-Cookie", CookieSupport.deleteCookie("refreshToken", "/api/auth/reissue").toString());
+		res.addHeader("Set-Cookie", CookieSupport.deleteAccessCookie().toString());
+		res.addHeader("Set-Cookie", CookieSupport.deleteRefreshCookie().toString());
 		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 	}
 

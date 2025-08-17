@@ -105,7 +105,11 @@ public class SecurityConfig {
 				// 메인/공개 API들 (실제 공개 정책에 맞춰 조정)
 				.requestMatchers(
 					"/api/v1/**",
-					"/api/users/**"
+					"/api/users/**",
+					"/api/auth/**",
+					"/matching/**",
+					"/payment/**",
+					"/api/sms/**"
 				).permitAll()
 
 				// 2) 보호 엔드포인트 — /api/** 는 인증 필요

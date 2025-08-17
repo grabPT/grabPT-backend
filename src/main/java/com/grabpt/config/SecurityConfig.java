@@ -88,7 +88,7 @@ public class SecurityConfig {
 				.requestMatchers("/api/auth/user-signup", "/api/auth/pro-signup").permitAll()
 				.requestMatchers("/api/auth/check-nickname").permitAll()
 				.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-				.requestMatchers("/api/v1/**", "/api/users", "/mypage").permitAll()
+				.requestMatchers("/api/v1/**", "/api/users/**", "/mypage").permitAll()
 
 				// 스웨거
 				.requestMatchers("/swagger", "/swagger-ui.html", "/swagger-ui/**",
@@ -98,7 +98,7 @@ public class SecurityConfig {
 				.requestMatchers("/ws-connect/**").permitAll()
 
 				// 그 외 /api/** 는 인증 필요
-				.requestMatchers("/").authenticated()
+				.requestMatchers("/**").authenticated()
 				.requestMatchers("/api/**").authenticated()
 
 				.anyRequest().permitAll()

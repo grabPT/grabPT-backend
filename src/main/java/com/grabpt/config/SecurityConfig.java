@@ -102,7 +102,7 @@ public class SecurityConfig {
 					"/matching/**",
 					"/payment/**",
 					"/api/sms/**",
-					"api/category-proprofile/**",
+					"/api/category-proprofile/**",
 					"/api/*/reviews"
 				).permitAll()
 				.requestMatchers("/mypage", "/mypage/**").authenticated()

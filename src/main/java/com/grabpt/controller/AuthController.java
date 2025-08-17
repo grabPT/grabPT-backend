@@ -90,26 +90,49 @@ public class AuthController {
 		log.info("reissue 진입");
 
 		String refreshToken = null;
-		var cookies = request.getCookies();
-		if (cookies != null) {
-			for (var c : cookies) {
+		if (request.getCookies() != null) {
+			for (var c : request.getCookies()) {
 				if ("refreshToken".equals(c.getName())) {
 					refreshToken = c.getValue();
 					break;
 				}
 			}
 		}
-		if (refreshToken == null || !jwtTokenProvider.validateToken(refreshToken)) {
+
+		if (refreshToken == null) {
+			response.setHeader("X-Reason", "missing-cookie");
+			log.warn("[REISSUE] missing refresh cookie");
+			return unauthorizedAndClear(response);
+		}
+		if (!jwtTokenProvider.validateToken(refreshToken)) {
+			response.setHeader("X-Reason", "invalid-or-expired");
+			try {
+				jwtTokenProvider.getUserEmail(refreshToken);
+			} catch (io.jsonwebtoken.ExpiredJwtException e) {
+				response.setHeader("X-Reason", "expired");
+			}
+			log.warn("[REISSUE] invalid/expired refresh");
 			return unauthorizedAndClear(response);
 		}
 
 		String email = jwtTokenProvider.getUserEmail(refreshToken);
 		Users user = userRepository.findByEmail(email).orElse(null);
-		if (user == null)
+		if (user == null) {
+			response.setHeader("X-Reason", "user-not-found");
+			log.warn("[REISSUE] user not found: {}", email);
 			return unauthorizedAndClear(response);
+		}
 
-		// 문자열 동일 비교로 안전하게 회전
-		if (!refreshToken.equals(user.getRefreshToken())) {
+		String stored = user.getRefreshToken();
+		if (stored == null) {
+			response.setHeader("X-Reason", "stored-null");
+			log.warn("[REISSUE] stored refresh is null for {}", email);
+			return unauthorizedAndClear(response);
+		}
+		if (!refreshToken.equals(stored)) {
+			response.setHeader("X-Reason", "mismatch");
+			log.warn("[REISSUE] refresh mismatch for {} (cookie len {} vs stored len {})",
+				email, refreshToken.length(), stored.length());
 			return unauthorizedAndClear(response);
 		}
 

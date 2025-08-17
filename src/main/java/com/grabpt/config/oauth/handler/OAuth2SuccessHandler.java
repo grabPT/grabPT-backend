@@ -1,7 +1,5 @@
 package com.grabpt.config.oauth.handler;
 
-import static com.grabpt.config.jwt.properties.CookieSupport.*;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -17,6 +15,7 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 
 import com.grabpt.config.jwt.JwtTokenProvider;
+import com.grabpt.config.jwt.properties.CookieSupport;
 import com.grabpt.domain.entity.Users;
 import com.grabpt.domain.enums.Role;
 import com.grabpt.repository.UserRepository.UserRepository;
@@ -98,19 +97,19 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 			String accessToken = jwtTokenProvider.generateToken(oauthUser);
 			String refreshToken = oauthUser.getRefreshToken();
 
-			//  남아 있을 수 있는 루트 경로 refreshToken 제거
-			response.addHeader(HttpHeaders.SET_COOKIE, deleteRefreshCookieAtRoot().toString());
-			// 표준 경로(/api/auth/reissue) refresh 제거 후 재설정
-			response.addHeader(HttpHeaders.SET_COOKIE, deleteRefreshCookie().toString());
-			response.addHeader(HttpHeaders.SET_COOKIE, accessCookie(accessToken).toString());
-			response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie(refreshToken).toString());
+			// 과거 루트(/) 경로에 남은 refreshToken을 정리(치유)
+			response.addHeader(HttpHeaders.SET_COOKIE, CookieSupport.deleteRefreshCookieAtRoot().toString());
+			// 표준 경로(/api/auth/reissue) 것을 덮어쓰기 위해 한번 삭제 후 재발급
+			response.addHeader(HttpHeaders.SET_COOKIE, CookieSupport.deleteRefreshCookie().toString());
 
-			// role 쿠키 추가 (Base64 인코딩)
-			String roleValue = oauthUser.getRole() == Role.PRO ? "EXPERT" : oauthUser.getRole().name();
-			addCookie(response, "role", b64(roleValue), Duration.ofMinutes(30), false);
-
-			// userId 쿠키 추가
-			addCookie(response, "userId", b64(oauthUser.getId().toString()), Duration.ofMinutes(30), false);
+			// 표준 방식으로만 발급
+			response.addHeader(HttpHeaders.SET_COOKIE, CookieSupport.accessCookie(accessToken).toString());
+			response.addHeader(HttpHeaders.SET_COOKIE, CookieSupport.refreshCookie(refreshToken).toString());
+			response.addHeader(HttpHeaders.SET_COOKIE,
+				CookieSupport.roleCookie(b64(oauthUser.getRole() == Role.PRO ? "EXPERT" : oauthUser.getRole().name()))
+					.toString());
+			response.addHeader(HttpHeaders.SET_COOKIE,
+				CookieSupport.userIdCookie(b64(oauthUser.getId().toString())).toString());
 
 			if (oauthUser.getRole() == com.grabpt.domain.enums.Role.PRO) { // Role enum의 경로를 명확히 해주세요.
 				response.sendRedirect("https://www.grabpt.com/authcallback"); // 전문가 페이지로 리디렉션
@@ -138,6 +137,6 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 		log.info("신규 회원 소셜 로그인 - provider: {}, email: {}, name: {}",
 			oauthProvider, email, name);
 
-		response.sendRedirect("https://www.grabpt.com/authcallback");
+		response.sendRedirect("https://www.grabpt.com/signup");
 	}
 }

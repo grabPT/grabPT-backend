@@ -93,4 +93,11 @@ public final class CookieSupport {
 			.domain("grabpt.com").path("/")
 			.maxAge(Duration.ofDays(7)).build();
 	}
+
+	public static ResponseCookie userIdCookie(String valueB64) {
+		return ResponseCookie.from("userId", valueB64 == null ? "" : valueB64)
+			.httpOnly(false).secure(true).sameSite("None")
+			.domain("grabpt.com").path("/")
+			.maxAge(60 * 30).build();
+	}
 }

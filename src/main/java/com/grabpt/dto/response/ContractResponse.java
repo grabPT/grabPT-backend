@@ -2,6 +2,7 @@ package com.grabpt.dto.response;
 
 import java.time.LocalDate;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.grabpt.domain.entity.ContractInfo;
 import com.grabpt.domain.enums.MatchingStatus;
 
@@ -22,8 +23,10 @@ public class ContractResponse {
 		ContractInfo proInfo = new ContractInfo();
 		Integer totalSession;
 		Integer price;
+		@JsonFormat(pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
 		LocalDate startDate;
 		String ptAddress;
+		@JsonFormat(pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
 		LocalDate contractDate;
 		MatchingStatus status;
 	}

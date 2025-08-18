@@ -1,5 +1,6 @@
 package com.grabpt.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.grabpt.domain.enums.Gender;
 import jakarta.persistence.*;
@@ -15,6 +16,7 @@ public class ContractInfo {
 
 	private String name ="";
 
+	@JsonFormat(pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
 	private LocalDate birth;
 
 	private String phoneNumber="";

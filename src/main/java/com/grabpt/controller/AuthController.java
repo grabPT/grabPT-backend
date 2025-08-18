@@ -52,7 +52,7 @@ public class AuthController {
 	@Operation(summary = "User 회원가입 요청 (Multipart)",
 		description = "JSON 데이터와 프로필 이미지를 동시에 전송하는 회원가입")
 	@PostMapping(value = "/user-signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public void userSignup(
+	public ApiResponse<String> userSignup(
 		@RequestPart("data") SignupRequest.UserSignupRequestDto signupRequest,
 		@RequestPart(value = "profileImage", required = false) MultipartFile profileImage,
 		HttpServletResponse response) {
@@ -60,14 +60,16 @@ public class AuthController {
 		authService.registerUser_photo(signupRequest, profileImage, response);
 
 		// 일반 회원은 메인 페이지로 redirect
-		response.setStatus(HttpServletResponse.SC_SEE_OTHER); // 303
-		response.setHeader("Location", "https://www.grabpt.com/authcallback");
+		// response.setStatus(HttpServletResponse.SC_SEE_OTHER); // 303
+		// response.setHeader("Location", "https://www.grabpt.com/authcallback");
+
+		return ApiResponse.onSuccess("user 회원가입 성공");
 	}
 
 	@Operation(summary = "Pro 회원가입 요청 (Multipart)",
 		description = "JSON 데이터와 프로필 이미지를 동시에 전송하는 회원가입")
 	@PostMapping(value = "/pro-signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public void proSignup(
+	public ApiResponse<String> proSignup(
 		@RequestPart("data") SignupRequest.ProSignupRequestDto signupRequest,
 		@RequestPart(value = "profileImage", required = false) MultipartFile profileImage,
 		HttpServletResponse response) {
@@ -75,8 +77,10 @@ public class AuthController {
 		authService.registerPro_photo(signupRequest, profileImage, response);
 
 		// 전문가 회원은 /expert로 redirect
-		response.setStatus(HttpServletResponse.SC_SEE_OTHER); // 303
-		response.setHeader("Location", "https://www.grabpt.com/authcallback");
+		// response.setStatus(HttpServletResponse.SC_SEE_OTHER); // 303
+		// response.setHeader("Location", "https://www.grabpt.com/authcallback");
+
+		return ApiResponse.onSuccess("pro 회원가입 성공");
 	}
 
 	// JWT 토큰 재발행

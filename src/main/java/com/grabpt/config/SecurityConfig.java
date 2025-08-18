@@ -109,7 +109,6 @@ public class SecurityConfig {
 					"/api/category-proprofile/**",
 					"/api/*/reviews"
 				).permitAll()
-				.requestMatchers(HttpMethod.GET, "/api/requestion/**").permitAll()
 				.requestMatchers("/mypage", "/mypage/**").authenticated()
 				.anyRequest().authenticated()
 			)

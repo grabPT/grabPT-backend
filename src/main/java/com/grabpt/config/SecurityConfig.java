@@ -18,7 +18,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
 
 import com.grabpt.config.auth.PrincipalDetailsService;
 import com.grabpt.config.jwt.CsrfOriginFilter;
@@ -55,11 +54,6 @@ public class SecurityConfig {
 	@Bean
 	public JwtAuthenticationFilter jwtAuthenticationFilter() {
 		return new JwtAuthenticationFilter(jwtTokenProvider);
-	}
-
-	@Bean
-	public CorsFilter corsFilter() {
-		return new CorsFilter(corsConfigurationSource());
 	}
 
 	@Bean
@@ -143,18 +137,21 @@ public class SecurityConfig {
 	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
 
-		// ✔ 패턴 기반(서브도메인/포트 허용)
+		// 패턴 기반(서브도메인/포트 허용)
 		configuration.setAllowedOriginPatterns(List.of(
 			"https://www.grabpt.com",
-			"http://api.grabpt.com",
 			"https://grabpt.com",
-			"http://grabpt.com",
-			"http://localhost:5137",
-			"http://43.203.91.190:8080"
+			// --- local dev ---
+			"http://localhost:5173",
+			"http://127.0.0.1:5173",
+			"http://localhost:3000",
+			"http://127.0.0.1:3000"
 		));
 		configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
 		configuration.setAllowedHeaders(List.of("*"));
 		configuration.setAllowCredentials(true);
+		configuration.setExposedHeaders(List.of("Authorization", "Location", "Content-Disposition", "Set-Cookie"));
+		configuration.setMaxAge(3600L);
 
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", configuration);

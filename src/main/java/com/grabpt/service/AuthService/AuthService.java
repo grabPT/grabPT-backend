@@ -239,6 +239,10 @@ public class AuthService {
 		res.addHeader(HttpHeaders.SET_COOKIE, c.toString());
 	}
 
+	private static String toCookieRole(Role role) {
+		return (role == Role.PRO) ? "EXPERT" : role.name();
+	}
+
 	private void createTokenAndSetCookie(Users user, HttpServletResponse response) {
 		String accessToken = jwtTokenProvider.generateToken(user);
 		String refreshToken = jwtTokenProvider.createRefreshToken(user.getEmail());
@@ -257,7 +261,8 @@ public class AuthService {
 		addCookie(response, "refreshToken", refreshToken, Duration.ofDays(7), true);
 
 		// 3) role (Base64, 프론트에서 읽어야 하므로 HttpOnly=false)
-		addCookie(response, "role", b64(role), Duration.ofMinutes(30), false);
+		String cookieRole = toCookieRole(user.getRole()); // PRO → EXPERT 매핑
+		addCookie(response, "role", b64(cookieRole), Duration.ofMinutes(30), false);
 
 		// userId 쿠키 추가
 		addCookie(response, "userId", b64(user.getId().toString()), Duration.ofMinutes(30), false);

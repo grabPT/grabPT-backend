@@ -5,11 +5,20 @@ import java.io.IOException;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
+
 import com.grabpt.apiPayload.code.status.ErrorStatus;
 import com.grabpt.apiPayload.exception.handler.ContractHandler;
 import com.grabpt.aws.s3.AmazonS3Manager;
 import com.grabpt.config.AmazonConfig;
-import com.grabpt.domain.entity.*;
+import com.grabpt.domain.entity.Contract;
+import com.grabpt.domain.entity.ContractInfo;
+import com.grabpt.domain.entity.Matching;
+import com.grabpt.domain.entity.Requestions;
+import com.grabpt.domain.entity.Suggestions;
 import com.grabpt.domain.enums.Gender;
 import com.grabpt.domain.enums.MatchingStatus;
 import com.grabpt.dto.request.ContractRequest;
@@ -20,10 +29,6 @@ import com.grabpt.service.PdfService.PdfGenerateService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.thymeleaf.TemplateEngine;
-import org.thymeleaf.context.Context;
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -35,11 +40,11 @@ public class ContractServiceImpl implements ContractService {
 	private final AmazonS3Manager amazonS3Manager;
 	private final AmazonConfig amazonConfig;
 
-
 	@Override
 	@Transactional
-	public Contract writeUserInfo(Long contractId, ContractRequest.ContractInfoDto request){
-		Contract contract = contractRepository.findById(contractId).orElseThrow(() -> new ContractHandler(ErrorStatus.CONTRACT_NOT_FOUND));
+	public Contract writeUserInfo(Long contractId, ContractRequest.ContractInfoDto request) {
+		Contract contract = contractRepository.findById(contractId)
+			.orElseThrow(() -> new ContractHandler(ErrorStatus.CONTRACT_NOT_FOUND));
 		contract.getMatching().setStatus(MatchingStatus.USERWROTE);
 
 		ContractInfo contractInfo = toContractInfo(request);
@@ -47,14 +52,15 @@ public class ContractServiceImpl implements ContractService {
 
 		Long proId = contract.getMatching().getSuggestion().getProProfile().getUser().getId();
 		alarmService.sendAlarm(proId, "CONTRACT", "수강생 계약서 작성 완료",
-			contractInfo.getName()+"님이 계약서 작성을 완료했습니다. 계약서를 작성해주세요.", "/contract/"+contractId);
+			contractInfo.getName() + "님이 계약서 작성을 완료했습니다. 계약서를 작성해주세요.", "/contract/" + contractId);
 		return contract;
 	}
 
 	@Override
 	@Transactional
-	public Contract writeProInfo(Long contractId, ContractRequest.ContractInfoDto request){
-		Contract contract = contractRepository.findById(contractId).orElseThrow(() -> new ContractHandler(ErrorStatus.CONTRACT_NOT_FOUND));
+	public Contract writeProInfo(Long contractId, ContractRequest.ContractInfoDto request) {
+		Contract contract = contractRepository.findById(contractId)
+			.orElseThrow(() -> new ContractHandler(ErrorStatus.CONTRACT_NOT_FOUND));
 		contract.getMatching().setStatus(MatchingStatus.COMPLETED);
 
 		ContractInfo contractInfo = toContractInfo(request);
@@ -62,7 +68,7 @@ public class ContractServiceImpl implements ContractService {
 
 		Long userId = contract.getMatching().getRequestion().getUser().getId(); //너무 길긴 함
 		alarmService.sendAlarm(userId, "PAYMENT", "전문가 계약서 작성 완료",
-			contractInfo.getName()+"님의 계약서 작성이 완료되었어요. 결제를 진행해주세요", "/contract/"+contractId);
+			contractInfo.getName() + "님의 계약서 작성이 완료되었어요. 결제를 진행해주세요", "/contract/" + contractId);
 		return contract;
 	}
 
@@ -73,13 +79,13 @@ public class ContractServiceImpl implements ContractService {
 		userInfo.setBirth(request.getBirth());
 		userInfo.setGender(request.getGender());
 		userInfo.setPhoneNumber(request.getPhoneNumber());
-		userInfo.setSignUrl(request.getSignUrl());
+		// userInfo.setSignUrl(request.getSignUrl());
 		return userInfo;
 	}
 
 	@Override
 	@Transactional
-	public Contract createContract(Matching matching, Requestions req, Suggestions sug){
+	public Contract createContract(Matching matching, Requestions req, Suggestions sug) {
 		Contract contract = new Contract(); // 기본 생성자 사용
 		contract.setMatching(matching);
 		contract.setPrice(sug.getPrice());
@@ -93,11 +99,10 @@ public class ContractServiceImpl implements ContractService {
 	}
 
 	@Override
-	public Contract findById(Long contractId){
+	public Contract findById(Long contractId) {
 		return contractRepository.findById(contractId)
 			.orElseThrow(() -> new ContractHandler(ErrorStatus.CONTRACT_NOT_FOUND));
 	}
-
 
 	@Transactional
 	public String generateAndSavePdfToS3(Long contractId) {
@@ -134,7 +139,7 @@ public class ContractServiceImpl implements ContractService {
 		// --- 3. 서비스(service) 정보 설정 ---
 		Integer totalSession = contract.getTotalSession() != null ? contract.getTotalSession() : 0;
 		Integer pricePerSession = contract.getPrice() != null ? contract.getPrice() : 0;
-		long totalPrice = (long) totalSession * pricePerSession;
+		long totalPrice = (long)totalSession * pricePerSession;
 
 		// 유효기간 (예: 시작일로부터 3개월) - 정책에 맞게 수정 필요
 		String endDateStr = "-";
@@ -155,8 +160,8 @@ public class ContractServiceImpl implements ContractService {
 		// --- 4. 기타 정보 설정 ---
 		context.setVariable("agreements", Map.of("termsAccepted", true)); // 필수 약관은 항상 동의했다고 가정
 		context.setVariable("contractDate", contract.getCreatedAt().format(DateTimeFormatter.ISO_LOCAL_DATE)); // 계약 생성일
-		context.setVariable("appLogoUrl", "https://grabpt-image-bucket-2.s3.ap-northeast-2.amazonaws.com/AppLogo.png/2025-08-14T01%3A38%3A19.770886374");
-
+		context.setVariable("appLogoUrl",
+			"https://grabpt-image-bucket-2.s3.ap-northeast-2.amazonaws.com/AppLogo.png/2025-08-14T01%3A38%3A19.770886374");
 
 		// --- 5. PDF 생성 및 S3 업로드 ---
 		try {
@@ -166,7 +171,8 @@ public class ContractServiceImpl implements ContractService {
 			long contentLength = pdfInputStream.available();
 			String objectKey = "contracts/contract_" + contract.getId() + ".pdf";
 
-			String fileUrl = amazonS3Manager.uploadInputStream(objectKey, pdfInputStream, contentLength, "application/pdf");
+			String fileUrl = amazonS3Manager.uploadInputStream(objectKey, pdfInputStream, contentLength,
+				"application/pdf");
 			contract.setContractFileUrl(fileUrl); // 생성된 PDF의 URL을 DB에 저장
 
 			return fileUrl;

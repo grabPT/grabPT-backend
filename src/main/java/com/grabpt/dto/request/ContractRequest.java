@@ -1,11 +1,12 @@
 package com.grabpt.dto.request;
 
+import java.time.LocalDate;
+
 import com.grabpt.domain.enums.Gender;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.time.LocalDate;
 
 public class ContractRequest {
 
@@ -29,7 +30,7 @@ public class ContractRequest {
 		@Schema(description = "주소", example = "서울시 강남구")
 		private String address;
 
-		@Schema(description = "전자서명 이미지")
-		private String signUrl;
+		// @Schema(description = "전자서명 이미지")
+		// private String signUrl;
 	}
 }

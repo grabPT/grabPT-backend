@@ -68,7 +68,7 @@ public final class CookieSupport {
 
 	public static ResponseCookie deleteAccessCookie() {
 		return ResponseCookie.from("accessToken", "")
-			.httpOnly(true).secure(true).sameSite("Lax")
+			.httpOnly(true).secure(true).sameSite("None")
 			.domain("grabpt.com").path("/")
 			.maxAge(0).build();
 	}

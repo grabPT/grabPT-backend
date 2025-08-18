@@ -148,6 +148,7 @@ public class ProfileConverter {
 
 		return ProProfileResponseDTO.builder()
 			.name(user.getNickname()) // User 객체에서 닉네임 가져오기
+			.profileImageUrl(user.getProfileImageUrl())
 			.photos(photoDTOS)
 			.introduction(proProfile.getDescription())
 			.certifications(certificationDTOS)

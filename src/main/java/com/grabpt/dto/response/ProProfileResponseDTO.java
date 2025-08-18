@@ -20,6 +20,7 @@ public class ProProfileResponseDTO {
 	// 프로필 카드
 	private String name;
 	private String center;
+	private String profileImageUrl;
 
 	private String centerDescription;
 

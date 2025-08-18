@@ -109,6 +109,7 @@ public class SecurityConfig {
 					"/api/category-proprofile/**",
 					"/api/*/reviews"
 				).permitAll()
+				.requestMatchers(HttpMethod.GET, "/api/requestion/**").permitAll()
 				.requestMatchers("/mypage", "/mypage/**").authenticated()
 				.anyRequest().authenticated()
 			)
@@ -129,7 +130,7 @@ public class SecurityConfig {
 			)
 
 			.authenticationProvider(authenticationProvider())
-			
+
 			.oauth2Login(oauth2 -> oauth2
 				.userInfoEndpoint(userInfo -> userInfo.userService(principalOauth2UserService))
 				.authorizationEndpoint(a -> a.authorizationRequestRepository(authorizationRequestRepository()))

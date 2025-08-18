@@ -158,6 +158,7 @@ public class ProfileConverter {
 			.center(proProfile.getCenter())
 			.address(addressDTOS)
 			.categoryName(proProfile.getCategory().getName())
+			.centerDescription(proProfile.getCenterDescription())
 			.build();
 	}
 }

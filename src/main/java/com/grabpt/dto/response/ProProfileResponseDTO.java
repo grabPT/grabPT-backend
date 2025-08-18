@@ -1,14 +1,17 @@
 package com.grabpt.dto.response;
 
-import com.grabpt.domain.entity.*;
+import java.util.List;
+
+import com.grabpt.domain.entity.Address;
+import com.grabpt.domain.entity.ProCertification;
+import com.grabpt.domain.entity.ProPhoto;
+import com.grabpt.domain.entity.PtPrice;
+import com.grabpt.domain.entity.Review;
+import com.grabpt.domain.entity.Users;
 import com.grabpt.domain.enums.CertificationType;
 
-import jakarta.persistence.Column;
 import lombok.Builder;
 import lombok.Getter;
-
-import java.time.LocalDateTime;
-import java.util.List;
 
 @Getter
 @Builder
@@ -17,6 +20,8 @@ public class ProProfileResponseDTO {
 	// 프로필 카드
 	private String name;
 	private String center;
+
+	private String centerDescription;
 
 	// 소개 글
 	private String introduction;
@@ -28,7 +33,6 @@ public class ProProfileResponseDTO {
 	private List<PhotoDTO> photos;
 
 	private String categoryName;
-
 
 	// PT 프로그램 과정
 	private String programDescription;
@@ -78,7 +82,6 @@ public class ProProfileResponseDTO {
 		}
 	}
 
-
 	@Getter
 	@Builder
 	public static class ReviewDTO {
@@ -102,7 +105,7 @@ public class ProProfileResponseDTO {
 		private String imageUrl;
 		private String description;
 
-		public static PhotoDTO from(ProPhoto photo){
+		public static PhotoDTO from(ProPhoto photo) {
 			return PhotoDTO.builder()
 				.imageUrl(photo.getImageUrl())
 				.description(photo.getDescription())

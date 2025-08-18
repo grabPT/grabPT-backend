@@ -15,10 +15,13 @@ public class CsrfOriginFilter extends OncePerRequestFilter {
 		"https://grabpt.com",
 		"https://www.grabpt.com",
 		"https://api.grabpt.com",
-		"http://localhost:5173"   // 로컬 개발
+		"http://localhost:5173",
+		"https://localhost:5173",
+		"http://localhost:3000",
+		"https://localhost:3000"
 	);
 
-	private static final Set<String> STATE_CHANGING = Set.of("POST", "PUT", "PATCH", "DELETE");
+	private static final Set<String> STATE_CHANGING = Set.of("POST", "PUT", "PATCH", "DELETE", "OPTIONS");
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)

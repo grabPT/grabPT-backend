@@ -24,6 +24,7 @@ public class ContractResponse {
 		Integer price;
 		LocalDate startDate;
 		String ptAddress;
+		LocalDate contractDate;
 		MatchingStatus status;
 	}
 

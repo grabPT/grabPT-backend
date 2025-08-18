@@ -48,7 +48,7 @@ public class ContractController {
 		summary = "트레이너 계약서 작성 API"
 	)
 	@PostMapping("/contract/{contractId}/pro")
-	public ApiResponse<Long> writeProInfo(@RequestBody ContractRequest.ContractInfoDto request,
+	public ApiResponse<Long> writeProInfo(@RequestBody ContractRequest.ContractInfoForProDto request,
 		@PathVariable(name = "contractId") Long id) {
 		Contract contract = contractService.writeProInfo(id, request);
 		return ApiResponse.onSuccess(contract.getId());
@@ -75,7 +75,7 @@ public class ContractController {
 		return ApiResponse.onSuccess("수강생 전자서명 upload");
 	}
 
-	@PostMapping("/contract/{contractId}/uploadProSign")
+	@PostMapping(value = "/contract/{contractId}/uploadProSign",consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
 	public ApiResponse<String> uploadProSign(@PathVariable(name = "contractId") Long contractId, @RequestPart MultipartFile file) {
 		contractPhotoService.uploadProSign(contractId,file);
 		return ApiResponse.onSuccess("전문가 전자서명 upload");

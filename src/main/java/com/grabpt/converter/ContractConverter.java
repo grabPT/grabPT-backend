@@ -13,6 +13,7 @@ public class ContractConverter {
 			.ptAddress(contract.getPtAddress())
 			.startDate(contract.getStartDate())
 			.totalSession(contract.getTotalSession())
+			.contractDate(contract.getContractDate())
 			.status(contract.getMatching().getStatus())
 			.build();
 	}

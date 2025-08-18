@@ -58,13 +58,15 @@ public class ContractServiceImpl implements ContractService {
 
 	@Override
 	@Transactional
-	public Contract writeProInfo(Long contractId, ContractRequest.ContractInfoDto request) {
+	public Contract writeProInfo(Long contractId, ContractRequest.ContractInfoForProDto request) {
 		Contract contract = contractRepository.findById(contractId)
 			.orElseThrow(() -> new ContractHandler(ErrorStatus.CONTRACT_NOT_FOUND));
 		contract.getMatching().setStatus(MatchingStatus.COMPLETED);
 
 		ContractInfo contractInfo = toContractInfo(request);
 		contract.setProInfo(contractInfo);
+		contract.setStartDate(request.getStartDate());
+		contract.setContractDate(request.getContractDate());
 
 		Long userId = contract.getMatching().getRequestion().getUser().getId(); //너무 길긴 함
 		alarmService.sendAlarm(userId, "PAYMENT", "전문가 계약서 작성 완료",
@@ -73,15 +75,15 @@ public class ContractServiceImpl implements ContractService {
 	}
 
 	private ContractInfo toContractInfo(ContractRequest.ContractInfoDto request) {
-		ContractInfo userInfo = new ContractInfo();
-		userInfo.setAddress(request.getAddress());
-		userInfo.setName(request.getName());
-		userInfo.setBirth(request.getBirth());
-		userInfo.setGender(request.getGender());
-		userInfo.setPhoneNumber(request.getPhoneNumber());
-		// userInfo.setSignUrl(request.getSignUrl());
-		return userInfo;
+		ContractInfo contractInfo = new ContractInfo();
+		contractInfo.setAddress(request.getAddress());
+		contractInfo.setName(request.getName());
+		contractInfo.setBirth(request.getBirth());
+		contractInfo.setGender(request.getGender());
+		contractInfo.setPhoneNumber(request.getPhoneNumber());
+		return contractInfo;
 	}
+
 
 	@Override
 	@Transactional
@@ -90,7 +92,6 @@ public class ContractServiceImpl implements ContractService {
 		contract.setMatching(matching);
 		contract.setPrice(sug.getPrice());
 		contract.setPtAddress(sug.getLocation());
-		contract.setStartDate(req.getStartPreference());
 		contract.setTotalSession(sug.getSessionCount());
 		contract.setUserInfo(new ContractInfo());
 		contract.setProInfo(new ContractInfo());

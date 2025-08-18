@@ -129,7 +129,7 @@ public class SecurityConfig {
 			)
 
 			.authenticationProvider(authenticationProvider())
-			
+
 			.oauth2Login(oauth2 -> oauth2
 				.userInfoEndpoint(userInfo -> userInfo.userService(principalOauth2UserService))
 				.authorizationEndpoint(a -> a.authorizationRequestRepository(authorizationRequestRepository()))

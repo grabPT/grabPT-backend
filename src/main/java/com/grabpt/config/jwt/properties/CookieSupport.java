@@ -13,7 +13,7 @@ public final class CookieSupport {
 		return ResponseCookie.from("accessToken", token)
 			.httpOnly(true)        // JS 접근 차단(XSS 방어)
 			.secure(true)          // HTTPS 전용
-			.sameSite("Lax")       // same-site라 Lax면 충분 (필요시 "None")
+			.sameSite("None")       // same-site라 Lax면 충분 (필요시 "None")
 			.domain("grabpt.com")
 			.path("/")
 			.maxAge(60 * 15)       // 예: 15분

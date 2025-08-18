@@ -1,19 +1,17 @@
 package com.grabpt.converter;
 
-
-import com.grabpt.domain.entity.ProProfile;
-import com.grabpt.domain.entity.UserProfile;
-import com.grabpt.domain.entity.Users;
-import com.grabpt.dto.response.ProProfileResponseDTO;
-import com.grabpt.dto.response.ProfileResponseDTO;
-import com.grabpt.domain.entity.Review;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class ProfileConverter {
+import com.grabpt.domain.entity.ProProfile;
+import com.grabpt.domain.entity.Review;
+import com.grabpt.domain.entity.UserProfile;
+import com.grabpt.domain.entity.Users;
+import com.grabpt.dto.response.ProProfileResponseDTO;
+import com.grabpt.dto.response.ProfileResponseDTO;
 
+public class ProfileConverter {
 
 	// MyProfileDTO 변환
 	public static ProfileResponseDTO.MyProfileDTO toMyProfileDTO(Users user) {
@@ -22,7 +20,6 @@ public class ProfileConverter {
 		List<ProfileResponseDTO.MyProProfileDTO.AddressDTO> addressDTOS = (user.getAddress() != null)
 			? Collections.singletonList(ProfileResponseDTO.MyProfileDTO.AddressDTO.from(user.getAddress()))
 			: Collections.emptyList();
-
 
 		if (profile == null) {
 			return ProfileResponseDTO.MyProfileDTO.builder()
@@ -84,7 +81,6 @@ public class ProfileConverter {
 			? Collections.singletonList(ProfileResponseDTO.MyProProfileDTO.AddressDTO.from(user.getAddress()))
 			: Collections.emptyList();
 
-
 		return ProfileResponseDTO.MyProProfileDTO.builder()
 			.proId(user.getId())
 			.profileImageUrl(user.getProfileImageUrl())
@@ -111,7 +107,6 @@ public class ProfileConverter {
 		List<ProProfileResponseDTO.CertificationDTO> certificationDTOS = proProfile.getCertifications().stream()
 			.map(ProProfileResponseDTO.CertificationDTO::from)
 			.collect(Collectors.toList());
-
 
 		List<ProProfileResponseDTO.PhotoDTO> photoDTOS = proProfile.getPhotos().stream()
 			.map(ProProfileResponseDTO.PhotoDTO::from)
@@ -162,6 +157,8 @@ public class ProfileConverter {
 			.ptPrices(proProfile.getPtPrices())
 			.center(proProfile.getCenter())
 			.address(addressDTOS)
+			.categoryName(proProfile.getCategory().getName())
+			.centerDescription(proProfile.getCenterDescription())
 			.build();
 	}
 }

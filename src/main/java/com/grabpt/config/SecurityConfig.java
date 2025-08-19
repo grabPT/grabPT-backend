@@ -40,19 +40,20 @@ public class SecurityConfig {
 	private final OAuth2SuccessHandler oauth2SuccessHandler;
 
 	@Bean
-	@Order(0) // 가장 먼저 매칭되도록
+	@Order(0)
 	public SecurityFilterChain wsFilterChain(HttpSecurity http) throws Exception {
-		http
-			.securityMatcher("/ws-connect/**")
-			.authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+		http.securityMatcher(req -> {
+			String uri = req.getRequestURI();            // 예: //ws-connect/info
+			if (uri == null)
+				return false;
+			String norm = uri.replaceAll("/{2,}", "/");  // // -> /
+			return norm.startsWith("/ws-connect/");
+		});
+		http.authorizeHttpRequests(a -> a.anyRequest().permitAll())
 			.csrf(AbstractHttpConfigurer::disable)
-			.cors(AbstractHttpConfigurer::disable)   // SockJS 핸드셰이크엔 굳이 필요 X
-			.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-			.securityContext(sc -> sc
-				.securityContextRepository(new org.springframework.security.web.context.NullSecurityContextRepository())
-			);
-
-		// ★ 커스텀 필터 일절 추가 금지 (Jwt/CsrfOriginFilter 모두 X)
+			.cors(AbstractHttpConfigurer::disable)
+			.sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+		// 여기에는 커스텀 필터(JWT/CSRF) 절대 추가 X
 		return http.build();
 	}
 
@@ -101,7 +102,7 @@ public class SecurityConfig {
 			.authorizeHttpRequests(auth -> auth
 				// 1) 공개 엔드포인트(화이트리스트) — 반드시 위쪽에!
 				.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-				.requestMatchers("//ws-connect/**").permitAll()
+				.requestMatchers("/ws-connect/**").permitAll()
 
 				// 온보딩/인증 관련
 				.requestMatchers(

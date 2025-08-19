@@ -13,7 +13,7 @@ public class AlarmConverter {
 			.type(alarm.getType())
 			.title(alarm.getTitle())
 			.content(alarm.getContent())
-			.createdAt(LocalDateTime.now())
+			.sentAt(alarm.getSentAt())
 			.redirectUrl(alarm.getRedirectUrl())
 			.isRead(alarm.isRead())
 			.build();

@@ -21,6 +21,11 @@ public class ProfileConverter {
 			? Collections.singletonList(ProfileResponseDTO.MyProfileDTO.AddressDTO.from(user.getAddress()))
 			: Collections.emptyList();
 
+		String categoryName = null;
+		if (profile != null && profile.getCategory() != null) {
+			categoryName = profile.getCategory().getName();
+		}
+
 		if (profile == null) {
 			return ProfileResponseDTO.MyProfileDTO.builder()
 				.userId(user.getId())
@@ -29,7 +34,7 @@ public class ProfileConverter {
 				.nickname(user.getNickname())
 				.email(user.getEmail())
 				.address(addressDTOS)
-				.categoryName(profile.getCategory().getName())
+				.categoryName(categoryName)
 				.build();
 		}
 
@@ -40,7 +45,7 @@ public class ProfileConverter {
 			.nickname(user.getNickname())
 			.email(user.getEmail())
 			.address(addressDTOS)
-			.categoryName(profile.getCategory().getName())
+			.categoryName(categoryName)
 			.build();
 	}
 

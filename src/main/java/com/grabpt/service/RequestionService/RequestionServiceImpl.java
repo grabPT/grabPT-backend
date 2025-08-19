@@ -103,6 +103,7 @@ public class RequestionServiceImpl implements RequestionService {
 			() -> new UserHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
 		Address addr = findProUser.getAddress();
+		findProUser.getProProfile().getCategory().getId();
 		String proAddressPrefix = buildAddressPrefix(addr); // "서울시 강남구 역삼동"
 		log.info("RequestServiceImpl pro address prefix = {}", proAddressPrefix);
 
@@ -111,17 +112,14 @@ public class RequestionServiceImpl implements RequestionService {
 			return Page.empty(pageable);
 		}
 
-		// String proStreet = findProUser.getAddress().getStreet();
-		// log.info("RequestServiceImpl 내부 프로 address = " + proStreet);
-
 		Page<Requestions> requestionPage;
-
+		Category category = findProUser.getProProfile().getCategory();
 		if ("price".equalsIgnoreCase(sortBy)) {
 			requestionPage = requestionRepository
-				.findByLocationStartingWithOrderByPriceDesc(proAddressPrefix, pageable);
+				.findByLocationStartingWithAndCategoryOrderByPriceDesc(proAddressPrefix, category, pageable);
 		} else {
 			requestionPage = requestionRepository
-				.findByLocationStartingWithOrderByCreatedAtDesc(proAddressPrefix, pageable);
+				.findByLocationStartingWithAndCategoryOrderByCreatedAtDesc(proAddressPrefix, category, pageable);
 		}
 
 		return requestionPage.map(req -> {

@@ -102,7 +102,7 @@ public class ChatServiceImpl implements ChatService{
 
 		if(chatRoom.getLastMessage().equals("")){
 			alarmService.sendAlarm(otherUserId,"MESSAGE","메시지 도착",
-				sender.getNickname()+"님이 채팅을 시작했어요", "chatRoom/list");
+				sender.getNickname()+"님이 채팅을 시작했어요", "/chat");
 		}
 
 		chatRoom.setLastMessage(save.getContent());

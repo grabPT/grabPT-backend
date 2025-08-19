@@ -52,7 +52,7 @@ public class ContractServiceImpl implements ContractService {
 
 		Long proId = contract.getMatching().getSuggestion().getProProfile().getUser().getId();
 		alarmService.sendAlarm(proId, "CONTRACT", "수강생 계약서 작성 완료",
-			contractInfo.getName() + "님이 계약서 작성을 완료했습니다. 계약서를 작성해주세요.", "/contract/" + contractId);
+			contractInfo.getName() + "님이 계약서 작성을 완료했습니다. 계약서를 작성해주세요.", "/contracts/" + contractId);
 		return contract;
 	}
 
@@ -70,7 +70,7 @@ public class ContractServiceImpl implements ContractService {
 
 		Long userId = contract.getMatching().getRequestion().getUser().getId(); //너무 길긴 함
 		alarmService.sendAlarm(userId, "PAYMENT", "전문가 계약서 작성 완료",
-			contractInfo.getName() + "님의 계약서 작성이 완료되었어요. 결제를 진행해주세요", "/contract/" + contractId);
+			contractInfo.getName() + "님의 계약서 작성이 완료되었어요. 결제를 진행해주세요", "/contracts/new/" + contractId);
 		return contract;
 	}
 

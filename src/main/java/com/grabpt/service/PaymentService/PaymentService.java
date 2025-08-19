@@ -16,4 +16,6 @@ public interface PaymentService {
 
 	// 결제(콜백)
 	IamportResponse<Payment> paymentByCallback(ImPortRequestDto.PaymentCallbackRequest request);
+
+	boolean paymentByCallbackBoolean(ImPortRequestDto.PaymentCallbackRequest request);
 }

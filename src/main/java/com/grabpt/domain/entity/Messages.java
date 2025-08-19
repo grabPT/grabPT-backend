@@ -2,6 +2,7 @@ package com.grabpt.domain.entity;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.data.annotation.CreatedDate;
@@ -53,7 +54,7 @@ public class Messages extends BaseEntity {
 	@Column
 	private String content;
 
-	@CreatedDate
+	@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
 	private LocalDateTime sentAt;
 
 	@Column

@@ -101,7 +101,7 @@ public class CategoryRestController {
 	@GetMapping("/requests/{code}")
 	public ApiResponse<List<CategoryResponse.RequestListDto>> getRequestList(@PathVariable(name = "code") String code) {
 
-		Pageable pageable = PageRequest.of(0,6);
+		Pageable pageable = PageRequest.of(0,8);
 		List<Requestions> reqeustions = requestionService.getReqeustions(code, pageable);
 		return ApiResponse.onSuccess(CategoryConverter.toRequestListDto(reqeustions));
 	}

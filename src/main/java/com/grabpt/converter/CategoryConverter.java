@@ -26,7 +26,7 @@ public class CategoryConverter {
 				.nickname(requestion.getUser().getNickname())
 				.region(requestion.getLocation())
 				.matchStatus(requestion.getStatus())
-				.profileImageUrl(null)
+				.profileImageUrl(requestion.getUser().getProfileImageUrl())
 				.totalPrice(requestion.getPrice())
 				.sessionCount(requestion.getSessionCount())
 				.build())

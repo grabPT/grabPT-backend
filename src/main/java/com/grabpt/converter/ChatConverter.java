@@ -9,6 +9,7 @@ import com.grabpt.dto.request.ChatRequest;
 import com.grabpt.dto.response.ChatResponse;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 public class ChatConverter {
 	public static ChatResponse.CreateChatRoomResponseDto toCreateChatRoomResponseDto(UserChatRoom room) {
@@ -23,7 +24,7 @@ public class ChatConverter {
 			.chatRoom(chatRoom)
 			.type(MessageType.fromString(request.getMessageType()))
 			.content(request.getContent())
-			.sentAt(LocalDateTime.now())
+			.sentAt(LocalDateTime.now(ZoneId.of( "Asia/Seoul")))
 			.readCount(1)
 			.build();
 	}

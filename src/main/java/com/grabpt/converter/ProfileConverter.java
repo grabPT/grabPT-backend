@@ -21,17 +21,13 @@ public class ProfileConverter {
 			? Collections.singletonList(ProfileResponseDTO.MyProfileDTO.AddressDTO.from(user.getAddress()))
 			: Collections.emptyList();
 
-		if (profile == null) {
-			return ProfileResponseDTO.MyProfileDTO.builder()
-				.userId(user.getId())
-				.profileImageUrl(user.getProfileImageUrl())
-				.name(user.getUsername())
-				.nickname(user.getNickname())
-				.email(user.getEmail())
-				.address(addressDTOS)
-				.build();
+		// categoryName 안전 처리
+		String categoryName = null;
+		if (profile != null && profile.getCategory() != null) {
+			categoryName = profile.getCategory().getName();
 		}
 
+		// profile 여부와 관계없이 동일한 빌더 호출
 		return ProfileResponseDTO.MyProfileDTO.builder()
 			.userId(user.getId())
 			.profileImageUrl(user.getProfileImageUrl())
@@ -39,6 +35,7 @@ public class ProfileConverter {
 			.nickname(user.getNickname())
 			.email(user.getEmail())
 			.address(addressDTOS)
+			.categoryName(categoryName)  // 없으면 null 반환
 			.build();
 	}
 

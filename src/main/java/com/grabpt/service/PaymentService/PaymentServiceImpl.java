@@ -122,7 +122,6 @@ public class PaymentServiceImpl implements PaymentService {
 	public ImPortRequestDto.CustomRequestPayDto buildCustomRequestPayDto(Order order) {
 		Users buyer = order.getUser();
 
-		// 주소/전화/이메일은 프로젝트 상황에 맞게 가져오세요
 		String buyerName = buyer.getNickname();
 		String buyerEmail = buyer.getEmail();
 		String buyerTel = (buyer.getUserProfile() != null) ? buyer.getPhone_number() : null;
@@ -139,5 +138,60 @@ public class PaymentServiceImpl implements PaymentService {
 			.buyerTel(buyerTel)
 			.buyerPostcode(buyerPostcode)
 			.build();
+	}
+
+	@Override
+	public boolean paymentByCallbackBoolean(ImPortRequestDto.PaymentCallbackRequest request) {
+		try {
+			// 결제 단건 조회(아임포트)
+			IamportResponse<com.siot.IamportRestClient.response.Payment> iamportResponse = iamportClient.paymentByImpUid(
+				request.getPaymentUid());
+
+			// 주문내역 조회
+			Order order = orderRepository.findOrderAndPayment(request.getOrderUid())
+				.orElseThrow(() -> new IllegalArgumentException("주문 내역이 없습니다."));
+
+			// 결제 완료가 아니면
+			if (!iamportResponse.getResponse().getStatus().equals("paid")) {
+				// 주문, 결제 삭제
+				orderRepository.delete(order);
+				paymentRepository.delete(order.getPayment());
+
+				throw new RuntimeException("결제 미완료");
+			}
+
+			// DB에 저장된 결제 금액
+			Long price = order.getPayment().getPrice();
+			// 실 결제 금액
+			int iamportPrice = iamportResponse.getResponse().getAmount().intValue();
+
+			// 결제 금액 검증
+			if (iamportPrice != price) {
+				// 주문, 결제 삭제
+				orderRepository.delete(order);
+				paymentRepository.delete(order.getPayment());
+
+				// 결제금액 위변조로 의심되는 결제금액을 취소(아임포트)
+				iamportClient.cancelPaymentByImpUid(
+					new CancelData(iamportResponse.getResponse().getImpUid(), true, new BigDecimal(iamportPrice)));
+
+				throw new RuntimeException("결제금액 위변조 의심");
+			}
+
+			// 결제 상태 변경
+			order.getPayment().changePaymentBySuccess(PaymentStatus.OK, iamportResponse.getResponse().getImpUid());
+
+			Long contractId = order.getMatching().getContract().getId();
+			Long proId = order.getMatching().getSuggestion().getProProfile().getUser().getId();
+
+			alarmService.sendAlarm(proId, "SUCCESS", "결제 완료",
+				"결제가 성공적으로 완료되었습니다.", "/contracts/" + contractId);
+			return true;
+
+		} catch (IamportResponseException e) {
+			throw new RuntimeException(e);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 }

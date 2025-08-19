@@ -77,7 +77,7 @@ public class RequestionResponseDto {
 		private Integer price;          // 1회당 가격
 		private RequestStatus status;   // 상태 (대기중 등)
 		private String userProfileImageUrl; // 유저 프로필 이미지 링크
-		private Long requestionId; // 리다이렉트를 위한 requestionId
+		private Long requestId; // 리다이렉트를 위한 requestId
 		private String content; // 상세 설명
 		private String etcPurposeContent; // 기타 목적
 
@@ -95,7 +95,7 @@ public class RequestionResponseDto {
 				.price(r.getPrice())
 				.status(r.getStatus())
 				.userProfileImageUrl(u.getProfileImageUrl())
-				.requestionId(r.getId())
+				.requestId(r.getId())
 				.content(r.getContent())
 				.etcPurposeContent(r.getEtcPurposeContent())
 				.build();

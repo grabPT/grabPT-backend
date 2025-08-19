@@ -1,19 +1,34 @@
 package com.grabpt.service.ProfileService;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 
-import com.grabpt.domain.entity.*;
-import com.grabpt.dto.request.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
 import com.grabpt.apiPayload.code.status.ErrorStatus;
 import com.grabpt.apiPayload.exception.GeneralException;
 import com.grabpt.converter.ProfileConverter;
+import com.grabpt.domain.entity.Address;
+import com.grabpt.domain.entity.ProProfile;
+import com.grabpt.domain.entity.PtPrice;
+import com.grabpt.domain.entity.Requestions;
+import com.grabpt.domain.entity.Review;
+import com.grabpt.domain.entity.Users;
 import com.grabpt.domain.enums.Role;
+import com.grabpt.dto.request.CenterUpdateRequestDTO;
+import com.grabpt.dto.request.CertificationUpdateRequestDTO;
+import com.grabpt.dto.request.DeletedRequestDTO;
+import com.grabpt.dto.request.DescriptionUpdateRequestDTO;
+import com.grabpt.dto.request.PhotoUpdateRequestDTO;
+import com.grabpt.dto.request.ProLocationUpdateRequestDTO;
+import com.grabpt.dto.request.PtPriceRequest;
+import com.grabpt.dto.request.PtProgramUpdateRequestDTO;
+import com.grabpt.dto.request.UserProfileUpdateRequestDTO;
 import com.grabpt.dto.response.CertificationResponseDTO;
 import com.grabpt.dto.response.MyRequestListDTO;
 import com.grabpt.dto.response.MyReviewListDTO;
@@ -25,8 +40,8 @@ import com.grabpt.repository.ReviewRepository.reviewRepository;
 import com.grabpt.repository.UserRepository.UserRepository;
 import com.grabpt.service.CertificationService.CertificationService;
 import com.grabpt.service.PhotoService.PhotoService;
+
 import lombok.RequiredArgsConstructor;
-import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
@@ -40,8 +55,6 @@ public class ProfileServiceImpl implements ProfileService {
 	private final PhotoService photoService;
 	private final ProProfileRepository proProfileRepository;
 	private final CertificationService certificationService;
-
-
 
 	@Override
 	public ProfileResponseDTO.MyProfileDTO findMyUserProfile(Long userId) {
@@ -57,7 +70,8 @@ public class ProfileServiceImpl implements ProfileService {
 
 	@Override
 	public Page<MyRequestListDTO> findMyRequests(Long userId, Pageable pageable) {
-		Page<Requestions> requests = requestionRepository.findAllByUserIdOrderByCreatedAtDesc(userId, pageable);;
+		Page<Requestions> requests = requestionRepository.findAllByUserIdOrderByCreatedAtDesc(userId, pageable);
+		;
 		return requests.map(MyRequestListDTO::new);
 	}
 
@@ -107,14 +121,14 @@ public class ProfileServiceImpl implements ProfileService {
 		}
 	}
 
-
 	@Override
 	public Page<MyReviewListDTO> findProReviews(Long userId, Pageable pageable) {
 		Users user = findUserById(userId);
 		if (user.getProProfile() == null) {
 			throw new GeneralException(ErrorStatus.MEMBER_NOT_FOUND);
 		}
-		Page<Review> reviews = reviewRepository.findAllByProProfile_IdOrderByCreatedAt(user.getProProfile().getId(), pageable);
+		Page<Review> reviews = reviewRepository.findAllByProProfile_IdOrderByCreatedAt(user.getProProfile().getId(),
+			pageable);
 		return reviews.map(MyReviewListDTO::from);
 	}
 
@@ -132,7 +146,6 @@ public class ProfileServiceImpl implements ProfileService {
 		Long proId = user.getProProfile().getId();
 
 		Page<Review> reviews = reviewRepository.findAllByProProfile_IdOrderByCreatedAt(proId, pageable);
-
 
 		return reviews.map(MyReviewListDTO::from);
 	}
@@ -162,9 +175,12 @@ public class ProfileServiceImpl implements ProfileService {
 		String city = null;
 		String district = null;
 		String street = null;
-		if(address.length >= 1) street = address[address.length-1];
-		if(address.length >= 2) district = address[address.length-2];
-		if(address.length >= 3) city = address[0];
+		if (address.length >= 1)
+			street = address[address.length - 1];
+		if (address.length >= 2)
+			district = address[address.length - 2];
+		if (address.length >= 3)
+			city = address[0];
 		return proProfileRepository.findAllProByCategoryCodeAndRegion(categoryCode, city, district, street);
 	}
 
@@ -202,9 +218,8 @@ public class ProfileServiceImpl implements ProfileService {
 		if (proProfile == null) {
 			throw new GeneralException(ErrorStatus.MEMBER_NOT_FOUND);
 		}
-		photoService.updateProPhotos(proProfile,updateRequest, newPhotoFiles);
+		photoService.updateProPhotos(proProfile, updateRequest, newPhotoFiles);
 	}
-
 
 	@Override
 	@Transactional
@@ -213,12 +228,12 @@ public class ProfileServiceImpl implements ProfileService {
 		proProfile.getPtPrices().clear(); // 기존 ptPrices 삭제
 
 		List<PtPriceRequest.PtPriceUpdateRequestDto> requestDtos = request.getPtPriceUpdateRequestDtoList();
-		for(int i=0; i<requestDtos.size(); i++) {
+		for (int i = 0; i < requestDtos.size(); i++) {
 			PtPriceRequest.PtPriceUpdateRequestDto requestDto = requestDtos.get(i);
-			if(i==0){
+			if (i == 0) {
 				proProfile.setTotalSessions(requestDto.getTotalSessions());
 				proProfile.setPricePerSession(requestDto.getPricePerSession());
-			}else{
+			} else {
 				PtPrice ptPrice = new PtPrice();
 				ptPrice.setSessionCount(requestDto.getTotalSessions());
 				ptPrice.setPrice(requestDto.getPricePerSession());
@@ -253,12 +268,14 @@ public class ProfileServiceImpl implements ProfileService {
 	@Override
 	public CertificationResponseDTO findMyCertifications(Long userId) {
 		ProProfile proProfile = findUserById(userId).getProProfile();
-		return CertificationResponseDTO.from(proProfile != null ? proProfile.getCertifications() : Collections.emptyList());
+		return CertificationResponseDTO.from(
+			proProfile != null ? proProfile.getCertifications() : Collections.emptyList());
 	}
 
 	@Override
 	@Transactional
-	public void updateProCertifications(Long userId, CertificationUpdateRequestDTO request, List<MultipartFile> images) {
+	public void updateProCertifications(Long userId, CertificationUpdateRequestDTO request,
+		List<MultipartFile> images) {
 		ProProfile proProfile = findUserById(userId).getProProfile();
 		if (proProfile == null) {
 			throw new GeneralException(ErrorStatus.MEMBER_NOT_FOUND);
@@ -269,7 +286,8 @@ public class ProfileServiceImpl implements ProfileService {
 	@Override
 	@Transactional
 	public void deleteUser(Long userId, DeletedRequestDTO deletedRequest) {
-		Users user = userRepository.findById(userId).orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+		Users user = userRepository.findById(userId)
+			.orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
 
 		user.setPreviousRole(user.getRole());
 		user.setRole(Role.DELETED);
@@ -282,16 +300,16 @@ public class ProfileServiceImpl implements ProfileService {
 	@Override
 	@Transactional
 	public void restoreUser(Long userId) {
-		Users user = userRepository.findById(userId).orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
+		Users user = userRepository.findById(userId)
+			.orElseThrow(() -> new GeneralException(ErrorStatus.MEMBER_NOT_FOUND));
 
 		LocalDateTime recoveryDate = LocalDateTime.now().minusDays(30);
 
-		if(user.getRole() == Role.DELETED && user.getDeletedAt().isAfter(recoveryDate)) {
+		if (user.getRole() == Role.DELETED && user.getDeletedAt().isAfter(recoveryDate)) {
 			user.setRole(user.getPreviousRole());
 			user.setDeletedAt(null);
 			user.setDeletionReason(null);
-		}
-		else {
+		} else {
 			throw new IllegalStateException("복구 가능 시간이 지났습니다.");
 		}
 	}

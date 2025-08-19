@@ -14,6 +14,7 @@ import com.grabpt.domain.entity.Order;
 import com.grabpt.domain.entity.Users;
 import com.grabpt.dto.request.ImPortRequestDto;
 import com.grabpt.service.OrderService.OrderService;
+import com.grabpt.service.PaymentService.PaymentService;
 import com.grabpt.service.UserService.UserQueryService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,6 +30,7 @@ public class OrderController {
 
 	private final UserQueryService userQueryService;
 	private final OrderService orderService;
+	private final PaymentService paymentService;
 
 	@GetMapping("/order")
 	public String order(@RequestParam(name = "message", required = false) String message,
@@ -78,23 +80,40 @@ public class OrderController {
 		security = {@SecurityRequirement(name = "JWT TOKEN")}
 	)
 	public String customOrder(HttpServletRequest request,
-		@RequestBody ImPortRequestDto.CustomOrderRequestDto req) throws
+		@RequestBody ImPortRequestDto.CustomOrderRequestDto req, Model model) throws
 		IllegalAccessException {
 
-		String userEmail = userQueryService.getUserInfo(request).getEmail();
-		Users user = userQueryService.findByEmail(userEmail).get();
-		log.info("price = " + req.getPrice());
+		// String userEmail = userQueryService.getUserInfo(request).getEmail();
+		// Users user = userQueryService.findByEmail(userEmail).get();
+		// log.info("price = " + req.getPrice());
+		//
+		// //  matchingId 전달
+		// Order customOrder = orderService.customOrder(user, req.getPrice(), req.getItemName(), req.getMatchingId());
+		//
+		// String message = "주문 실패";
+		// if (customOrder != null) {
+		// 	message = "주문 성공";
+		// }
+		//
+		// String encode = URLEncoder.encode(message, StandardCharsets.UTF_8);
+		//
+		// return "redirect:/order?message=" + encode + "&orderUid=" + customOrder.getOrderUid();
 
-		//  matchingId 전달
-		Order customOrder = orderService.customOrder(user, req.getPrice(), req.getItemName(), req.getMatchingId());
+		String email = userQueryService.getUserInfo(request).getEmail();
+		Users user = userQueryService.findByEmail(email).orElseThrow();
 
-		String message = "주문 실패";
-		if (customOrder != null) {
-			message = "주문 성공";
+		Order order = orderService.customOrder(user, req.getPrice(), req.getItemName(), req.getMatchingId());
+		if (order == null) {
+			model.addAttribute("message", "주문 실패");
+			return "order"; // 실패 시 order.html 그대로 보여줌
 		}
 
-		String encode = URLEncoder.encode(message, StandardCharsets.UTF_8);
+		// 결제 페이지에서 필요한 DTO 생성
+		ImPortRequestDto.CustomRequestPayDto dto = paymentService.findCustomRequestDto(order.getOrderUid());
 
-		return "redirect:/order?message=" + encode + "&orderUid=" + customOrder.getOrderUid();
+		model.addAttribute("requestDto", dto);  // payment.html에서 쓸 수 있도록 전달
+
+		// 바로 payment.html 뷰 반환
+		return "payment";
 	}
 }

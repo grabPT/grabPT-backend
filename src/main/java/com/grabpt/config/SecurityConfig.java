@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -39,6 +40,23 @@ public class SecurityConfig {
 	private final OAuth2SuccessHandler oauth2SuccessHandler;
 
 	@Bean
+	@Order(0) // 가장 먼저 매칭되도록
+	public SecurityFilterChain wsFilterChain(HttpSecurity http) throws Exception {
+		http
+			.securityMatcher("/ws-connect/**")
+			.authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+			.csrf(AbstractHttpConfigurer::disable)
+			.cors(AbstractHttpConfigurer::disable)   // SockJS 핸드셰이크엔 굳이 필요 X
+			.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+			.securityContext(sc -> sc
+				.securityContextRepository(new org.springframework.security.web.context.NullSecurityContextRepository())
+			);
+
+		// ★ 커스텀 필터 일절 추가 금지 (Jwt/CsrfOriginFilter 모두 X)
+		return http.build();
+	}
+
+	@Bean
 	public BCryptPasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
 	}
@@ -65,6 +83,7 @@ public class SecurityConfig {
 	}
 
 	@Bean
+	@Order(1)
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http
 			.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -82,6 +101,7 @@ public class SecurityConfig {
 			.authorizeHttpRequests(auth -> auth
 				// 1) 공개 엔드포인트(화이트리스트) — 반드시 위쪽에!
 				.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+				.requestMatchers("/ws-connect/**").permitAll()
 
 				// 온보딩/인증 관련
 				.requestMatchers(
@@ -93,7 +113,6 @@ public class SecurityConfig {
 					"/api/auth/api/temp-info",
 					"/swagger", "/swagger-ui.html", "/swagger-ui/**",
 					"/api-docs", "/api-docs/**", "/v3/api-docs/**",
-					"/ws-connect/**",
 					"/api/v1/**",
 					"/api/users/**",
 					"/api/auth/**",

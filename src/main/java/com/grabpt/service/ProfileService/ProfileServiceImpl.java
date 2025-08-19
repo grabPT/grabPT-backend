@@ -12,7 +12,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.grabpt.apiPayload.code.status.ErrorStatus;
 import com.grabpt.apiPayload.exception.GeneralException;
-import com.grabpt.apiPayload.exception.handler.UserHandler;
 import com.grabpt.converter.ProfileConverter;
 import com.grabpt.domain.entity.Address;
 import com.grabpt.domain.entity.ProProfile;
@@ -60,9 +59,6 @@ public class ProfileServiceImpl implements ProfileService {
 	@Override
 	public ProfileResponseDTO.MyProfileDTO findMyUserProfile(Long userId) {
 		Users user = findUserById(userId);
-		if (user.getRole().toString() != "USER") {
-			throw new UserHandler(ErrorStatus.MEMBERS_ROLE_IS_USER);
-		}
 		return ProfileConverter.toMyProfileDTO(user);
 	}
 
@@ -179,9 +175,12 @@ public class ProfileServiceImpl implements ProfileService {
 		String city = null;
 		String district = null;
 		String street = null;
-		if(address.length >= 1) street = address[address.length-1];
-		if(address.length >= 2) district = address[address.length-2];
-		if(address.length >= 3) city = address[0];
+		if (address.length >= 1)
+			street = address[address.length - 1];
+		if (address.length >= 2)
+			district = address[address.length - 2];
+		if (address.length >= 3)
+			city = address[0];
 		return proProfileRepository.findAllProByCategoryCodeAndRegion(categoryCode, city, district, street);
 	}
 

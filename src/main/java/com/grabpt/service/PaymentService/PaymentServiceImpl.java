@@ -3,14 +3,15 @@ package com.grabpt.service.PaymentService;
 import java.io.IOException;
 import java.math.BigDecimal;
 
-import com.grabpt.service.AlarmService.AlarmService;
 import org.springframework.stereotype.Service;
 
 import com.grabpt.domain.entity.Order;
+import com.grabpt.domain.entity.Users;
 import com.grabpt.domain.enums.PaymentStatus;
 import com.grabpt.dto.request.ImPortRequestDto;
 import com.grabpt.repository.OrderRepository.OrderRepository;
 import com.grabpt.repository.PaymentRepository.PaymentRepository;
+import com.grabpt.service.AlarmService.AlarmService;
 import com.siot.IamportRestClient.IamportClient;
 import com.siot.IamportRestClient.exception.IamportResponseException;
 import com.siot.IamportRestClient.request.CancelData;
@@ -75,7 +76,7 @@ public class PaymentServiceImpl implements PaymentService {
 			Long proId = order.getMatching().getSuggestion().getProProfile().getUser().getId();
 
 			alarmService.sendAlarm(proId, "SUCCESS", "결제 완료",
-				"결제가 성공적으로 완료되었습니다.", "/contracts/"+contractId);
+				"결제가 성공적으로 완료되었습니다.", "/contracts/" + contractId);
 			return iamportResponse;
 
 		} catch (IamportResponseException e) {
@@ -114,6 +115,29 @@ public class PaymentServiceImpl implements PaymentService {
 			.buyerTel(order.getUser().getPhone_number())
 			.buyerPostcode(order.getUser().getAddress().getZipcode())
 			.orderUid(order.getOrderUid())
+			.build();
+	}
+
+	@Override
+	public ImPortRequestDto.CustomRequestPayDto buildCustomRequestPayDto(Order order) {
+		Users buyer = order.getUser();
+
+		// 주소/전화/이메일은 프로젝트 상황에 맞게 가져오세요
+		String buyerName = buyer.getNickname();
+		String buyerEmail = buyer.getEmail();
+		String buyerTel = (buyer.getUserProfile() != null) ? buyer.getPhone_number() : null;
+		String buyerAddress = (buyer.getAddress() != null) ? buyer.getAddress().getFullAddress() : null;
+		String buyerPostcode = (buyer.getAddress() != null) ? buyer.getAddress().getZipcode() : null;
+
+		return ImPortRequestDto.CustomRequestPayDto.builder()
+			.orderUid(order.getOrderUid())
+			.itemName(order.getItemName())
+			.paymentPrice(order.getPrice())
+			.buyerName(buyerName)
+			.buyerEmail(buyerEmail)
+			.buyerAddress(buyerAddress)
+			.buyerTel(buyerTel)
+			.buyerPostcode(buyerPostcode)
 			.build();
 	}
 }

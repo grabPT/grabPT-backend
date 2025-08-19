@@ -98,22 +98,21 @@ public class OrderController {
 		// String encode = URLEncoder.encode(message, StandardCharsets.UTF_8);
 		//
 		// return "redirect:/order?message=" + encode + "&orderUid=" + customOrder.getOrderUid();
-
 		String email = userQueryService.getUserInfo(request).getEmail();
-		Users user = userQueryService.findByEmail(email).orElseThrow();
+		Users user = userQueryService.findByEmail(email)
+			.orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
+		// 1) 주문 생성
 		Order order = orderService.customOrder(user, req.getPrice(), req.getItemName(), req.getMatchingId());
-		if (order == null) {
-			model.addAttribute("message", "주문 실패");
-			return "order"; // 실패 시 order.html 그대로 보여줌
-		}
 
-		// 결제 페이지에서 필요한 DTO 생성
-		ImPortRequestDto.CustomRequestPayDto dto = paymentService.findCustomRequestDto(order.getOrderUid());
+		// 2) 결제 페이지 DTO 구성
+		ImPortRequestDto.CustomRequestPayDto requestDto = paymentService.buildCustomRequestPayDto(order);
 
-		model.addAttribute("requestDto", dto);  // payment.html에서 쓸 수 있도록 전달
+		// 3) payment.html 로 전달할 모델
+		model.addAttribute("requestDto", requestDto);
+		model.addAttribute("impCode", "imp05656377");
 
-		// 바로 payment.html 뷰 반환
+		// 4) 바로 결제 페이지 렌더
 		return "payment";
 	}
 }

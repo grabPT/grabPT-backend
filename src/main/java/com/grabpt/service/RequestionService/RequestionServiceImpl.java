@@ -47,7 +47,7 @@ public class RequestionServiceImpl implements RequestionService {
 	public List<Requestions> getReqeustions(String categoryCode, Pageable pageable) {
 		return requestionRepository.findTop6RequestionsByCategory(categoryCode, pageable);
 	}
- 
+
 	@Override
 	public Requestions save(RequestionRequestDto dto, String email) {
 		Users user = userRepository.findByEmail(email)
@@ -79,7 +79,7 @@ public class RequestionServiceImpl implements RequestionService {
 		List<ProProfile> proProfiles = profileService.findAllProByCategoryCodeAndRegion(category.getCode(), requestion.getLocation());
 		for (ProProfile proProfile : proProfiles) {
 			alarmService.sendAlarm(proProfile.getUser().getId(),"REQUESTION", "요청서 도착",
-				requestion.getUser().getNickname()+"님의 요청서가 도착했습니다.", "/api/requestion/"+requestion.getId());
+				requestion.getUser().getNickname()+"님의 요청서가 도착했습니다.", "/matching/requests/"+requestion.getId());
 
 		}
 		return save;

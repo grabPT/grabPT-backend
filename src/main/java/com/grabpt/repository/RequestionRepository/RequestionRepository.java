@@ -5,6 +5,7 @@ import static jakarta.persistence.LockModeType.*;
 import java.util.List;
 import java.util.Optional;
 
+import com.grabpt.domain.entity.Category;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -32,14 +33,9 @@ public interface RequestionRepository extends JpaRepository<Requestions, Long> {
 	Page<Requestions> findByLocationOrderByCreatedAtDesc(String location, Pageable pageable);
 
 	// 최신순(주소변경)
-	Page<Requestions> findByLocationStartingWithOrderByCreatedAtDesc(String locationPrefix, Pageable pageable);
-
-	// 가격 높은 순
-	Page<Requestions> findByLocationOrderByPriceDesc(String location, Pageable pageable);
-
+	Page<Requestions> findByLocationStartingWithAndCategoryOrderByCreatedAtDesc(String locationPrefix, Category category, Pageable pageable);
 	// 가격 높은 순(주소변경)
-	Page<Requestions> findByLocationStartingWithOrderByPriceDesc(String locationPrefix, Pageable pageable);
-
+	Page<Requestions> findByLocationStartingWithAndCategoryOrderByPriceDesc(String locationPrefix, Category category, Pageable pageable);
 	// 기본 요청서 조회
 	Page<Requestions> findByLocation(String locationPrefix, Pageable pageable);
 

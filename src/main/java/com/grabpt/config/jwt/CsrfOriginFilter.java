@@ -3,6 +3,7 @@ package com.grabpt.config.jwt;
 import java.io.IOException;
 import java.util.Set;
 
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import jakarta.servlet.FilterChain;
@@ -11,6 +12,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 public class CsrfOriginFilter extends OncePerRequestFilter {
+
+	private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
+
+	// 실제로 제외 경로를 필터링에서 빼기
+	private static final String[] EXCLUDE = {
+		"/ws-connect/**" // SockJS 핸드셰이크 & /info 포함
+	};
+
 	private static final Set<String> TRUSTED = Set.of(
 		"https://grabpt.com",
 		"https://www.grabpt.com",
@@ -21,7 +30,19 @@ public class CsrfOriginFilter extends OncePerRequestFilter {
 		"https://localhost:3000"
 	);
 
-	private static final Set<String> STATE_CHANGING = Set.of("POST", "PUT", "PATCH", "DELETE", "OPTIONS");
+	// 상태 변경만 검사 (OPTIONS는 프리플라이트라서 제외하는 편이 낫습니다)
+	private static final Set<String> STATE_CHANGING = Set.of("POST", "PUT", "PATCH", "DELETE");
+
+	// 제외 경로는 아예 필터 미적용
+	@Override
+	protected boolean shouldNotFilter(HttpServletRequest request) {
+		String uri = request.getRequestURI();
+		for (String p : EXCLUDE) {
+			if (PATH_MATCHER.match(p, uri))
+				return true;
+		}
+		return false;
+	}
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
@@ -29,13 +50,13 @@ public class CsrfOriginFilter extends OncePerRequestFilter {
 
 		String method = req.getMethod();
 
-		// 1) Preflight는 무조건 통과
+		// 1) 프리플라이트는 무조건 통과
 		if ("OPTIONS".equalsIgnoreCase(method)) {
 			chain.doFilter(req, res);
 			return;
 		}
 
-		// 2) 상태 변경이 아니면 통과
+		// 2) 상태 변경이 아니면 통과 (GET/HEAD 등은 검사 안 함)
 		if (!STATE_CHANGING.contains(method)) {
 			chain.doFilter(req, res);
 			return;
@@ -49,9 +70,9 @@ public class CsrfOriginFilter extends OncePerRequestFilter {
 			return;
 		}
 
-		// 4) 같은 호스트(동일 도메인)에서 온 Referer는 허용 (Swagger 등)
+		// 4) 동일 호스트(자기 자신에서 온 Referer)는 허용
 		String self = req.getScheme() + "://" + req.getServerName()
-			+ (req.getServerPort() == 80 || req.getServerPort() == 443 ? "" : ":" + req.getServerPort());
+			+ ((req.getServerPort() == 80 || req.getServerPort() == 443) ? "" : ":" + req.getServerPort());
 		if (referer != null && referer.startsWith(self)) {
 			chain.doFilter(req, res);
 			return;
@@ -62,10 +83,17 @@ public class CsrfOriginFilter extends OncePerRequestFilter {
 			|| (referer != null && TRUSTED.stream().anyMatch(referer::startsWith));
 
 		if (!ok) {
+			// 차단 응답에도 CORS 헤더를 달아 브라우저가 'CORS 에러'로 오해하지 않게
+			if (origin != null && TRUSTED.contains(origin)) {
+				res.setHeader("Access-Control-Allow-Origin", origin);
+				res.setHeader("Vary", "Origin");
+				res.setHeader("Access-Control-Allow-Credentials", "true");
+			}
 			res.setStatus(HttpServletResponse.SC_FORBIDDEN);
 			return;
 		}
 
 		chain.doFilter(req, res);
 	}
+
 }

@@ -176,7 +176,13 @@ public class ProfileServiceImpl implements ProfileService {
 	@Override
 	public List<ProProfile> findAllProByCategoryCodeAndRegion(String categoryCode, String region) {
 		String[] address = region.split(" ");
-		return proProfileRepository.findAllProByCategoryCodeAndRegion(categoryCode, address[0], address[1], address[2]);
+		String city = null;
+		String district = null;
+		String street = null;
+		if(address.length >= 1) street = address[address.length-1];
+		if(address.length >= 2) district = address[address.length-2];
+		if(address.length >= 3) city = address[0];
+		return proProfileRepository.findAllProByCategoryCodeAndRegion(categoryCode, city, district, street);
 	}
 
 	private Users findUserById(Long userId) {

@@ -3,12 +3,13 @@ package com.grabpt.controller;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
+import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.grabpt.apiPayload.ApiResponse;
 import com.grabpt.domain.entity.Order;
@@ -25,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@RestController
+@Controller
 @RequiredArgsConstructor
 public class OrderController {
 
@@ -75,6 +76,7 @@ public class OrderController {
 
 	// JWT AccessToken을 받아 사용자 정보를 저장하는 로직
 	// 계산 시 정보 추가한 버전
+	@ResponseBody
 	@PostMapping("/customOrder")
 	@Operation(summary = "사용자 정보를 받아 order 정보를 저장하는 API입니다.",
 		description = "사용자 정보를 토큰으로 받아 order 정보를 저장하는 API입니다.",

@@ -140,6 +140,7 @@ public class RequestionServiceImpl implements RequestionService {
 				.requestId(req.getId())
 				.location(req.getLocation())
 				.content(req.getContent())
+				.nickname(user.getNickname())
 				.etcPurposeContent(req.getEtcPurposeContent())
 				.build();
 		});

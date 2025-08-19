@@ -46,7 +46,7 @@ public class RequestionServiceImpl implements RequestionService {
 
 	@Override
 	public List<Requestions> getReqeustions(String categoryCode, Pageable pageable) {
-		return requestionRepository.findTop6RequestionsByCategory(categoryCode, pageable);
+		return requestionRepository.findTop8RequestionsByCategory(categoryCode, pageable);
 	}
 
 	@Override

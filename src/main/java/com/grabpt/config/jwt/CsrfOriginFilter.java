@@ -17,7 +17,7 @@ public class CsrfOriginFilter extends OncePerRequestFilter {
 
 	// 실제로 제외 경로를 필터링에서 빼기
 	private static final String[] EXCLUDE = {
-		"/ws-connect/**" // SockJS 핸드셰이크 & /info 포함
+		"//ws-connect/**" // SockJS 핸드셰이크 & /info 포함
 	};
 
 	private static final Set<String> TRUSTED = Set.of(

@@ -101,7 +101,7 @@ public class SecurityConfig {
 			.authorizeHttpRequests(auth -> auth
 				// 1) 공개 엔드포인트(화이트리스트) — 반드시 위쪽에!
 				.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-				.requestMatchers("/ws-connect/**").permitAll()
+				.requestMatchers("//ws-connect/**").permitAll()
 
 				// 온보딩/인증 관련
 				.requestMatchers(

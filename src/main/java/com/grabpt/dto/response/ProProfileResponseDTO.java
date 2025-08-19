@@ -22,6 +22,9 @@ public class ProProfileResponseDTO {
 	private String center;
 	private String profileImageUrl;
 
+	// pro의 userId
+	private Long proId;
+
 	private String centerDescription;
 
 	// 소개 글

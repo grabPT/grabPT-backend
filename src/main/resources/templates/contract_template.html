@@ -471,12 +471,12 @@
           </div>
 
           <!-- 계약일자: 페이지 맨 하단 -->
-          <p
-            class="footer-date"
-            th:text="${#temporals.format(#temporals.parseISO(contractDate), 'yyyy년 M월 d일')}"
-          >
-            2025년 8월 14일
-          </p>
+            <p
+                    class="footer-date"
+                    th:text="${#temporals.format(contractDate, 'yyyy년 M월 d일')}"
+            >
+                2025년 8월 14일
+            </p>
         </div>
       </section>
     </div>

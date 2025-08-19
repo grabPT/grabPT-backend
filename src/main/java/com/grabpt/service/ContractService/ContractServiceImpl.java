@@ -2,6 +2,7 @@ package com.grabpt.service.ContractService;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
@@ -95,6 +96,7 @@ public class ContractServiceImpl implements ContractService {
 		contract.setTotalSession(sug.getSessionCount());
 		contract.setUserInfo(new ContractInfo());
 		contract.setProInfo(new ContractInfo());
+		contract.setContractDate(LocalDate.now());
 
 		return contractRepository.save(contract);
 	}
@@ -160,7 +162,7 @@ public class ContractServiceImpl implements ContractService {
 
 		// --- 4. 기타 정보 설정 ---
 		context.setVariable("agreements", Map.of("termsAccepted", true)); // 필수 약관은 항상 동의했다고 가정
-		context.setVariable("contractDate", contract.getCreatedAt().format(DateTimeFormatter.ISO_LOCAL_DATE)); // 계약 생성일
+		context.setVariable("contractDate", contract.getContractDate());; // 계약 생성일
 		context.setVariable("appLogoUrl",
 			"https://grabpt-image-bucket-2.s3.ap-northeast-2.amazonaws.com/AppLogo.png/2025-08-14T01%3A38%3A19.770886374");
 

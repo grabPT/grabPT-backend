@@ -1,11 +1,8 @@
 package com.grabpt.service.RequestionService;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import com.grabpt.domain.entity.ProProfile;
-import com.grabpt.dto.response.CategoryResponse;
-import com.grabpt.service.AlarmService.AlarmService;
-import com.grabpt.service.ProfileService.ProfileService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -14,7 +11,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.grabpt.apiPayload.code.status.ErrorStatus;
 import com.grabpt.apiPayload.exception.handler.RequestionHandler;
 import com.grabpt.apiPayload.exception.handler.UserHandler;
+import com.grabpt.domain.entity.Address;
 import com.grabpt.domain.entity.Category;
+import com.grabpt.domain.entity.ProProfile;
 import com.grabpt.domain.entity.Requestions;
 import com.grabpt.domain.entity.Users;
 import com.grabpt.domain.enums.Gender;
@@ -25,6 +24,8 @@ import com.grabpt.dto.response.UserResponseDto;
 import com.grabpt.repository.CategoryRepository.CategoryRepository;
 import com.grabpt.repository.RequestionRepository.RequestionRepository;
 import com.grabpt.repository.UserRepository.UserRepository;
+import com.grabpt.service.AlarmService.AlarmService;
+import com.grabpt.service.ProfileService.ProfileService;
 import com.grabpt.service.UserService.UserQueryService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -47,7 +48,7 @@ public class RequestionServiceImpl implements RequestionService {
 	public List<Requestions> getReqeustions(String categoryCode, Pageable pageable) {
 		return requestionRepository.findTop6RequestionsByCategory(categoryCode, pageable);
 	}
- 
+
 	@Override
 	public Requestions save(RequestionRequestDto dto, String email) {
 		Users user = userRepository.findByEmail(email)
@@ -76,10 +77,11 @@ public class RequestionServiceImpl implements RequestionService {
 		requestion.setUser(user); // 연관관계 설정
 		Requestions save = requestionRepository.save(requestion);
 
-		List<ProProfile> proProfiles = profileService.findAllProByCategoryCodeAndRegion(category.getCode(), requestion.getLocation());
+		List<ProProfile> proProfiles = profileService.findAllProByCategoryCodeAndRegion(category.getCode(),
+			requestion.getLocation());
 		for (ProProfile proProfile : proProfiles) {
-			alarmService.sendAlarm(proProfile.getUser().getId(),"REQUESTION", "요청서 도착",
-				requestion.getUser().getNickname()+"님의 요청서가 도착했습니다.", "/api/requestion/"+requestion.getId());
+			alarmService.sendAlarm(proProfile.getUser().getId(), "REQUESTION", "요청서 도착",
+				requestion.getUser().getNickname() + "님의 요청서가 도착했습니다.", "/api/requestion/" + requestion.getId());
 
 		}
 		return save;
@@ -100,15 +102,33 @@ public class RequestionServiceImpl implements RequestionService {
 		UserResponseDto.UserInfoDTO userInfo = userQueryService.getUserInfo(request);
 		Users findProUser = userRepository.findByEmail(userInfo.getEmail()).orElseThrow(
 			() -> new UserHandler(ErrorStatus.MEMBER_NOT_FOUND));
-		String proStreet = findProUser.getAddress().getStreet();
-		log.info("RequestServiceImpl 내부 프로 address = " + proStreet);
+
+		Address addr = findProUser.getAddress();
+		String proAddressPrefix = buildAddressPrefix(addr); // "서울시 강남구 역삼동"
+		log.info("RequestServiceImpl pro address prefix = {}", proAddressPrefix);
+
+		if (proAddressPrefix.isBlank()) {
+			// 주소가 비어있다면 빈 결과 반환 혹은 예외 처리 중 택1
+			return Page.empty(pageable);
+		}
+
+		// String proStreet = findProUser.getAddress().getStreet();
+		// log.info("RequestServiceImpl 내부 프로 address = " + proStreet);
 
 		Page<Requestions> requestionPage;
 
+		// if ("price".equalsIgnoreCase(sortBy)) {
+		// 	requestionPage = requestionRepository.findByLocationOrderByPriceDesc(proStreet, pageable);
+		// } else {
+		// 	requestionPage = requestionRepository.findByLocationOrderByCreatedAtDesc(proStreet, pageable);
+		// }
+
 		if ("price".equalsIgnoreCase(sortBy)) {
-			requestionPage = requestionRepository.findByLocationOrderByPriceDesc(proStreet, pageable);
+			requestionPage = requestionRepository
+				.findByLocationStartingWithOrderByPriceDesc(proAddressPrefix, pageable);
 		} else {
-			requestionPage = requestionRepository.findByLocationOrderByCreatedAtDesc(proStreet, pageable);
+			requestionPage = requestionRepository
+				.findByLocationStartingWithOrderByCreatedAtDesc(proAddressPrefix, pageable);
 		}
 
 		return requestionPage.map(req -> {
@@ -188,5 +208,22 @@ public class RequestionServiceImpl implements RequestionService {
 			.orElseThrow(() -> new RequestionHandler(ErrorStatus.REQUESTION_NOT_FOUND));
 
 		return requestion.getUser().getEmail().equals(email);
+	}
+
+	private String buildAddressPrefix(Address addr) {
+		if (addr == null)
+			return "";
+
+		List<String> parts = new ArrayList<>();
+		if (addr.getCity() != null && !addr.getCity().isBlank())
+			parts.add(addr.getCity().trim());
+		if (addr.getDistrict() != null && !addr.getDistrict().isBlank())
+			parts.add(addr.getDistrict().trim());
+		if (addr.getStreet() != null && !addr.getStreet().isBlank())
+			parts.add(addr.getStreet().trim());
+
+		// "서울시 강남구 역삼동" 형태
+		String joined = String.join(" ", parts).replaceAll("\\s+", " ").trim();
+		return joined;
 	}
 }

@@ -86,6 +86,10 @@ public class RequestionResponseDto {
 		private List<String> availableTimes;
 		private String categoryName;
 
+		// 추가 정보
+		private String nickname;
+		private Address location;
+
 		public static RequestionResponsePagingDto from(Requestions r) {
 			Users u = r.getUser();
 			return RequestionResponsePagingDto.builder()

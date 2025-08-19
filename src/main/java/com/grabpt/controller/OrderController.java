@@ -3,12 +3,12 @@ package com.grabpt.controller;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.grabpt.apiPayload.ApiResponse;
 import com.grabpt.domain.entity.Order;
@@ -25,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Controller
+@RestController
 @RequiredArgsConstructor
 public class OrderController {
 
@@ -62,16 +62,16 @@ public class OrderController {
 		return "redirect:/order?message=" + encode + "&orderUid=" + order.getOrderUid();
 	}
 
-	@GetMapping("/customOrder")
-	public String customOrder(@RequestParam(name = "message", required = false) String message,
-		@RequestParam(name = "orderUid", required = false) String id,
-		Model model) {
-
-		model.addAttribute("message", message);
-		model.addAttribute("orderUid", id);
-
-		return "order";
-	}
+	// @GetMapping("/customOrder")
+	// public String customOrder(@RequestParam(name = "message", required = false) String message,
+	// 	@RequestParam(name = "orderUid", required = false) String id,
+	// 	Model model) {
+	//
+	// 	model.addAttribute("message", message);
+	// 	model.addAttribute("orderUid", id);
+	//
+	// 	return "order";
+	// }
 
 	// JWT AccessToken을 받아 사용자 정보를 저장하는 로직
 	// 계산 시 정보 추가한 버전
@@ -81,7 +81,7 @@ public class OrderController {
 		security = {@SecurityRequirement(name = "JWT TOKEN")}
 	)
 	public ApiResponse<ImPortRequestDto.CustomRequestPayDto> customOrder(HttpServletRequest request,
-		@RequestBody ImPortRequestDto.CustomOrderRequestDto req, Model model) throws
+		@RequestBody ImPortRequestDto.CustomOrderRequestDto req) throws
 		IllegalAccessException {
 
 		// String userEmail = userQueryService.getUserInfo(request).getEmail();

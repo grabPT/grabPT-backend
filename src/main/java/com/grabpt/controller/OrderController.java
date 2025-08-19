@@ -115,4 +115,38 @@ public class OrderController {
 		// 4) 바로 결제 페이지 렌더
 		return "payment";
 	}
+
+	// 1) JSON 버전 (기존)
+	@PostMapping(value = "/customOrder", consumes = "application/json")
+	public String customOrderJson(HttpServletRequest request,
+		@RequestBody ImPortRequestDto.CustomOrderRequestDto req,
+		Model model) throws IllegalAccessException {
+		return handleCustomOrder(request, req.getPrice(), req.getItemName(), req.getMatchingId(), model);
+	}
+
+	// 2) FORM 버전 (WWW 숨은 폼용)
+	@PostMapping(value = "/customOrder", consumes = "application/x-www-form-urlencoded")
+	public String customOrderForm(HttpServletRequest request,
+		@RequestParam("price") Long price,
+		@RequestParam("itemName") String itemName,
+		@RequestParam("matchingId") Long matchingId,
+		Model model) throws IllegalAccessException {
+		return handleCustomOrder(request, price, itemName, matchingId, model);
+	}
+
+	// 공통 처리: 주문 생성 → payment.html 렌더(자동 결제)
+	private String handleCustomOrder(HttpServletRequest request,
+		Long price, String itemName, Long matchingId,
+		Model model) throws IllegalAccessException {
+		String email = userQueryService.getUserInfo(request).getEmail();
+		Users user = userQueryService.findByEmail(email)
+			.orElseThrow(() -> new IllegalArgumentException("사용자 없음"));
+
+		Order order = orderService.customOrder(user, price, itemName, matchingId);
+		ImPortRequestDto.CustomRequestPayDto requestDto = paymentService.buildCustomRequestPayDto(order);
+
+		model.addAttribute("requestDto", requestDto);
+		model.addAttribute("impCode", "imp05656377");
+		return "payment"; // ← 이 뷰가 즉시 렌더되고, 아래에서 자동 결제 호출
+	}
 }

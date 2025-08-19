@@ -6,6 +6,7 @@ import com.grabpt.domain.entity.ProProfile;
 import com.grabpt.dto.request.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.grabpt.dto.response.CategoryResponse;
@@ -35,6 +36,7 @@ public interface ProfileService {
 
 	Page<ProProfileResponseDTO> findProProfilesByCategory(String categoryCode, Pageable pageable);
 
+	@Query("SELECT p FROM ProProfile p WHERE p.category.code = :categoryCode AND p.user.address.street = :region")
 	List<ProProfile> findAllProByCategoryCodeAndRegion(String categoryCode, String region);
 	void updateProCenter(Long userId, CenterUpdateRequestDTO request);
 	void updateProDescription(Long userId, DescriptionUpdateRequestDTO request);

@@ -77,12 +77,11 @@ public class RequestionServiceImpl implements RequestionService {
 		requestion.setUser(user); // 연관관계 설정
 		Requestions save = requestionRepository.save(requestion);
 
-		List<ProProfile> proProfiles = profileService.findAllProByCategoryCodeAndRegion(category.getCode(),
-			requestion.getLocation());
+		String[] address = requestion.getLocation().split(" ");
+		List<ProProfile> proProfiles = profileService.findAllProByCategoryCodeAndRegion(category.getCode(), address[2]);
 		for (ProProfile proProfile : proProfiles) {
 			alarmService.sendAlarm(proProfile.getUser().getId(), "REQUESTION", "요청서 도착",
 				requestion.getUser().getNickname() + "님의 요청서가 도착했습니다.", "/matching/requests/" + requestion.getId());
-
 		}
 		return save;
 	}

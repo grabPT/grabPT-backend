@@ -30,7 +30,7 @@ public class Alarm extends BaseEntity {
 	private String title;
 	private String content;
 	private String redirectUrl;
-	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
+	@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
 	private LocalDateTime sentAt;
 	private boolean isRead;
 }

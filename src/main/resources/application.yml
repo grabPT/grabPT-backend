@@ -37,6 +37,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   jackson:
     default-property-inclusion: always
+    time-zone: Asia/Seoul
 
   jpa:
     generate-ddl: true
@@ -49,7 +50,8 @@ spring:
         format_sql: true
         use_sql_comments: true
         default_batch_fetch_size: 1000
-
+        jdbc:
+          time-zone: Asia/Seoul
   sql:
     init:
       mode: never

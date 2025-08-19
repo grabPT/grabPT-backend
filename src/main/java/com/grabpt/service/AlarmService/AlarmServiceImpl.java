@@ -16,6 +16,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -38,6 +39,7 @@ public class AlarmServiceImpl implements AlarmService {
 			.type(type)
 			.title(title)
 			.content(content)
+			.sentAt(LocalDateTime.now())
 			.redirectUrl(redirectUrl)
 			.build();
 		alarmRepository.save(alarm);

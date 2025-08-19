@@ -19,8 +19,14 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 	@Override
 	public void registerStompEndpoints(StompEndpointRegistry registry) {
 		registry.addEndpoint("/ws-connect")
-			.setAllowedOriginPatterns("*")
-			// .setAllowedOriginPatterns("https://www.grabpt.com", "https://grabpt.com")
+			.setAllowedOriginPatterns(
+				"http://localhost:5173",
+				"http://127.0.0.1:5173",
+				"https://grabpt.com",
+				"https://www.grabpt.com",
+				"https://api.grabpt.com",
+				"*"
+			)
 			.withSockJS();
 	}
 }

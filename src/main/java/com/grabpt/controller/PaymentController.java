@@ -42,8 +42,6 @@ public class PaymentController {
 
 	@ResponseBody
 	@PostMapping("/payment")
-	@Operation(summary = "결제 정보를 받아 결제가 유효한지 검증합니다.",
-		description = "paymentUid와 orderUid를 받아 현재 결제가 유효한 결제인지 true, false로 반환하는 API입니다.")
 	public ResponseEntity<IamportResponse<Payment>> validationPayment(
 		@RequestBody ImPortRequestDto.PaymentCallbackRequest request) {
 		IamportResponse<Payment> iamportResponse = paymentService.paymentByCallback(request);
@@ -55,6 +53,8 @@ public class PaymentController {
 
 	@ResponseBody
 	@PostMapping("/paymentCallback")
+	@Operation(summary = "결제 정보를 받아 결제가 유효한지 검증합니다.",
+		description = "paymentUid와 orderUid를 받아 현재 결제가 유효한 결제인지 true, false로 반환하는 API입니다.")
 	public ApiResponse<String> validationPaymentBoolean(
 		@RequestBody ImPortRequestDto.PaymentCallbackRequest request) {
 		Boolean validationResult = paymentService.paymentByCallbackBoolean(request);

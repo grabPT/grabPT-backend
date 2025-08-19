@@ -31,8 +31,14 @@ public interface RequestionRepository extends JpaRepository<Requestions, Long> {
 	// 최신순
 	Page<Requestions> findByLocationOrderByCreatedAtDesc(String location, Pageable pageable);
 
+	// 최신순(주소변경)
+	Page<Requestions> findByLocationStartingWithOrderByCreatedAtDesc(String locationPrefix, Pageable pageable);
+
 	// 가격 높은 순
 	Page<Requestions> findByLocationOrderByPriceDesc(String location, Pageable pageable);
+
+	// 가격 높은 순(주소변경)
+	Page<Requestions> findByLocationStartingWithOrderByPriceDesc(String locationPrefix, Pageable pageable);
 
 	// 본인 요청서 조회
 	Page<Requestions> findAllByUserEmail(String email, Pageable pageable);

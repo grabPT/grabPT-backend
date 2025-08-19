@@ -2,13 +2,13 @@ package com.grabpt.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
 
 import com.grabpt.apiPayload.ApiResponse;
 import com.grabpt.dto.request.ImPortRequestDto;
@@ -16,11 +16,12 @@ import com.grabpt.service.PaymentService.PaymentService;
 import com.siot.IamportRestClient.response.IamportResponse;
 import com.siot.IamportRestClient.response.Payment;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@RestController
+@Controller
 @RequiredArgsConstructor
 public class PaymentController {
 	private final PaymentService paymentService;
@@ -41,6 +42,8 @@ public class PaymentController {
 
 	@ResponseBody
 	@PostMapping("/payment")
+	@Operation(summary = "결제 정보를 받아 결제가 유효한지 검증합니다.",
+		description = "paymentUid와 orderUid를 받아 현재 결제가 유효한 결제인지 true, false로 반환하는 API입니다.")
 	public ResponseEntity<IamportResponse<Payment>> validationPayment(
 		@RequestBody ImPortRequestDto.PaymentCallbackRequest request) {
 		IamportResponse<Payment> iamportResponse = paymentService.paymentByCallback(request);

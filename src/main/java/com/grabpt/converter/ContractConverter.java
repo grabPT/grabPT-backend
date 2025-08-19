@@ -5,7 +5,7 @@ import com.grabpt.domain.entity.ContractInfo;
 import com.grabpt.dto.response.ContractResponse;
 
 public class ContractConverter {
-	public static ContractResponse.ContractResponseDto toContractResponseDto(Contract contract){
+	public static ContractResponse.ContractResponseDto toContractResponseDto(Contract contract) {
 		return ContractResponse.ContractResponseDto.builder()
 			.userInfo(contract.getUserInfo() != null ? contract.getUserInfo() : new ContractInfo())
 			.proInfo(contract.getProInfo() != null ? contract.getProInfo() : new ContractInfo())
@@ -15,6 +15,7 @@ public class ContractConverter {
 			.totalSession(contract.getTotalSession())
 			.contractDate(contract.getContractDate())
 			.status(contract.getMatching().getStatus())
+			.matchingId(contract.getMatching().getId())
 			.build();
 	}
 }

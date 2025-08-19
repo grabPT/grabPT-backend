@@ -134,9 +134,12 @@ public class RequestionServiceImpl implements RequestionService {
 				.userStreet(userStreet)
 				.sessionCount(req.getSessionCount())
 				.price(req.getPrice())
+				.categoryName(req.getCategory().getName())
+				.availableDays(req.getAvailableDays())
+				.availableTimes(req.getAvailableTimes())
 				.status(req.getStatus())
 				.userProfileImageUrl(user.getProfileImageUrl())
-				.requestionId(req.getId())
+				.requestId(req.getId())
 				.content(req.getContent())
 				.etcPurposeContent(req.getEtcPurposeContent())
 				.build();

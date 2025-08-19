@@ -15,11 +15,6 @@ public class CsrfOriginFilter extends OncePerRequestFilter {
 
 	private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
 
-	// 실제로 제외 경로를 필터링에서 빼기
-	private static final String[] EXCLUDE = {
-		"/ws-connect/**" // SockJS 핸드셰이크 & /info 포함
-	};
-
 	private static final Set<String> TRUSTED = Set.of(
 		"https://grabpt.com",
 		"https://www.grabpt.com",
@@ -35,13 +30,12 @@ public class CsrfOriginFilter extends OncePerRequestFilter {
 
 	// 제외 경로는 아예 필터 미적용
 	@Override
-	protected boolean shouldNotFilter(HttpServletRequest request) {
-		String uri = request.getRequestURI();
-		for (String p : EXCLUDE) {
-			if (PATH_MATCHER.match(p, uri))
-				return true;
-		}
-		return false;
+	protected boolean shouldNotFilter(HttpServletRequest req) {
+		String uri = req.getRequestURI();
+		if (uri == null)
+			return false;
+		String norm = uri.replaceAll("/{2,}", "/");  // // -> /
+		return norm.startsWith("/ws-connect/");
 	}
 
 	@Override

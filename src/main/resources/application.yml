@@ -147,3 +147,5 @@ logging:
     com.grabpt.config.oauth: DEBUG
     org.springframework.security.oauth2.client.web: DEBUG
     org.springframework.security.oauth2.client: DEBUG
+
+

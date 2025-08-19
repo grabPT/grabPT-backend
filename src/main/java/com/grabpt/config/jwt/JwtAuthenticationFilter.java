@@ -54,8 +54,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	}
 
 	@Override
-	protected boolean shouldNotFilter(HttpServletRequest request) {
-		return request.getRequestURI().startsWith("/ws-connect/");
+	protected boolean shouldNotFilter(HttpServletRequest req) {
+		String uri = req.getRequestURI();
+		if (uri == null)
+			return false;
+		String norm = uri.replaceAll("/{2,}", "/");  // // -> /
+		return norm.startsWith("/ws-connect/");
 	}
 }
 

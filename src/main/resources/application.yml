@@ -31,7 +31,7 @@ spring:
       max-request-size: 80MB
 
   datasource:
-    url: jdbc:mysql://grabptdb.cl4e0asq8fu0.ap-northeast-2.rds.amazonaws.com:3306/grabpt
+    url: jdbc:mysql://grabptdb.cl4e0asq8fu0.ap-northeast-2.rds.amazonaws.com:3306/grabpt?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
     username: root
     password: ${GRABPTDB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver

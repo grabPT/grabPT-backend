@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 @Slf4j
@@ -39,13 +40,14 @@ public class AlarmServiceImpl implements AlarmService {
 			.type(type)
 			.title(title)
 			.content(content)
-			.sentAt(LocalDateTime.now())
+			.sentAt(LocalDateTime.now(ZoneId.of("Asia/Seoul")))
 			.redirectUrl(redirectUrl)
 			.build();
 		alarmRepository.save(alarm);
 
 		messagingTemplate.convertAndSend("/subscribe/alarm/"+user.getId(), countUnReadAlarmByUserId(userId));
 		log.info("Alarm sent to user: {}", user.getId());
+		log.info("currentTime:{}", LocalDateTime.now());
 	}
 
 

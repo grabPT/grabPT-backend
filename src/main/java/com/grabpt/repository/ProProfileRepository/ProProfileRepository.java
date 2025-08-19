@@ -20,9 +20,11 @@ public interface ProProfileRepository extends JpaRepository<ProProfile, Long> {
     JOIN FETCH p.user u
     JOIN u.address addr
     WHERE cat.code = :categoryCode
-    AND addr.street LIKE %:region%
+	AND addr.city LIKE %:city%
+	AND addr.district LIKE %:district%
+    AND addr.street LIKE %:street%
 	""")
-	List<ProProfile> findAllProByCategoryCodeAndRegion(String categoryCode, String region);
+	List<ProProfile> findAllProByCategoryCodeAndRegion(String categoryCode, String city, String district, String street);
 
 	Page<ProProfile> findByCategory_Code(String categoryCode, Pageable pageable);
 

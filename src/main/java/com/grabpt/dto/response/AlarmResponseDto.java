@@ -20,6 +20,6 @@ public class AlarmResponseDto {
 	String content;
 	String redirectUrl;
 	@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
-	LocalDateTime createdAt;
+	LocalDateTime sentAt;
 	boolean isRead;
 }

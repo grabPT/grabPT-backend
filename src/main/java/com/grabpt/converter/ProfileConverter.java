@@ -29,6 +29,7 @@ public class ProfileConverter {
 				.nickname(user.getNickname())
 				.email(user.getEmail())
 				.address(addressDTOS)
+				.categoryName(profile.getCategory().getName())
 				.build();
 		}
 
@@ -39,6 +40,7 @@ public class ProfileConverter {
 			.nickname(user.getNickname())
 			.email(user.getEmail())
 			.address(addressDTOS)
+			.categoryName(profile.getCategory().getName())
 			.build();
 	}
 

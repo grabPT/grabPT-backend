@@ -106,6 +106,7 @@ public class SecurityConfig {
 
 				// 온보딩/인증 관련
 				.requestMatchers(
+					"/favicon.ico",
 					"/api/auth/reissue",
 					"/api/auth/logout",
 					"/api/auth/user-signup",

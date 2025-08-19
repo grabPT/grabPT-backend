@@ -10,11 +10,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.grabpt.apiPayload.ApiResponse;
 import com.grabpt.dto.request.ImPortRequestDto;
 import com.grabpt.service.PaymentService.PaymentService;
 import com.siot.IamportRestClient.response.IamportResponse;
 import com.siot.IamportRestClient.response.Payment;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -47,6 +49,19 @@ public class PaymentController {
 		log.info("결제 응답={}", iamportResponse.getResponse().toString());
 
 		return new ResponseEntity<>(iamportResponse, HttpStatus.OK);
+	}
+
+	@ResponseBody
+	@PostMapping("/paymentCallback")
+	@Operation(summary = "결제 정보를 받아 결제가 유효한지 검증합니다.",
+		description = "paymentUid와 orderUid를 받아 현재 결제가 유효한 결제인지 true, false로 반환하는 API입니다.")
+	public ApiResponse<String> validationPaymentBoolean(
+		@RequestBody ImPortRequestDto.PaymentCallbackRequest request) {
+		Boolean validationResult = paymentService.paymentByCallbackBoolean(request);
+
+		log.info("결제 응답={}", validationResult.toString());
+
+		return ApiResponse.onSuccess(validationResult.toString());
 	}
 
 	@GetMapping("/success-payment")

@@ -71,7 +71,7 @@ public class RequestionResponseDto {
 	@NoArgsConstructor
 	@AllArgsConstructor
 	public static class RequestionResponsePagingDto {
-		private String username;        // 일반 유저 닉네임
+		private String username;        // 일반 유저
 		private String userStreet;      // 주소 - 동
 		private Integer sessionCount;   // 세션 횟수
 		private Integer price;          // 1회당 가격
@@ -88,7 +88,7 @@ public class RequestionResponseDto {
 
 		// 추가 정보
 		private String nickname;
-		private Address location;
+		private String location;
 
 		public static RequestionResponsePagingDto from(Requestions r) {
 			Users u = r.getUser();

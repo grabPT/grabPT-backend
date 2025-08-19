@@ -188,6 +188,7 @@ public class ChatServiceImpl implements ChatService{
 			}
 			broadcastReadStatus(roomId, messages);
 		}
+		updateAllUnreadMessageCount(userId);
 	}
 
 	//채팅방 들어갈 시 message읽음 처리

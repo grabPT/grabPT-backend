@@ -1,11 +1,12 @@
 package com.grabpt.dto.response;
 
-import com.grabpt.domain.entity.*;
-import lombok.Builder;
-import lombok.Getter;
-
-
 import java.util.List;
+
+import com.grabpt.domain.entity.Address;
+import com.grabpt.domain.entity.ProPhoto;
+import com.grabpt.domain.entity.PtPrice;
+import com.grabpt.domain.entity.Review;
+import com.grabpt.domain.entity.Users;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -28,6 +29,7 @@ public class ProfileResponseDTO {
 		private String name;
 		private String nickname;
 		private String email;
+		private String categoryName;
 		// location
 		private List<MyProProfileDTO.AddressDTO> address;
 
@@ -66,7 +68,6 @@ public class ProfileResponseDTO {
 		private String center;
 		private String categoryName; // 카테고리 이름 추가
 		private Double averageRating; // 리뷰 평점 추가
-
 
 		private String description;
 		private String centerDescription;

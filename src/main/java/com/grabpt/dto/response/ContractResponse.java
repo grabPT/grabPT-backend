@@ -29,6 +29,7 @@ public class ContractResponse {
 		@JsonFormat(pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
 		LocalDate contractDate;
 		MatchingStatus status;
+		Long matchingId;
 	}
 
 	@Getter

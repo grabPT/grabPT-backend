@@ -9,7 +9,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.grabpt.apiPayload.ApiResponse;
 import com.grabpt.domain.entity.Order;
 import com.grabpt.domain.entity.Users;
 import com.grabpt.dto.request.ImPortRequestDto;
@@ -61,26 +63,27 @@ public class OrderController {
 		return "redirect:/order?message=" + encode + "&orderUid=" + order.getOrderUid();
 	}
 
-	@GetMapping("/customOrder")
-	public String customOrder(@RequestParam(name = "message", required = false) String message,
-		@RequestParam(name = "orderUid", required = false) String id,
-		Model model) {
-
-		model.addAttribute("message", message);
-		model.addAttribute("orderUid", id);
-
-		return "order";
-	}
+	// @GetMapping("/customOrder")
+	// public String customOrder(@RequestParam(name = "message", required = false) String message,
+	// 	@RequestParam(name = "orderUid", required = false) String id,
+	// 	Model model) {
+	//
+	// 	model.addAttribute("message", message);
+	// 	model.addAttribute("orderUid", id);
+	//
+	// 	return "order";
+	// }
 
 	// JWT AccessToken을 받아 사용자 정보를 저장하는 로직
 	// 계산 시 정보 추가한 버전
+	@ResponseBody
 	@PostMapping("/customOrder")
 	@Operation(summary = "사용자 정보를 받아 order 정보를 저장하는 API입니다.",
 		description = "사용자 정보를 토큰으로 받아 order 정보를 저장하는 API입니다.",
 		security = {@SecurityRequirement(name = "JWT TOKEN")}
 	)
-	public String customOrder(HttpServletRequest request,
-		@RequestBody ImPortRequestDto.CustomOrderRequestDto req, Model model) throws
+	public ApiResponse<ImPortRequestDto.CustomRequestPayDto> customOrder(HttpServletRequest request,
+		@RequestBody ImPortRequestDto.CustomOrderRequestDto req) throws
 		IllegalAccessException {
 
 		// String userEmail = userQueryService.getUserInfo(request).getEmail();
@@ -108,45 +111,7 @@ public class OrderController {
 		// 2) 결제 페이지 DTO 구성
 		ImPortRequestDto.CustomRequestPayDto requestDto = paymentService.buildCustomRequestPayDto(order);
 
-		// 3) payment.html 로 전달할 모델
-		model.addAttribute("requestDto", requestDto);
-		model.addAttribute("impCode", "imp05656377");
-
 		// 4) 바로 결제 페이지 렌더
-		return "payment";
-	}
-
-	// 1) JSON 버전 (기존)
-	@PostMapping(value = "/customOrder", consumes = "application/json")
-	public String customOrderJson(HttpServletRequest request,
-		@RequestBody ImPortRequestDto.CustomOrderRequestDto req,
-		Model model) throws IllegalAccessException {
-		return handleCustomOrder(request, req.getPrice(), req.getItemName(), req.getMatchingId(), model);
-	}
-
-	// 2) FORM 버전 (WWW 숨은 폼용)
-	@PostMapping(value = "/customOrder", consumes = "application/x-www-form-urlencoded")
-	public String customOrderForm(HttpServletRequest request,
-		@RequestParam("price") Long price,
-		@RequestParam("itemName") String itemName,
-		@RequestParam("matchingId") Long matchingId,
-		Model model) throws IllegalAccessException {
-		return handleCustomOrder(request, price, itemName, matchingId, model);
-	}
-
-	// 공통 처리: 주문 생성 → payment.html 렌더(자동 결제)
-	private String handleCustomOrder(HttpServletRequest request,
-		Long price, String itemName, Long matchingId,
-		Model model) throws IllegalAccessException {
-		String email = userQueryService.getUserInfo(request).getEmail();
-		Users user = userQueryService.findByEmail(email)
-			.orElseThrow(() -> new IllegalArgumentException("사용자 없음"));
-
-		Order order = orderService.customOrder(user, price, itemName, matchingId);
-		ImPortRequestDto.CustomRequestPayDto requestDto = paymentService.buildCustomRequestPayDto(order);
-
-		model.addAttribute("requestDto", requestDto);
-		model.addAttribute("impCode", "imp05656377");
-		return "payment"; // ← 이 뷰가 즉시 렌더되고, 아래에서 자동 결제 호출
+		return ApiResponse.onSuccess(requestDto);
 	}
 }

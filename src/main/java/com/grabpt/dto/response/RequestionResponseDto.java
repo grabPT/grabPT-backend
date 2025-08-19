@@ -81,6 +81,11 @@ public class RequestionResponseDto {
 		private String content; // 상세 설명
 		private String etcPurposeContent; // 기타 목적
 
+		// 추가 정보
+		private List<String> availableDays;
+		private List<String> availableTimes;
+		private String categoryName;
+
 		public static RequestionResponsePagingDto from(Requestions r) {
 			Users u = r.getUser();
 			return RequestionResponsePagingDto.builder()

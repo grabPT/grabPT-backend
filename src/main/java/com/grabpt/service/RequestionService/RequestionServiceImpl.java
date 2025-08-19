@@ -117,7 +117,7 @@ public class RequestionServiceImpl implements RequestionService {
 
 		Page<Requestions> requestionPage;
 
-		if ("price".equalsIgnoreCase(sortBy)) {
+		if (sortBy.equals("price")) {
 			requestionPage = requestionRepository
 				.findByLocationStartingWithOrderByPriceDesc(proAddressPrefix, pageable);
 		} else {

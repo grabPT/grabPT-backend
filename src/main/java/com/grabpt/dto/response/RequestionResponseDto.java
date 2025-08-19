@@ -88,7 +88,7 @@ public class RequestionResponseDto {
 
 		// 추가 정보
 		private String nickname;
-		private Address location;
+		private String location;
 
 		public static RequestionResponsePagingDto from(Requestions r) {
 			Users u = r.getUser();

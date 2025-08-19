@@ -140,7 +140,7 @@ public class RequestionServiceImpl implements RequestionService {
 				.availableTimes(req.getAvailableTimes())
 				.status(req.getStatus())
 				.userProfileImageUrl(user.getProfileImageUrl())
-				.requestionId(req.getId())
+				.requestId(req.getId())
 				.content(req.getContent())
 				.etcPurposeContent(req.getEtcPurposeContent())
 				.build();

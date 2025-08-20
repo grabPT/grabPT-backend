@@ -174,7 +174,7 @@ public class SuggestionServiceImpl implements SuggestionService {
 				.status(status)
 				.requestionId(s.getRequestion().getId())
 				.suggestionId(s.getId())
-				.profileImageUrl(s.getProProfile().getUser().getProfileImageUrl())
+				.profileImageUrl(s.getRequestion().getUser().getProfileImageUrl())
 				.build();
 		});
 	}

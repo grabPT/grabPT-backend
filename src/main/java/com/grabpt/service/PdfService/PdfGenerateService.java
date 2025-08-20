@@ -1,40 +1,43 @@
 package com.grabpt.service.PdfService;
 
-import com.itextpdf.html2pdf.ConverterProperties;
-import com.itextpdf.html2pdf.HtmlConverter;
-import com.itextpdf.html2pdf.resolver.font.DefaultFontProvider;
 
-import org.springframework.core.io.ClassPathResource;
+import com.microsoft.playwright.Browser;
+import com.microsoft.playwright.Page;
+import com.microsoft.playwright.Playwright;
+
 import org.springframework.stereotype.Service;
-import org.springframework.util.FileCopyUtils;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 
 @Service
 public class PdfGenerateService {
 
 	public ByteArrayInputStream generatePdfFromHtml(String htmlContent) throws IOException {
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		try (Playwright playwright = Playwright.create()) {
+			// Chromium 브라우저 인스턴스 실행
+			Browser browser = playwright.chromium().launch();
+			Page page = browser.newPage();
 
-		// 1. ConverterProperties 객체를 생성합니다.
-		ConverterProperties converterProperties = new ConverterProperties();
+			// 페이지에 HTML 컨텐츠 설정
+			page.setContent(htmlContent);
 
-		// 2. 폰트 제공자(FontProvider)를 설정합니다.
-		DefaultFontProvider fontProvider = new DefaultFontProvider(false, false, false);
+			// PDF 생성 옵션 설정 (A4 사이즈)
+			Page.PdfOptions pdfOptions = new Page.PdfOptions()
+				.setFormat("A4")
+				.setPrintBackground(true); // 배경 그래픽 인쇄
 
-		// 3. resources 폴더에 있는 폰트 파일을 폰트 제공자에 추가합니다.
-		byte[] fontBytes = new ClassPathResource("static/fonts/NanumGothic.ttf").getInputStream().readAllBytes();
-		fontProvider.addFont(fontBytes);
-		converterProperties.setFontProvider(fontProvider);
+			// HTML을 PDF로 변환하여 byte 배열로 저장
+			byte[] pdfBytes = page.pdf(pdfOptions);
 
-		// 4. HTML을 PDF로 변환합니다.
-		HtmlConverter.convertToPdf(htmlContent, outputStream, converterProperties);
+			// 브라우저 종료
+			browser.close();
 
-		return new ByteArrayInputStream(outputStream.toByteArray());
+			// 생성된 PDF byte 배열을 InputStream으로 변환하여 반환
+			return new ByteArrayInputStream(pdfBytes);
+		} catch (Exception e) {
+			// 예외 발생 시 IOException으로 감싸서 던지기
+			throw new IOException("Playwright를 사용하여 PDF를 생성하는 중 오류 발생", e);
+		}
 	}
 }

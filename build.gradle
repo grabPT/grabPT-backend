@@ -95,8 +95,8 @@ dependencies {
     implementation 'javax.xml.bind:jaxb-api:2.3.1'
     implementation 'com.sun.xml.bind:jaxb-impl:2.3.1'
 
-    // (추가) iText pdfHTML 의존성 추가
-    implementation 'com.itextpdf:html2pdf:5.0.4'
+
+    implementation 'com.microsoft.playwright:playwright:1.45.0'
     
     // ImPort 의존성
     implementation 'com.github.iamport:iamport-rest-client-java:0.2.21'

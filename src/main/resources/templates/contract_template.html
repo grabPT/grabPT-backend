@@ -257,7 +257,7 @@
                                 <div class="label">성별</div>
                                 <div class="value">
                       <span
-                              th:text="${member.gender == 'MALE' ? '남' : (member.gender == 'FEMALE' ? '여' : '')}"
+                              th:text="${member.gender}"
                       >입력 전</span
                       >
                                 </div>
@@ -294,7 +294,7 @@
                                 <div class="label">성별</div>
                                 <div class="value">
                       <span
-                              th:text="${trainer.gender == 'MALE' ? '남' : (trainer.gender == 'FEMALE' ? '여' : '')}"
+                              th:text="${trainer.gender}"
                       >입력 전</span
                       >
                                 </div>

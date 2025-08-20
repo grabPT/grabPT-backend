@@ -121,7 +121,7 @@ public class ContractServiceImpl implements ContractService {
 			"name", userInfo != null ? userInfo.getName() : "입력 전",
 			"birth", userInfo != null && userInfo.getBirth() != null ? userInfo.getBirth().format(dateFormatter) : "-",
 			"phoneNumber", userInfo != null ? userInfo.getPhoneNumber() : "-",
-			"gender", userInfo != null ? userInfo.getGender() : Gender.FEMALE, // HTML에서 'MALE'/'FEMALE'로 분기 처리
+			"gender", (userInfo != null && userInfo.getGender() != null) ? userInfo.getGender().getKorean() : Gender.MALE.getKorean(),
 			"address", userInfo != null ? userInfo.getAddress() : "-",
 			"signImageUrl", userInfo != null ? userInfo.getSignUrl() : null // 서명 이미지 URL
 		);
@@ -133,7 +133,7 @@ public class ContractServiceImpl implements ContractService {
 			"name", proInfo != null ? proInfo.getName() : "입력 전",
 			"birth", proInfo != null && proInfo.getBirth() != null ? proInfo.getBirth().format(dateFormatter) : "-",
 			"phoneNumber", proInfo != null ? proInfo.getPhoneNumber() : "-",
-			"gender", proInfo != null ? proInfo.getGender() : Gender.MALE,
+			"gender", (proInfo != null && proInfo.getGender() != null) ? proInfo.getGender().getKorean() : Gender.MALE.getKorean(),
 			"address", proInfo != null ? proInfo.getAddress() : "-",
 			"signImageUrl", proInfo != null ? proInfo.getSignUrl() : null // 서명 이미지 URL
 		);
@@ -170,7 +170,10 @@ public class ContractServiceImpl implements ContractService {
 		try {
 			// 템플릿 파일명을 정확하게 지정합니다.
 			String html = templateEngine.process("contract_template.html", context);
+
+			// 이 부분은 수정 없이 그대로 작동합니다.
 			ByteArrayInputStream pdfInputStream = pdfGenerateService.generatePdfFromHtml(html);
+
 			long contentLength = pdfInputStream.available();
 			String objectKey = "contracts/contract_" + contract.getId() + ".pdf";
 

@@ -1,14 +1,14 @@
 package com.grabpt.dto.response;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.grabpt.domain.entity.Address;
 import com.grabpt.domain.entity.Requestions;
+import com.grabpt.domain.enums.RequestStatus;
 
 import lombok.Builder;
 import lombok.Getter;
+
 @Getter
 public class MyRequestListDTO {
 	private Long requestId;
@@ -20,6 +20,7 @@ public class MyRequestListDTO {
 	private Integer sessionCount;
 	private String content;
 	private AddressDTO address;
+	private RequestStatus status;
 
 	@Getter
 	@Builder
@@ -52,6 +53,7 @@ public class MyRequestListDTO {
 		this.categoryName = requestion.getCategory().getName();
 		this.sessionCount = requestion.getSessionCount();
 		this.content = requestion.getContent();
+		this.status = requestion.getStatus();
 	}
 
 }

@@ -33,6 +33,20 @@ public class ContractController {
 	}
 
 	@Operation(
+		summary = "계약서 PDF 링크 조회 API",
+		description = "contractId를 통해 계약서의 PDF 링크를 조회합니다."
+	)
+	@GetMapping("/contract/{contractId}/pdf")
+	public ApiResponse<String> getContractPdf(@PathVariable(name = "contractId") Long id) {
+		Contract contract = contractService.findById(id);
+		if (contract.getContractFileUrl() == null || contract.getContractFileUrl().isEmpty()) {
+			return ApiResponse.onFailure("PDF_NOT_FOUND", "PDF가 아직 생성되지 않았습니다.", null);
+		}
+		return ApiResponse.onSuccess(contract.getContractFileUrl());
+	}
+
+
+	@Operation(
 		description = "수강생이 계약서 정보를 입력한 뒤 제출하며 Matching status가 USERWROTE로 업데이트 됩니다",
 		summary = "수강생 계약서 작성 API"
 	)

@@ -1,6 +1,8 @@
 package com.grabpt.service.PdfService;
 
-import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
+import com.itextpdf.html2pdf.ConverterProperties;
+import com.itextpdf.html2pdf.HtmlConverter;
+import com.itextpdf.html2pdf.resolver.font.DefaultFontProvider;
 
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
@@ -18,34 +20,21 @@ public class PdfGenerateService {
 
 	public ByteArrayInputStream generatePdfFromHtml(String htmlContent) throws IOException {
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-		PdfRendererBuilder builder = new PdfRendererBuilder();
 
-		// 1. 폰트 리소스를 InputStream으로 읽어 임시 파일로 복사합니다.
-		File fontFile;
-		try (InputStream fontStream = new ClassPathResource("static/fonts/NanumGothic.ttf").getInputStream()) {
-			fontFile = File.createTempFile("NanumGothic", ".ttf");
-			try (FileOutputStream out = new FileOutputStream(fontFile)) {
-				FileCopyUtils.copy(fontStream, out);
-			}
-		}
+		// 1. ConverterProperties 객체를 생성합니다.
+		ConverterProperties converterProperties = new ConverterProperties();
 
-		try {
-			// 2. 복사된 임시 폰트 파일을 사용합니다.
-			builder.useFont(fontFile, "Nanum Gothic");
+		// 2. 폰트 제공자(FontProvider)를 설정합니다.
+		DefaultFontProvider fontProvider = new DefaultFontProvider(false, false, false);
 
-			String baseUrl = new ClassPathResource("templates/").getURL().toString();
-			builder.withHtmlContent(htmlContent, baseUrl);
+		// 3. resources 폴더에 있는 폰트 파일을 폰트 제공자에 추가합니다.
+		byte[] fontBytes = new ClassPathResource("static/fonts/NanumGothic.ttf").getInputStream().readAllBytes();
+		fontProvider.addFont(fontBytes);
+		converterProperties.setFontProvider(fontProvider);
 
-			builder.toStream(outputStream);
-			builder.run();
-		} finally {
-			// 3. PDF 생성 후 임시 폰트 파일을 삭제합니다.
-			if (fontFile != null) {
-				fontFile.delete();
-			}
-		}
+		// 4. HTML을 PDF로 변환합니다.
+		HtmlConverter.convertToPdf(htmlContent, outputStream, converterProperties);
 
-		// 4. 생성된 PDF 데이터를 반환합니다.
 		return new ByteArrayInputStream(outputStream.toByteArray());
 	}
 }

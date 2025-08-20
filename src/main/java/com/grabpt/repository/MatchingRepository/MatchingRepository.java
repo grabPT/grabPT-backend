@@ -16,6 +16,16 @@ public interface MatchingRepository extends JpaRepository<Matching, Long> {
 	Long getActiveClients(@Param("proProfileId") Long proProfileId,
 		@Param("status") MatchingStatus status);
 
+	// 회원: 활성 계약(매칭) 수
+	@Query("""
+		    SELECT COUNT(DISTINCT m.id)
+		    FROM Matching m
+		    WHERE m.requestion.user.id = :userId
+		      AND m.status = :status
+		""")
+	Long getActiveContractsByUser(@Param("userId") Long userId,
+		@Param("status") MatchingStatus status);
+
 	Matching findMatchingBySuggestionId(Long suggestionId);
 
 	boolean existsByRequestionId(Long requestionId);

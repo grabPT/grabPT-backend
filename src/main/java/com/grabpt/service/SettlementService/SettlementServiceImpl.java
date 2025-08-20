@@ -9,6 +9,8 @@ import com.grabpt.domain.enums.MatchingStatus;
 import com.grabpt.domain.enums.PaymentStatus;
 import com.grabpt.dto.response.MemberPaymentDto;
 import com.grabpt.dto.response.TrainerDashboardDto;
+import com.grabpt.dto.response.UserDashboardDto;
+import com.grabpt.dto.response.UserDashboardResponseDto;
 import com.grabpt.repository.MatchingRepository.MatchingRepository;
 import com.grabpt.repository.OrderRepository.OrderRepository;
 
@@ -40,4 +42,27 @@ public class SettlementServiceImpl implements SettlementService {
 			.memberPayments(memberPayments)
 			.build();
 	}
+
+	@Override
+	public UserDashboardResponseDto getUserDashboard(Long userId, int page, int size) {
+		Long totalSpent = orderRepository.getUserTotalSpent(userId, PaymentStatus.OK);
+		Long totalOrders = orderRepository.getUserTotalOrders(userId, PaymentStatus.OK);
+		Long activeContracts = matchingRepository.getActiveContractsByUser(userId, MatchingStatus.COMPLETED);
+
+		Pageable pageable = PageRequest.of(page, size);
+		Page<UserDashboardDto> payments
+			= orderRepository.getUserPayments(userId, PaymentStatus.OK, pageable);
+
+		return UserDashboardResponseDto.builder()
+			.totalSpent(nvl(totalSpent))
+			.totalOrders(nvl(totalOrders))
+			.activeContracts(nvl(activeContracts))
+			.payments(payments)
+			.build();
+	}
+
+	private Long nvl(Long v) {
+		return v == null ? 0L : v;
+	}
+
 }

@@ -1,51 +1,43 @@
 package com.grabpt.service.PdfService;
 
-import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 
-import org.springframework.core.io.ClassPathResource;
+import com.microsoft.playwright.Browser;
+import com.microsoft.playwright.Page;
+import com.microsoft.playwright.Playwright;
+
 import org.springframework.stereotype.Service;
-import org.springframework.util.FileCopyUtils;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 
 @Service
 public class PdfGenerateService {
 
 	public ByteArrayInputStream generatePdfFromHtml(String htmlContent) throws IOException {
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-		PdfRendererBuilder builder = new PdfRendererBuilder();
+		try (Playwright playwright = Playwright.create()) {
+			// Chromium 브라우저 인스턴스 실행
+			Browser browser = playwright.chromium().launch();
+			Page page = browser.newPage();
 
-		// 1. 폰트 리소스를 InputStream으로 읽어 임시 파일로 복사합니다.
-		File fontFile;
-		try (InputStream fontStream = new ClassPathResource("static/fonts/NanumGothic.ttf").getInputStream()) {
-			fontFile = File.createTempFile("NanumGothic", ".ttf");
-			try (FileOutputStream out = new FileOutputStream(fontFile)) {
-				FileCopyUtils.copy(fontStream, out);
-			}
+			// 페이지에 HTML 컨텐츠 설정
+			page.setContent(htmlContent);
+
+			// PDF 생성 옵션 설정 (A4 사이즈)
+			Page.PdfOptions pdfOptions = new Page.PdfOptions()
+				.setFormat("A4")
+				.setPrintBackground(true); // 배경 그래픽 인쇄
+
+			// HTML을 PDF로 변환하여 byte 배열로 저장
+			byte[] pdfBytes = page.pdf(pdfOptions);
+
+			// 브라우저 종료
+			browser.close();
+
+			// 생성된 PDF byte 배열을 InputStream으로 변환하여 반환
+			return new ByteArrayInputStream(pdfBytes);
+		} catch (Exception e) {
+			// 예외 발생 시 IOException으로 감싸서 던지기
+			throw new IOException("Playwright를 사용하여 PDF를 생성하는 중 오류 발생", e);
 		}
-
-		try {
-			// 2. 복사된 임시 폰트 파일을 사용합니다.
-			builder.useFont(fontFile, "Nanum Gothic");
-
-			String baseUrl = new ClassPathResource("templates/").getURL().toString();
-			builder.withHtmlContent(htmlContent, baseUrl);
-
-			builder.toStream(outputStream);
-			builder.run();
-		} finally {
-			// 3. PDF 생성 후 임시 폰트 파일을 삭제합니다.
-			if (fontFile != null) {
-				fontFile.delete();
-			}
-		}
-
-		// 4. 생성된 PDF 데이터를 반환합니다.
-		return new ByteArrayInputStream(outputStream.toByteArray());
 	}
 }

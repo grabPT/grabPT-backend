@@ -84,7 +84,7 @@ public class ProfileConverter {
 			.proName(user.getNickname())
 			.userName(user.getUsername())
 			.center(proProfile.getCenter())
-			.categoryName(user.getProProfile().getCategory().getName())
+			.categoryName(user.getProProfile().getCategory().getCode().toLowerCase())
 			.averageRating(averageRating)
 			.description(proProfile.getDescription())
 			.photos(photoDTOS)

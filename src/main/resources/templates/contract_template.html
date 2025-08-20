@@ -15,7 +15,7 @@
             box-sizing: border-box;
         }
         body {
-            margin: 100px;
+            margin: 0;
             font-family: "Pretendard Variable", "Apple SD Gothic Neo",
             "Noto Sans KR", sans-serif;
             color: black;
@@ -36,7 +36,9 @@
             align-items: center;
         }
         .panel {
-            width: 1077px;
+            /* A4에 맞춰서 크기고정 */
+            width: 1024px;
+            height: 1448px;
             background: #efefef;
             padding: 32px 8px;
             display: flex;
@@ -200,6 +202,7 @@
 </head>
 <body>
 <div class="wrap">
+    
     <section class="panel">
         <!-- 상단 -->
         <div class="header">
@@ -367,9 +370,28 @@
                     </div>
                 </div>
             </div>
+        </section>
+        <section class="panel">
+
+        
+        <div class="header">
+            <!-- 로고: 정적 경로 또는 Base64 가능 -->
+            <img
+                    class="logo"
+                    th:if="${appLogoUrl != null}"
+                    src="https://grabpt-image-bucket-2.s3.ap-northeast-2.amazonaws.com/AppLogo.png/2025-08-14T01%3A38%3A19.770886374"
+                    alt="로고"
+            />
+            <h1>PT(퍼스널 트레이닝) 계약서</h1>
+        </div>
+
+        <hr class="tophr"/>
+        <article class="article" style="height: 1050px;">
+
+        
 
             <!-- 환불 및 취소 규정 -->
-            <p class="title">환불 및 취소 규정</p>
+            <p class="title" style="margin-top: 40px">환불 및 취소 규정</p>
             <p>
                 환불 및 취소는 다음과 같은 기준에 따라 처리됩니다.
                 [수업 시작 전]
@@ -392,7 +414,7 @@
             </p>
 
             <!-- 회원의 권리 및 의무 -->
-            <p class="title">회원의 권리 및 의무</p>
+            <p class="title" style="margin-top: 40px">회원의 권리 및 의무</p>
             <p>
                 - grabPT는 매칭된 트레이너의 신원, 자격, 전문성을 최대한 확인한 후 등록합니다.
                 - 플랫폼을 통해 이뤄지는 PT 활동의 직접적인 결과(부상, 건강 문제 등)에 대해서는 트레이너 개인에게 1차적인 책임이 있습니다.
@@ -401,7 +423,7 @@
             </p>
 
             <!-- 개인정보 처리 방침 -->
-            <p class="title">개인정보 처리 방침</p>
+            <p class="title" style="margin-top: 40px">개인정보 처리 방침</p>
             <p>
                 수집하는 개인정보: 성명, 생년월일, 연락처, 주소, 성별 등
                 수집 목적: PT 서비스 제공, 계약 이행, 안전 관리, 서비스 품질 향상
@@ -473,11 +495,13 @@
             <!-- 계약일자: 페이지 맨 하단 -->
             <p
                     class="footer-date"
+                    style="font-size: 20px;"
                     th:text="${#temporals.format(contractDate, 'yyyy년 M월 d일')}"
             >
                 2025년 8월 14일
             </p>
         </div>
+        </article>
     </section>
 </div>
 </body>

@@ -66,7 +66,6 @@ public class ProProfile extends BaseEntity {
 	private Category category;
 
 	@OneToOne
-	@Where(clause = "role != 'DELETED'")
 	@JoinColumn(name = "user_id")
 	private Users user;
 

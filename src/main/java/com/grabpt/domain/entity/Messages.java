@@ -42,7 +42,6 @@ public class Messages extends BaseEntity {
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@Where(clause = "role != 'DELETED'")
 	@JoinColumn(name = "sender_id")
 	private Users sender;
 

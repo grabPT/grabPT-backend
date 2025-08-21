@@ -36,7 +36,6 @@ import org.hibernate.annotations.Where;
 @DynamicUpdate
 @DynamicInsert
 @Builder
-@Where(clause = "role != 'DELETED'")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class Users extends BaseEntity {

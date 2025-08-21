@@ -41,7 +41,6 @@ public class UserProfile extends BaseEntity {
 	private Long id;
 
 	@OneToOne
-	@Where(clause = "role != 'DELETED'")
 	@JoinColumn(name = "user_id")
 	private Users user;
 

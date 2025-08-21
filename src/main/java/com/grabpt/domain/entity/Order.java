@@ -33,7 +33,6 @@ public class Order extends BaseEntity {
 	private String orderUid; // 주문 번호
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@Where(clause = "role != 'DELETED'")
 	@JoinColumn(name = "member_id")
 	private Users user;
 

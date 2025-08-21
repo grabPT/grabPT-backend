@@ -33,7 +33,6 @@ public class Review extends BaseEntity {
 	private ProProfile proProfile;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@Where(clause = "role != 'DELETED'")
 	@JoinColumn(name = "user_id")
 	private Users user;
 

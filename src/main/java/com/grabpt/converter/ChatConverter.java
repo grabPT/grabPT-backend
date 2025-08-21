@@ -45,9 +45,10 @@ public class ChatConverter {
 		return ChatResponse.ChatRoomPreviewDto.builder()
 			.chatRoomId(userChatRoom.getChatRoom().getId())
 			.userId(userChatRoom.getUser().getId())
+			.otherUserId(userChatRoom.getOtherUser().getId())
 			.unreadCount(unreadCount)
 			.otherUserProfile(userChatRoom.getOtherUser().getProfileImageUrl())
-			.roomName(userChatRoom.getRoomName())
+			.roomName(userChatRoom.getOtherUser().getNickname())
 			.lastMessage(userChatRoom.getChatRoom().getLastMessage())
 			.lastMessageTime(userChatRoom.getChatRoom().getLastMessageTime())
 			.build();

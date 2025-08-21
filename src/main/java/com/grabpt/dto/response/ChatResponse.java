@@ -50,6 +50,7 @@ public class ChatResponse {
 	public static class ChatRoomPreviewDto{
 		Long chatRoomId;
 		Long userId;
+		Long otherUserId;
 		Long unreadCount; //추가
 		String roomName;
 		String lastMessage;

@@ -3,6 +3,8 @@ package com.grabpt.service.ProfileService;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,6 +16,7 @@ import com.grabpt.apiPayload.code.status.ErrorStatus;
 import com.grabpt.apiPayload.exception.GeneralException;
 import com.grabpt.converter.ProfileConverter;
 import com.grabpt.domain.entity.Address;
+import com.grabpt.domain.entity.Matching;
 import com.grabpt.domain.entity.ProProfile;
 import com.grabpt.domain.entity.PtPrice;
 import com.grabpt.domain.entity.Requestions;
@@ -34,6 +37,7 @@ import com.grabpt.dto.response.MyRequestListDTO;
 import com.grabpt.dto.response.MyReviewListDTO;
 import com.grabpt.dto.response.ProProfileResponseDTO;
 import com.grabpt.dto.response.ProfileResponseDTO;
+import com.grabpt.repository.MatchingRepository.MatchingRepository;
 import com.grabpt.repository.ProProfileRepository.ProProfileRepository;
 import com.grabpt.repository.RequestionRepository.RequestionRepository;
 import com.grabpt.repository.ReviewRepository.reviewRepository;
@@ -51,6 +55,7 @@ public class ProfileServiceImpl implements ProfileService {
 	private final UserRepository userRepository;
 	private final RequestionRepository requestionRepository;
 	private final reviewRepository reviewRepository;
+	private final MatchingRepository matchingRepository;
 
 	private final PhotoService photoService;
 	private final ProProfileRepository proProfileRepository;
@@ -69,10 +74,40 @@ public class ProfileServiceImpl implements ProfileService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Page<MyRequestListDTO> findMyRequests(Long userId, Pageable pageable) {
-		Page<Requestions> requests = requestionRepository.findAllByUserIdOrderByCreatedAtDesc(userId, pageable);
-		;
-		return requests.map(MyRequestListDTO::new);
+		// 1) 내 요청서 페이지 조회
+		Page<Requestions> page = requestionRepository
+			.findAllByUserIdOrderByCreatedAtDesc(userId, pageable);
+
+		// 2) 요청서 ID 목록 추출
+		List<Long> requestionIds = page.stream()
+			.map(Requestions::getId)
+			.toList();
+
+		// 요청서가 없으면 바로 매핑해서 리턴
+		if (requestionIds.isEmpty()) {
+			return page.map(MyRequestListDTO::new);
+		}
+
+		// 3) Matching을 요청서 ID 기준으로 한 번에 로드 (pro의 user까지 fetch join)
+		List<Matching> matchings = matchingRepository.findAllWithProByRequestionIds(requestionIds);
+
+		// 4) requestionId → Matching 매핑
+		Map<Long, Matching> matchingMap = matchings.stream()
+			.collect(Collectors.toMap(m -> m.getRequestion().getId(), m -> m));
+
+		// 5) DTO 매핑 + pro 정보 세팅
+		return page.map(req -> {
+			MyRequestListDTO dto = new MyRequestListDTO(req);
+			Matching m = matchingMap.get(req.getId());
+			if (m != null) {
+				// pro 닉네임 / proId 세팅
+				dto.setProNickname(m.getSuggestion().getProProfile().getUser().getNickname());
+				dto.setProId(m.getSuggestion().getProProfile().getId());
+			}
+			return dto;
+		});
 	}
 
 	@Override

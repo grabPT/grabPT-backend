@@ -91,14 +91,7 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
 		}
 	}
 
-	// 삭제 없이 로드만 (프레임워크 일부 코드가 이 오버로드를 호출)
-	// @Override
-	// public OAuth2AuthorizationRequest removeAuthorizationRequest(HttpServletRequest request) {
-	// 	log.debug("[OAUTH][REMOVE-noresp] uri={}", request.getRequestURI());
-	// 	return loadAuthorizationRequest(request);
-	// }
-
-	// ★ 실제 삭제는 여기서만 수행 (성공/실패 처리 시점)
+	// 실제 삭제는 여기서만 수행 (성공/실패 처리 시점)
 	@Override
 	public OAuth2AuthorizationRequest removeAuthorizationRequest(HttpServletRequest request,
 		HttpServletResponse response) {

@@ -66,19 +66,24 @@ public enum ErrorStatus implements BaseErrorCode {
 
 	INVALID_PRO(HttpStatus.BAD_REQUEST, "SUGG4002", "제안서를 등록한 트레이너와 다른 유저입니다."),
 
-	INVALID_USER(HttpStatus.BAD_REQUEST, "SUGG4002", "요청서를 등록한 유저와 다른 유저입니다."),
+	INVALID_USER(HttpStatus.BAD_REQUEST, "SUGG4003", "요청서를 등록한 유저와 다른 유저입니다."),
 
 	NOT_IMAGE(HttpStatus.BAD_REQUEST, "IMG4001", "이미지가 없습니다."),
 
 	ALARM_NOT_FOUND(HttpStatus.BAD_REQUEST, "ALA4001", "알림이 존재하지 않습니다."),
 
-	INVALID_SUGGESTION_FOR_REQUESTION(HttpStatus.BAD_REQUEST, "SUGG4001", "유효한 제안서가 아닙니다."),
+	INVALID_SUGGESTION_FOR_REQUESTION(HttpStatus.BAD_REQUEST, "SUGG4004", "유효한 제안서가 아닙니다."),
 
 	SUGGESTION_ALREADY_MATCHED(HttpStatus.BAD_REQUEST, "SUGG4005", "이미 매칭된 제안서입니다."),
 
 	REQUESTION_DELETE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "REQU4006", "매칭 진행/완료된 요청서는 삭제할 수 없습니다."),
 
-	REQUESTION_DELETE_NOT_OWNER(HttpStatus.FORBIDDEN, "REQU4007", "요청서 작성자만 삭제할 수 있습니다.");
+	REQUESTION_DELETE_NOT_OWNER(HttpStatus.FORBIDDEN, "REQU4007", "요청서 작성자만 삭제할 수 있습니다."),
+
+	SUGGESTION_DELETE_NOT_ALLOWED_STATUS(HttpStatus.BAD_REQUEST, "SUGG4006", "매칭 진행/완료된 제안서는 삭제할 수 없습니다."),
+
+	SUGGESTION_DELETE_NOT_OWNER(HttpStatus.FORBIDDEN, "SUGG4007", "제안서 작성자만 삭제할 수 있습니다."),
+	;
 
 	private final HttpStatus httpStatus;
 	private final String code;

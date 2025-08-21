@@ -28,9 +28,11 @@ import com.grabpt.domain.entity.SuggestionPhoto;
 import com.grabpt.domain.entity.Suggestions;
 import com.grabpt.domain.entity.Users;
 import com.grabpt.domain.enums.MatchingStatus;
+import com.grabpt.domain.enums.SuggestStatus;
 import com.grabpt.dto.request.SuggestionRequestDto;
 import com.grabpt.dto.response.SuggestionResponseDto;
 import com.grabpt.dto.response.UserResponseDto;
+import com.grabpt.repository.MatchingRepository.MatchingRepository;
 import com.grabpt.repository.ProProfileRepository.ProProfileRepository;
 import com.grabpt.repository.RequestionRepository.RequestionRepository;
 import com.grabpt.repository.SuggestionRepository.SuggestionRepository;
@@ -54,6 +56,7 @@ public class SuggestionServiceImpl implements SuggestionService {
 	private final AmazonS3Manager amazonS3Manager;
 	private final AlarmService alarmService;
 	private final MatchingService matchingService;
+	private final MatchingRepository matchingRepository;
 
 	@Override
 	public Suggestions save(SuggestionRequestDto dto, String email, List<MultipartFile> photos) {
@@ -74,6 +77,7 @@ public class SuggestionServiceImpl implements SuggestionService {
 			.sentAt(dto.getSentAt() != null ? dto.getSentAt() : LocalDate.now())
 			.isAgreed(dto.getIsAgreed() != null ? dto.getIsAgreed() : false)
 			.photos(new ArrayList<>())
+			.status(SuggestStatus.MATCHING)
 			.build();
 
 		suggestion.setProProfile(proProfile);
@@ -200,12 +204,20 @@ public class SuggestionServiceImpl implements SuggestionService {
 	}
 
 	@Override
+	@Transactional
 	public void deleteSuggestion(Long suggestionId, String email) {
-		Suggestions suggestion = suggestionRepository.findById(suggestionId)
+		// 1) 잠금 후 조회 (동시성 안전)
+		Suggestions suggestion = suggestionRepository.findByIdForUpdate(suggestionId)
 			.orElseThrow(() -> new SuggestionHandler(ErrorStatus.SUGGESTION_NOT_FOUND));
 
+		// 2) 작성자 확인
 		if (!suggestion.getProProfile().getUser().getEmail().equals(email)) {
-			throw new SuggestionHandler(ErrorStatus.INVALID_PRO);
+			throw new SuggestionHandler(ErrorStatus.INVALID_PRO); // 또는 SUGGESTION_DELETE_NOT_OWNER
+		}
+
+		// 3) 상태 검사: MATCHED면 삭제 불가
+		if (suggestion.getStatus() == SuggestStatus.MATCHED) {
+			throw new SuggestionHandler(ErrorStatus.SUGGESTION_DELETE_NOT_ALLOWED_STATUS);
 		}
 
 		suggestionRepository.delete(suggestion);

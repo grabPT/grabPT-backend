@@ -8,10 +8,13 @@ import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 
 import com.grabpt.domain.common.BaseEntity;
+import com.grabpt.domain.enums.SuggestStatus;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -62,6 +65,9 @@ public class Suggestions extends BaseEntity {
 
 	@Column(nullable = false)
 	private String location;
+
+	@Enumerated(EnumType.STRING)
+	private SuggestStatus status;
 
 	private LocalDate sentAt;
 

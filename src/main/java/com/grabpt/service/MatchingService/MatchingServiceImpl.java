@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.grabpt.apiPayload.code.status.ErrorStatus;
 import com.grabpt.apiPayload.exception.handler.RequestionHandler;
@@ -14,6 +15,7 @@ import com.grabpt.domain.entity.Requestions;
 import com.grabpt.domain.entity.Suggestions;
 import com.grabpt.domain.enums.MatchingStatus;
 import com.grabpt.domain.enums.RequestStatus;
+import com.grabpt.domain.enums.SuggestStatus;
 import com.grabpt.dto.response.ContractResponse;
 import com.grabpt.repository.MatchingRepository.MatchingRepository;
 import com.grabpt.repository.RequestionRepository.RequestionRepository;
@@ -34,6 +36,7 @@ public class MatchingServiceImpl implements MatchingService {
 	private final ContractService contractService;
 
 	@Override
+	@Transactional
 	public ContractResponse.CreateMatchingAndContractResponseDto createMatching(Long requestionId, Long suggestionId) {
 
 		log.info("[MATCH] reqId={}", requestionId);
@@ -86,6 +89,7 @@ public class MatchingServiceImpl implements MatchingService {
 
 		// 6) 요청서 상태 변경
 		requestion.setStatus(RequestStatus.MATCHED);
+		suggestion.setStatus(SuggestStatus.MATCHED);
 
 		// 7) 계약 생성
 		Contract contract = contractService.createContract(matching, requestion, suggestion);

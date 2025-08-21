@@ -2,6 +2,7 @@ package com.grabpt.dto.response;
 
 import com.grabpt.domain.entity.Review;
 import com.grabpt.domain.entity.Users;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
@@ -35,8 +36,6 @@ public class MyReviewListDTO {
 
 	private String imageURL;
 
-
-
 	public static MyReviewListDTO from(Review review) {
 		Users user = review.getUser();
 
@@ -49,7 +48,7 @@ public class MyReviewListDTO {
 			.center(review.getProProfile().getCenter())
 			.proId(review.getProProfile().getUser().getId())
 			.proNickName(review.getProProfile().getUser().getNickname())
-			.imageURL(review.getProProfile().getUser().getProfileImageUrl())
+			.imageURL(user.getProfileImageUrl())
 			.build();
 	}
 }

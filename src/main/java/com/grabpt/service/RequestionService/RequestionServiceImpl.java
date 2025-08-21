@@ -179,14 +179,32 @@ public class RequestionServiceImpl implements RequestionService {
 	}
 
 	@Override
+	@Transactional
 	public void delete(Long requestionId, String email) {
-		Requestions requestion = requestionRepository.findById(requestionId)
+		// 1) 잠금 후 조회 (동시성 안전)
+		Requestions requestion = requestionRepository.findByIdForUpdate(requestionId)
 			.orElseThrow(() -> new RequestionHandler(ErrorStatus.REQUESTION_NOT_FOUND));
 
+		// 2) 소유자 검사
 		if (!requestion.getUser().getEmail().equals(email)) {
-			throw new RequestionHandler(ErrorStatus.INVALID_USER);
+			// 기존에 쓰던 에러가 있으면 그대로 사용해도 되고,
+			// 별도 코드가 있다면 REQUESTION_DELETE_NOT_OWNER 같은 걸 추천.
+			throw new RequestionHandler(ErrorStatus.REQUESTION_DELETE_NOT_OWNER);
 		}
 
+		// 3) 상태 검사: MATCHING(= 미매칭 상태)일 때만 삭제 허용
+		if (requestion.getStatus() != RequestStatus.MATCHING) {
+			// 프로젝트 규칙에 맞는 에러 코드 사용
+			throw new RequestionHandler(ErrorStatus.REQUESTION_DELETE_NOT_ALLOWED);
+			// 없다면 임시로 INVALID_USER 대신 별도 코드 추가 추천(아래 3) 참고)
+		}
+
+		// 4) 안전장치: 매칭 레코드가 이미 존재하면 삭제 불가
+		if (matchingRepository.existsByRequestionId(requestionId)) {
+			throw new RequestionHandler(ErrorStatus.REQUESTION_DELETE_NOT_ALLOWED);
+		}
+
+		// 5) 삭제
 		requestionRepository.delete(requestion);
 	}
 

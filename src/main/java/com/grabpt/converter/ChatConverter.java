@@ -45,6 +45,7 @@ public class ChatConverter {
 		return ChatResponse.ChatRoomPreviewDto.builder()
 			.chatRoomId(userChatRoom.getChatRoom().getId())
 			.userId(userChatRoom.getUser().getId())
+			.otherUserId(userChatRoom.getOtherUser().getId())
 			.unreadCount(unreadCount)
 			.otherUserProfile(userChatRoom.getOtherUser().getProfileImageUrl())
 			.roomName(userChatRoom.getOtherUser().getNickname())

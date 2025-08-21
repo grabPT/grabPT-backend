@@ -38,6 +38,7 @@ import com.grabpt.dto.response.MyRequestListDTO;
 import com.grabpt.dto.response.MyReviewListDTO;
 import com.grabpt.dto.response.ProProfileResponseDTO;
 import com.grabpt.dto.response.ProfileResponseDTO;
+import com.grabpt.dto.response.ReviewListDto;
 import com.grabpt.repository.MatchingRepository.MatchingRepository;
 import com.grabpt.repository.ProProfileRepository.ProProfileRepository;
 import com.grabpt.repository.RequestionRepository.RequestionRepository;
@@ -164,6 +165,17 @@ public class ProfileServiceImpl implements ProfileService {
 		Page<Review> reviews = reviewRepository.findAllByProProfile_IdOrderByCreatedAtDesc(user.getProProfile().getId(),
 			pageable);
 		return reviews.map(MyReviewListDTO::from);
+	}
+
+	@Override
+	public Page<ReviewListDto> findProProReviews(Long userId, Pageable pageable) {
+		Users user = findUserById(userId);
+		if (user.getProProfile() == null) {
+			throw new GeneralException(ErrorStatus.MEMBER_NOT_FOUND);
+		}
+		Page<Review> reviews = reviewRepository.findAllByProProfile_IdOrderByCreatedAtDesc(user.getProProfile().getId(),
+			pageable);
+		return reviews.map(ReviewListDto::from);
 	}
 
 	@Override

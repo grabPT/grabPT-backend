@@ -36,7 +36,7 @@ public class UserQueryServiceImpl implements UserQueryService {
 		if (authentication == null || !authentication.isAuthenticated()) {
 			throw new AuthenticationCredentialsNotFoundException("Unauthorized");
 		}
-		log.info("authentication = " + authentication);
+		log.info("authentication=" + authentication);
 		String email = ((PrincipalDetails)authentication.getPrincipal()).getUser().getEmail();
 
 		Users user = userRepository.findByEmail(email)

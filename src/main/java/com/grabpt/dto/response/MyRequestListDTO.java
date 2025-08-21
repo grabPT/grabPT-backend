@@ -22,6 +22,18 @@ public class MyRequestListDTO {
 	private AddressDTO address;
 	private RequestStatus status;
 
+	// 추가
+	private String proNickname;
+	private Long proId;
+
+	public void setProNickname(String proNickname) {
+		this.proNickname = proNickname;
+	}
+
+	public void setProId(Long proId) {
+		this.proId = proId;
+	}
+
 	@Getter
 	@Builder
 	public static class AddressDTO {
@@ -44,8 +56,6 @@ public class MyRequestListDTO {
 		this.requestId = requestion.getId();
 		this.imageURL = requestion.getUser().getProfileImageUrl();
 		this.userId = requestion.getUser().getId();
-
-		// 이 부분을 수정했습니다.
 		Address addresses = requestion.getUser().getAddress();
 		this.address = AddressDTO.from(addresses);
 		this.availableDays = requestion.getAvailableDays();
@@ -55,5 +65,4 @@ public class MyRequestListDTO {
 		this.content = requestion.getContent();
 		this.status = requestion.getStatus();
 	}
-
 }

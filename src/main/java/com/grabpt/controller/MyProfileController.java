@@ -4,6 +4,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -13,13 +15,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.grabpt.apiPayload.ApiResponse;
 import com.grabpt.apiPayload.code.status.ErrorStatus;
 import com.grabpt.apiPayload.exception.GeneralException;
 import com.grabpt.config.SecurityUtils;
+import com.grabpt.config.auth.PrincipalDetails;
 import com.grabpt.dto.request.DeletedRequestDTO;
 import com.grabpt.dto.request.UserProfileUpdateRequestDTO;
 import com.grabpt.dto.response.MyRequestListDTO;
@@ -29,9 +31,13 @@ import com.grabpt.service.ProfileService.ProfileService;
 import com.grabpt.service.UserService.UserQueryService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping("/mypage")
 @RequiredArgsConstructor
@@ -117,11 +123,43 @@ public class MyProfileController {
 
 	@DeleteMapping
 	@Operation(summary = "회원 탈퇴 API", description = "현재 로그인된 사용자의 계정을 비활성화합니다.")
-	public ApiResponse<String> withdrawUser(HttpServletRequest request,
-		@RequestBody DeletedRequestDTO deletedRequest
-	) throws IllegalAccessException {
-		Long userId = userQueryService.getUserId(request);
-		profileService.deleteUser(userId, deletedRequest);
+	public ApiResponse<String> withdrawUser(
+		HttpServletRequest req,
+		HttpServletResponse res,
+		@RequestBody DeletedRequestDTO requestDto
+	) {
+
+		Authentication authentication = (Authentication) req.getUserPrincipal();
+		PrincipalDetails principalDetails = (PrincipalDetails) authentication.getPrincipal();
+		Long userId = principalDetails.getUser().getId();
+
+		profileService.deleteUser(userId, requestDto);
+		log.info("[WITHDRAW] User data deleted for userId: {}", userId);
+
+		log.info("[WITHDRAW] Starting session & cookie cleanup process...");
+
+		Cookie accessTokenCookie = new Cookie("access_token", null);
+		accessTokenCookie.setMaxAge(0);
+		accessTokenCookie.setPath("/");
+		res.addCookie(accessTokenCookie);
+		log.info("[WITHDRAW] Clearing cookie -> access_token");
+
+		Cookie refreshTokenCookie = new Cookie("refresh_token", null);
+		refreshTokenCookie.setMaxAge(0);
+		refreshTokenCookie.setPath("/");
+		res.addCookie(refreshTokenCookie);
+		log.info("[WITHDRAW] Clearing cookie -> refresh_token");
+
+		var session = req.getSession(false);
+		if (session != null) {
+			session.invalidate();
+			log.info("[WITHDRAW] HTTP session invalidated.");
+		}
+		SecurityContextHolder.clearContext();
+		log.info("[WITHDRAW] SecurityContextHolder cleared.");
+
+		log.info("[WITHDRAW] Withdrawal process completed successfully.");
+
 		return ApiResponse.onSuccess("회원 탈퇴가 성공적으로 처리되었습니다.");
 	}
 

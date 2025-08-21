@@ -50,24 +50,14 @@ public interface RequestionRepository extends JpaRepository<Requestions, Long> {
 	@Query("select r from Requestions r where r.id = :id")
 	Optional<Requestions> findByIdForUpdate(@Param("id") Long id);
 
-	/**
-	 * 정확히 전달받은 fullRegion(예: "서울 강남구 역삼동")으로 시작하는 location만 집계.
-	 * - 점진적 확장 없음(동→구→시로 내려가지 않음)
-	 * - sessionCount > 0만 집계
-	 * - category.name으로 필터
-	 * - 실수 평균 보장
-	 */
 	@Query("""
-		    select coalesce(avg(1.0 * r.price / r.sessionCount), 0.0)
+		    select avg(r.price)
 		    from Requestions r
-		    where r.sessionCount > 0
-		      and r.category.name = :categoryName
-		      and r.location like concat(:fullRegion, '%')
+		    where r.category.name = :categoryName
+		      and r.location = :region
 		""")
-	double avgUnitPriceByCategoryAndRegion(
-		@Param("categoryName") String categoryName,
-		@Param("fullRegion") String fullRegion
-	);
+	double avgPriceByCategoryAndRegion(@Param("categoryName") String categoryName,
+		@Param("region") String region);
 
 	@Query("""
 		    select count(r)

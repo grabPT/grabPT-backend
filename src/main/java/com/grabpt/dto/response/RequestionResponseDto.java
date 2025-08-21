@@ -130,8 +130,9 @@ public class RequestionResponseDto {
 		// 추가
 		private RequestStatus status;
 		private Long proProfileId;
+		private String proNickname;
 
-		public static UserOwnRequestionDto from(Requestions requestion, Long proProfileId) {
+		public static UserOwnRequestionDto from(Requestions requestion, Long proProfileId, String proNickname) {
 			Users user = requestion.getUser();
 			Address address = user.getAddress();
 
@@ -151,6 +152,7 @@ public class RequestionResponseDto {
 				.etcPurposeContent(requestion.getEtcPurposeContent())
 				.status(requestion.getStatus())
 				.proProfileId(proProfileId)
+				.proNickname(proNickname)
 				.build();
 		}
 	}

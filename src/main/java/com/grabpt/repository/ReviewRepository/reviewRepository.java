@@ -9,6 +9,7 @@ import com.grabpt.domain.entity.Review;
 public interface reviewRepository extends JpaRepository<Review, Long> {
 	Page<Review> findAllByUserIdOrderByCreatedAt(Long userId, Pageable pageable);
 
+	Review findByUser_IdAndId(Long userId, Long reviewId);
 	// JPA 규칙
 	Page<Review> findAllByProProfile_IdOrderByCreatedAt(Long proProfileId, Pageable pageable); //// 전문가용
 

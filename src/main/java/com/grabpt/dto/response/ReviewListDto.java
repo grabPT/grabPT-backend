@@ -48,7 +48,7 @@ public class ReviewListDto {
 			.center(review.getProProfile().getCenter())
 			.proId(review.getProProfile().getUser().getId())
 			.proNickName(review.getProProfile().getUser().getNickname())
-			.imageURL(review.getProProfile().getUser().getProfileImageUrl())
+			.imageURL(user.getProfileImageUrl())
 			.build();
 	}
 }

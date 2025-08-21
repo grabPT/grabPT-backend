@@ -24,14 +24,14 @@ public class MyRequestListDTO {
 
 	// 추가
 	private String proNickname;
-	private Long proId;
+	private Long proProfileId;
 
 	public void setProNickname(String proNickname) {
 		this.proNickname = proNickname;
 	}
 
-	public void setProId(Long proId) {
-		this.proId = proId;
+	public void setProProfileId(Long proId) {
+		this.proProfileId = proId;
 	}
 
 	@Getter

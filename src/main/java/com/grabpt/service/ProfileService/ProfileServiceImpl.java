@@ -104,7 +104,7 @@ public class ProfileServiceImpl implements ProfileService {
 			if (m != null) {
 				// pro 닉네임 / proId 세팅
 				dto.setProNickname(m.getSuggestion().getProProfile().getUser().getNickname());
-				dto.setProId(m.getSuggestion().getProProfile().getId());
+				dto.setProProfileId(m.getSuggestion().getProProfile().getId());
 			}
 			return dto;
 		});

@@ -2,6 +2,7 @@ package com.grabpt.service.RequestionService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +23,7 @@ import com.grabpt.dto.request.RequestionRequestDto;
 import com.grabpt.dto.response.RequestionResponseDto;
 import com.grabpt.dto.response.UserResponseDto;
 import com.grabpt.repository.CategoryRepository.CategoryRepository;
+import com.grabpt.repository.MatchingRepository.MatchingRepository;
 import com.grabpt.repository.RequestionRepository.RequestionRepository;
 import com.grabpt.repository.UserRepository.UserRepository;
 import com.grabpt.service.AlarmService.AlarmService;
@@ -43,6 +45,7 @@ public class RequestionServiceImpl implements RequestionService {
 	private final UserQueryService userQueryService;
 	private final ProfileService profileService;
 	private final AlarmService alarmService;
+	private final MatchingRepository matchingRepository;
 
 	@Override
 	public List<Requestions> getReqeustions(String categoryCode, Pageable pageable) {
@@ -176,14 +179,32 @@ public class RequestionServiceImpl implements RequestionService {
 	}
 
 	@Override
+	@Transactional
 	public void delete(Long requestionId, String email) {
-		Requestions requestion = requestionRepository.findById(requestionId)
+		// 1) 잠금 후 조회 (동시성 안전)
+		Requestions requestion = requestionRepository.findByIdForUpdate(requestionId)
 			.orElseThrow(() -> new RequestionHandler(ErrorStatus.REQUESTION_NOT_FOUND));
 
+		// 2) 소유자 검사
 		if (!requestion.getUser().getEmail().equals(email)) {
-			throw new RequestionHandler(ErrorStatus.INVALID_USER);
+			// 기존에 쓰던 에러가 있으면 그대로 사용해도 되고,
+			// 별도 코드가 있다면 REQUESTION_DELETE_NOT_OWNER 같은 걸 추천.
+			throw new RequestionHandler(ErrorStatus.REQUESTION_DELETE_NOT_OWNER);
 		}
 
+		// 3) 상태 검사: MATCHING(= 미매칭 상태)일 때만 삭제 허용
+		if (requestion.getStatus() != RequestStatus.MATCHING) {
+			// 프로젝트 규칙에 맞는 에러 코드 사용
+			throw new RequestionHandler(ErrorStatus.REQUESTION_DELETE_NOT_ALLOWED);
+			// 없다면 임시로 INVALID_USER 대신 별도 코드 추가 추천(아래 3) 참고)
+		}
+
+		// 4) 안전장치: 매칭 레코드가 이미 존재하면 삭제 불가
+		if (matchingRepository.existsByRequestionId(requestionId)) {
+			throw new RequestionHandler(ErrorStatus.REQUESTION_DELETE_NOT_ALLOWED);
+		}
+
+		// 5) 삭제
 		requestionRepository.delete(requestion);
 	}
 
@@ -194,8 +215,28 @@ public class RequestionServiceImpl implements RequestionService {
 		UserResponseDto.UserInfoDTO userInfo = userQueryService.getUserInfo(request);
 		String email = userInfo.getEmail();
 
-		Page<Requestions> requestions = requestionRepository.findAllByUserEmail(email, pageable);
-		return requestions.map(RequestionResponseDto.UserOwnRequestionDto::from);
+		Page<Requestions> page = requestionRepository.findAllByUserEmail(email, pageable);
+
+		// 1) 현재 페이지의 요청서 IDs
+		List<Long> reqIds = page.getContent().stream()
+			.map(Requestions::getId)
+			.toList();
+
+		// 2) 요청서 ID들에 대한 매칭을 한 번에 로드
+		var matchings = matchingRepository.findAllWithProByRequestionIds(reqIds);
+
+		// 3) reqId -> proProfileId 맵 구성
+		var reqIdToProId = matchings.stream()
+			.collect(Collectors.toMap(
+				m -> m.getRequestion().getId(),
+				m -> m.getSuggestion().getProProfile().getId()
+			));
+
+		// 4) DTO 매핑 시 proProfileId 주입 (없으면 null)
+		return page.map(req -> {
+			Long proProfileId = reqIdToProId.get(req.getId());
+			return RequestionResponseDto.UserOwnRequestionDto.from(req, proProfileId);
+		});
 	}
 
 	@Override

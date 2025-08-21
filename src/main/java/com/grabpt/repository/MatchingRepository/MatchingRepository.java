@@ -1,5 +1,8 @@
 package com.grabpt.repository.MatchingRepository;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -31,5 +34,23 @@ public interface MatchingRepository extends JpaRepository<Matching, Long> {
 	boolean existsByRequestionId(Long requestionId);
 
 	boolean existsBySuggestionId(Long suggestionId);
+
+	// 단건 조회 (필요 시)
+	@Query("""
+		    select m from Matching m
+		    join fetch m.suggestion s
+		    join fetch s.proProfile pp
+		    where m.requestion.id = :requestionId
+		""")
+	Optional<Matching> findWithProByRequestionId(@Param("requestionId") Long requestionId);
+
+	// 배치 조회 (N+1 회피)
+	@Query("""
+		    select m from Matching m
+		    join m.suggestion s
+		    join s.proProfile pp
+		    where m.requestion.id in :requestionIds
+		""")
+	List<Matching> findAllWithProByRequestionIds(@Param("requestionIds") List<Long> requestionIds);
 
 }

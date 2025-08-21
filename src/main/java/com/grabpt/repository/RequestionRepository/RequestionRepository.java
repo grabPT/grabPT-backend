@@ -5,7 +5,6 @@ import static jakarta.persistence.LockModeType.*;
 import java.util.List;
 import java.util.Optional;
 
-import com.grabpt.domain.entity.Category;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,6 +12,7 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.grabpt.domain.entity.Category;
 import com.grabpt.domain.entity.Requestions;
 
 public interface RequestionRepository extends JpaRepository<Requestions, Long> {
@@ -33,9 +33,13 @@ public interface RequestionRepository extends JpaRepository<Requestions, Long> {
 	Page<Requestions> findByLocationOrderByCreatedAtDesc(String location, Pageable pageable);
 
 	// 최신순(주소변경)
-	Page<Requestions> findByLocationStartingWithAndCategoryOrderByCreatedAtDesc(String locationPrefix, Category category, Pageable pageable);
+	Page<Requestions> findByLocationStartingWithAndCategoryOrderByCreatedAtDesc(String locationPrefix,
+		Category category, Pageable pageable);
+
 	// 가격 높은 순(주소변경)
-	Page<Requestions> findByLocationStartingWithAndCategoryOrderByPriceDesc(String locationPrefix, Category category, Pageable pageable);
+	Page<Requestions> findByLocationStartingWithAndCategoryOrderByPriceDesc(String locationPrefix, Category category,
+		Pageable pageable);
+
 	// 기본 요청서 조회
 	Page<Requestions> findByLocation(String locationPrefix, Pageable pageable);
 

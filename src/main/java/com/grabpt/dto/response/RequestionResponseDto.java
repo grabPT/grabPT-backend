@@ -127,7 +127,11 @@ public class RequestionResponseDto {
 		private List<String> availableTimes;
 		private String content;
 
-		public static UserOwnRequestionDto from(Requestions requestion) {
+		// 추가
+		private RequestStatus status;
+		private Long proProfileId;
+
+		public static UserOwnRequestionDto from(Requestions requestion, Long proProfileId) {
 			Users user = requestion.getUser();
 			Address address = user.getAddress();
 
@@ -145,6 +149,8 @@ public class RequestionResponseDto {
 				.availableTimes(requestion.getAvailableTimes())
 				.content(requestion.getContent())
 				.etcPurposeContent(requestion.getEtcPurposeContent())
+				.status(requestion.getStatus())
+				.proProfileId(proProfileId)
 				.build();
 		}
 	}

@@ -74,7 +74,11 @@ public enum ErrorStatus implements BaseErrorCode {
 
 	INVALID_SUGGESTION_FOR_REQUESTION(HttpStatus.BAD_REQUEST, "SUGG4001", "유효한 제안서가 아닙니다."),
 
-	SUGGESTION_ALREADY_MATCHED(HttpStatus.BAD_REQUEST, "SUGG4005", "이미 매칭된 제안서입니다.");
+	SUGGESTION_ALREADY_MATCHED(HttpStatus.BAD_REQUEST, "SUGG4005", "이미 매칭된 제안서입니다."),
+
+	REQUESTION_DELETE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "REQU4006", "매칭 진행/완료된 요청서는 삭제할 수 없습니다."),
+
+	REQUESTION_DELETE_NOT_OWNER(HttpStatus.FORBIDDEN, "REQU4007", "요청서 작성자만 삭제할 수 있습니다.");
 
 	private final HttpStatus httpStatus;
 	private final String code;

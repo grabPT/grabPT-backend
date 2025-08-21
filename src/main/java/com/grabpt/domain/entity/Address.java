@@ -15,6 +15,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Where;
 
 @Entity
 @NoArgsConstructor
@@ -38,6 +39,7 @@ public class Address extends BaseEntity {
 	private String specAddress; // 상세주소
 
 	@OneToOne
+	@Where(clause = "role != 'DELETED'")
 	@JoinColumn(name = "user_id", unique = true)
 	private Users user;
 

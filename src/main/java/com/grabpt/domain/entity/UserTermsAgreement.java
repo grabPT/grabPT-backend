@@ -16,6 +16,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Where;
 
 @Entity
 @Getter
@@ -30,6 +31,7 @@ public class UserTermsAgreement extends BaseEntity {
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
+	@Where(clause = "role != 'DELETED'")
 	@JoinColumn(name = "user_id")
 	private Users user;
 

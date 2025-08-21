@@ -14,6 +14,7 @@ import jakarta.persistence.Table;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Where;
 
 @Entity
 @Getter
@@ -32,6 +33,7 @@ public class Order extends BaseEntity {
 	private String orderUid; // 주문 번호
 
 	@ManyToOne(fetch = FetchType.LAZY)
+	@Where(clause = "role != 'DELETED'")
 	@JoinColumn(name = "member_id")
 	private Users user;
 

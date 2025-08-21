@@ -15,6 +15,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Where;
 
 @Entity
 @Getter
@@ -32,6 +33,7 @@ public class Review extends BaseEntity {
 	private ProProfile proProfile;
 
 	@ManyToOne(fetch = FetchType.LAZY)
+	@Where(clause = "role != 'DELETED'")
 	@JoinColumn(name = "user_id")
 	private Users user;
 

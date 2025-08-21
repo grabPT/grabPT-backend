@@ -28,6 +28,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Where;
 
 @Entity
 @Getter
@@ -35,6 +36,7 @@ import lombok.Setter;
 @DynamicUpdate
 @DynamicInsert
 @Builder
+@Where(clause = "role != 'DELETED'")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class Users extends BaseEntity {

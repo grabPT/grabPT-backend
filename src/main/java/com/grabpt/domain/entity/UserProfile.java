@@ -23,6 +23,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Where;
 
 @Entity
 @Getter
@@ -40,6 +41,7 @@ public class UserProfile extends BaseEntity {
 	private Long id;
 
 	@OneToOne
+	@Where(clause = "role != 'DELETED'")
 	@JoinColumn(name = "user_id")
 	private Users user;
 

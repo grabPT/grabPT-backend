@@ -16,6 +16,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Where;
 
 @Entity
 @Getter
@@ -29,6 +30,7 @@ public class UserChatRoom extends BaseEntity {
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
+	@Where(clause = "role != 'DELETED'")
 	@JoinColumn(name = "user_id", nullable = false)
 	private Users user;
 
@@ -37,6 +39,7 @@ public class UserChatRoom extends BaseEntity {
 	private ChatRooms chatRoom;
 
 	@ManyToOne(fetch = FetchType.LAZY)
+	@Where(clause = "role != 'DELETED'")
 	@JoinColumn(name = "other_user_id", nullable = false)
 	private Users otherUser;
 

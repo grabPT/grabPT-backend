@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
+import org.hibernate.annotations.Where;
 import org.springframework.data.annotation.CreatedDate;
 
 import com.grabpt.domain.common.BaseEntity;
@@ -41,6 +42,7 @@ public class Messages extends BaseEntity {
 	private Long id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
+	@Where(clause = "role != 'DELETED'")
 	@JoinColumn(name = "sender_id")
 	private Users sender;
 

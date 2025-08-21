@@ -111,6 +111,7 @@ public class RequestionResponseDto {
 	@AllArgsConstructor
 	@Builder
 	public static class UserOwnRequestionDto {
+		private Long requestionId;
 		private String nickname;
 		private String profileImageUrl;
 
@@ -137,6 +138,7 @@ public class RequestionResponseDto {
 			Address address = user.getAddress();
 
 			return UserOwnRequestionDto.builder()
+				.requestionId(requestion.getId())
 				.nickname(user.getNickname())
 				.profileImageUrl(user.getProfileImageUrl())
 				.city(address.getCity())

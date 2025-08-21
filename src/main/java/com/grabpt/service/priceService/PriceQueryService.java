@@ -20,13 +20,11 @@ public class PriceQueryService {
 	public IntAvgPriceResult getAvgUnitPrice(String categoryName, String city, String district, String street) {
 		String fullRegion = buildFullRegion(city, district, street);
 
-		double avg = requestionRepository.avgUnitPriceByCategoryAndRegion(categoryName, fullRegion); // double
+		double avg = requestionRepository.avgUnitPriceByCategoryAndRegion(categoryName, fullRegion);
 		long cnt = requestionRepository.countByCategoryAndRegion(categoryName, fullRegion);
 
-		// 소수점 제거 방식 선택:
-		int avgInt = (int)Math.floor(avg);         // ① 버림 (기본)
-		// int avgInt = (int) Math.round(avg);      // ② 반올림
-		// int avgInt = (int) Math.ceil(avg);       // ③ 올림
+		// 1,000원 단위 반올림
+		int avgInt = (int)(Math.round(avg / 1000.0) * 1000);
 
 		return new IntAvgPriceResult(avgInt, cnt);
 	}

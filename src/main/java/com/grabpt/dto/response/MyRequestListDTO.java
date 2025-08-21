@@ -25,6 +25,7 @@ public class MyRequestListDTO {
 	// 추가
 	private String proNickname;
 	private Long proProfileId;
+	private boolean canWriteReview;
 
 	public void setProNickname(String proNickname) {
 		this.proNickname = proNickname;
@@ -32,6 +33,10 @@ public class MyRequestListDTO {
 
 	public void setProProfileId(Long proId) {
 		this.proProfileId = proId;
+	}
+
+	public void setCanWriteReview(boolean canWriteReview) {
+		this.canWriteReview = canWriteReview;
 	}
 
 	@Getter

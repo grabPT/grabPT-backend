@@ -109,11 +109,11 @@ public class RequestionServiceImpl implements RequestionService {
 
 		Address addr = findProUser.getAddress();
 		findProUser.getProProfile().getCategory().getId();
-		String proAddressPrefix = buildAddressPrefix(addr); // "서울시 강남구 역삼동"
+		String proAddressPrefix = buildAddressPrefix(addr); // "서울 강남구 역삼동"
 		log.info("RequestServiceImpl pro address prefix = {}", proAddressPrefix);
 
 		if (proAddressPrefix.isBlank()) {
-			// 주소가 비어있다면 빈 결과 반환 혹은 예외 처리 중 택1
+			// 주소가 비어있다면 빈 결과 반환
 			return Page.empty(pageable);
 		}
 
@@ -270,7 +270,7 @@ public class RequestionServiceImpl implements RequestionService {
 		if (addr.getStreet() != null && !addr.getStreet().isBlank())
 			parts.add(addr.getStreet().trim());
 
-		// "서울시 강남구 역삼동" 형태
+		// "서울 강남구 역삼동" 형태
 		String joined = String.join(" ", parts).replaceAll("\\s+", " ").trim();
 		return joined;
 	}

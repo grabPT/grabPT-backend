@@ -60,6 +60,6 @@ public class RequestionRequestDto {
 	private LocalDate startPreference;
 
 	@NotNull
-	@Schema(description = "지역", example = "성북동")
+	@Schema(description = "지역", example = "서울 강남구 성북동")
 	private String location;
 }

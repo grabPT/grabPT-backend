@@ -2,6 +2,7 @@ package com.grabpt.service.RequestionService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +23,7 @@ import com.grabpt.dto.request.RequestionRequestDto;
 import com.grabpt.dto.response.RequestionResponseDto;
 import com.grabpt.dto.response.UserResponseDto;
 import com.grabpt.repository.CategoryRepository.CategoryRepository;
+import com.grabpt.repository.MatchingRepository.MatchingRepository;
 import com.grabpt.repository.RequestionRepository.RequestionRepository;
 import com.grabpt.repository.UserRepository.UserRepository;
 import com.grabpt.service.AlarmService.AlarmService;
@@ -43,6 +45,7 @@ public class RequestionServiceImpl implements RequestionService {
 	private final UserQueryService userQueryService;
 	private final ProfileService profileService;
 	private final AlarmService alarmService;
+	private final MatchingRepository matchingRepository;
 
 	@Override
 	public List<Requestions> getReqeustions(String categoryCode, Pageable pageable) {
@@ -194,8 +197,28 @@ public class RequestionServiceImpl implements RequestionService {
 		UserResponseDto.UserInfoDTO userInfo = userQueryService.getUserInfo(request);
 		String email = userInfo.getEmail();
 
-		Page<Requestions> requestions = requestionRepository.findAllByUserEmail(email, pageable);
-		return requestions.map(RequestionResponseDto.UserOwnRequestionDto::from);
+		Page<Requestions> page = requestionRepository.findAllByUserEmail(email, pageable);
+
+		// 1) 현재 페이지의 요청서 IDs
+		List<Long> reqIds = page.getContent().stream()
+			.map(Requestions::getId)
+			.toList();
+
+		// 2) 요청서 ID들에 대한 매칭을 한 번에 로드
+		var matchings = matchingRepository.findAllWithProByRequestionIds(reqIds);
+
+		// 3) reqId -> proProfileId 맵 구성
+		var reqIdToProId = matchings.stream()
+			.collect(Collectors.toMap(
+				m -> m.getRequestion().getId(),
+				m -> m.getSuggestion().getProProfile().getId()
+			));
+
+		// 4) DTO 매핑 시 proProfileId 주입 (없으면 null)
+		return page.map(req -> {
+			Long proProfileId = reqIdToProId.get(req.getId());
+			return RequestionResponseDto.UserOwnRequestionDto.from(req, proProfileId);
+		});
 	}
 
 	@Override

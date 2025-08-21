@@ -24,6 +24,7 @@ import com.grabpt.dto.response.RequestionResponseDto;
 import com.grabpt.dto.response.UserResponseDto;
 import com.grabpt.repository.CategoryRepository.CategoryRepository;
 import com.grabpt.repository.MatchingRepository.MatchingRepository;
+import com.grabpt.repository.ProProfileRepository.ProProfileRepository;
 import com.grabpt.repository.RequestionRepository.RequestionRepository;
 import com.grabpt.repository.UserRepository.UserRepository;
 import com.grabpt.service.AlarmService.AlarmService;
@@ -46,6 +47,7 @@ public class RequestionServiceImpl implements RequestionService {
 	private final ProfileService profileService;
 	private final AlarmService alarmService;
 	private final MatchingRepository matchingRepository;
+	private final ProProfileRepository proProfileRepository;
 
 	@Override
 	public List<Requestions> getReqeustions(String categoryCode, Pageable pageable) {
@@ -211,7 +213,7 @@ public class RequestionServiceImpl implements RequestionService {
 	@Override
 	@Transactional(readOnly = true)
 	public Page<RequestionResponseDto.UserOwnRequestionDto> getRequestionsByUser(HttpServletRequest request,
-		Pageable pageable) throws IllegalAccessException {
+		Pageable pageable) throws IllegalAccessException, NullPointerException {
 		UserResponseDto.UserInfoDTO userInfo = userQueryService.getUserInfo(request);
 		String email = userInfo.getEmail();
 
@@ -235,7 +237,16 @@ public class RequestionServiceImpl implements RequestionService {
 		// 4) DTO 매핑 시 proProfileId 주입 (없으면 null)
 		return page.map(req -> {
 			Long proProfileId = reqIdToProId.get(req.getId());
-			return RequestionResponseDto.UserOwnRequestionDto.from(req, proProfileId);
+
+			String proNickname = null;
+			if (proProfileId != null) {
+				proNickname = proProfileRepository.findById(proProfileId)
+					.map(pp -> pp.getUser())
+					.map(Users::getNickname)
+					.orElse(null); // Optional.get() 사용 금지
+			}
+
+			return RequestionResponseDto.UserOwnRequestionDto.from(req, proProfileId, proNickname);
 		});
 	}
 

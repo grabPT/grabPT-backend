@@ -47,7 +47,7 @@ public class ChatConverter {
 			.userId(userChatRoom.getUser().getId())
 			.unreadCount(unreadCount)
 			.otherUserProfile(userChatRoom.getOtherUser().getProfileImageUrl())
-			.roomName(userChatRoom.getRoomName())
+			.roomName(userChatRoom.getOtherUser().getNickname())
 			.lastMessage(userChatRoom.getChatRoom().getLastMessage())
 			.lastMessageTime(userChatRoom.getChatRoom().getLastMessageTime())
 			.build();

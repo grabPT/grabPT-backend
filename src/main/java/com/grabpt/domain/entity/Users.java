@@ -67,7 +67,7 @@ public class Users extends BaseEntity {
 	@Column(name = "oauth_id")
 	private String oauthId;
 
-	@Column(nullable = false, unique = true)
+	@Column(nullable = false)
 	private String email;
 
 	@Enumerated(EnumType.STRING)

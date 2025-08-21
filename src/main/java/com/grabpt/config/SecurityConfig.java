@@ -104,6 +104,8 @@ public class SecurityConfig {
 				.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 				.requestMatchers("/ws-connect/**").permitAll()
 
+				.requestMatchers(HttpMethod.GET, "/reviews/**").permitAll()
+
 				// 온보딩/인증 관련
 				.requestMatchers(
 					"/favicon.ico",

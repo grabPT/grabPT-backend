@@ -49,7 +49,7 @@ public class ReviewServiceImpl implements ReviewService {
 
 	@Override
 	public void deleteReview(Long userId, Long reviewId) {
-		Review review = reviewRepository.findByUser_IdAndIdOOrderByCreatedAtDesc(userId,reviewId);
+		Review review = reviewRepository.findByUser_IdAndIdOrderByCreatedAtDesc(userId, reviewId);
 
 		reviewRepository.delete(review);
 	}

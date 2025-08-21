@@ -292,8 +292,18 @@ public class ProfileServiceImpl implements ProfileService {
 		user.setPreviousRole(user.getRole());
 		user.setRole(Role.DELETED);
 		user.setDeletedAt(LocalDateTime.now());
-
 		user.setDeletionReason(deletedRequest.getDeletionReason());
+		user.setUsername("탈퇴한 회원");
+		user.setNickname("탈퇴한 회원");
+		user.setEmail("deleted@" + user.getId());
+		user.setOauthId(null);
+		user.setOauthProvider(null);
+		user.setPhone_number("");
+		user.setProfileImageUrl(null);
+		user.setRefreshToken(null);
+		user.setUserProfile(null);
+		user.setProProfile(null);
+
 		userRepository.save(user);
 	}
 

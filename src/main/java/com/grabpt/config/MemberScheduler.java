@@ -27,6 +27,8 @@ public class MemberScheduler {
 			user.setUsername("탈퇴한 회원");
 			user.setNickname("탈퇴한 회원");
 			user.setEmail("deleted@" + user.getId());
+			user.setOauthId(null);
+			user.setOauthProvider(null);
 			user.setPhone_number("");
 			user.setProfileImageUrl(null);
 			user.setRefreshToken(null);

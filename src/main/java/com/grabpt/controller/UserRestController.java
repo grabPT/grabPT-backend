@@ -3,6 +3,7 @@ package com.grabpt.controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.grabpt.apiPayload.ApiResponse;
@@ -15,6 +16,8 @@ import com.grabpt.repository.UserRepository.UserRepository;
 import com.grabpt.service.UserService.UserQueryService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -48,4 +51,25 @@ public class UserRestController {
 		return ApiResponse.onSuccess(token);
 	}
 
+	@GetMapping("/check-phone")
+	@Operation(
+		summary = "휴대폰 번호 사용 가능 여부 확인",
+		description = "phoneNumber 파라미터를 받아 해당 번호로 가입된 계정이 없으면 true(사용 가능), "
+			+ "있으면 false(이미 존재하여 사용 불가)를 반환합니다."
+	)
+	@Parameters({
+		@Parameter(name = "phoneNumber", description = "확인할 휴대폰 번호", required = true, example = "01012345678")
+	})
+	public ApiResponse<Boolean> checkPhone(@RequestParam String phoneNumber) {
+		// 숫자만 남기도록 정규화
+		String normalized = phoneNumber.replaceAll("[^0-9]", "");
+
+		// DB에 존재 여부 확인
+		boolean exists = userRepository.existsActiveByPhone(normalized);
+
+		// true → 사용 가능, false → 이미 존재
+		boolean available = !exists;
+
+		return ApiResponse.onSuccess(available);
+	}
 }

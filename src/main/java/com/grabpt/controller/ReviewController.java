@@ -19,6 +19,7 @@ import com.grabpt.apiPayload.exception.handler.UserHandler;
 import com.grabpt.domain.entity.Users;
 import com.grabpt.dto.request.ReviewRequestDTO;
 import com.grabpt.dto.response.MyReviewListDTO;
+import com.grabpt.dto.response.ReviewListDto;
 import com.grabpt.dto.response.UserResponseDto;
 import com.grabpt.repository.UserRepository.UserRepository;
 import com.grabpt.service.ProfileService.ProfileService;
@@ -43,13 +44,13 @@ public class ReviewController {
 		summary = "해당 전문가의 리뷰 확인"
 	)
 	@GetMapping("/{userId}")
-	public ApiResponse<Page<MyReviewListDTO>> getProReviews(
+	public ApiResponse<Page<ReviewListDto>> getProReviews(
 		@PathVariable(name = "userId") Long userId,
 		@RequestParam(defaultValue = "1") int page,
 		@RequestParam(defaultValue = "10") int size) {
 
 		Pageable pageable = PageRequest.of(Math.max(page - 1, 0), size);
-		Page<MyReviewListDTO> reviews = profileService.findProReviews(userId, pageable);
+		Page<ReviewListDto> reviews = profileService.findProProReviews(userId, pageable);
 		return ApiResponse.onSuccess(reviews);
 	}
 

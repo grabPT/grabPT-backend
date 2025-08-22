@@ -22,6 +22,7 @@ import com.grabpt.domain.entity.PtPrice;
 import com.grabpt.domain.entity.Requestions;
 import com.grabpt.domain.entity.Review;
 import com.grabpt.domain.entity.Users;
+import com.grabpt.domain.enums.MatchingStatus;
 import com.grabpt.domain.enums.Role;
 import com.grabpt.dto.request.CenterUpdateRequestDTO;
 import com.grabpt.dto.request.CertificationUpdateRequestDTO;
@@ -37,6 +38,7 @@ import com.grabpt.dto.response.MyRequestListDTO;
 import com.grabpt.dto.response.MyReviewListDTO;
 import com.grabpt.dto.response.ProProfileResponseDTO;
 import com.grabpt.dto.response.ProfileResponseDTO;
+import com.grabpt.dto.response.ReviewListDto;
 import com.grabpt.repository.MatchingRepository.MatchingRepository;
 import com.grabpt.repository.ProProfileRepository.ProProfileRepository;
 import com.grabpt.repository.RequestionRepository.RequestionRepository;
@@ -80,31 +82,29 @@ public class ProfileServiceImpl implements ProfileService {
 		Page<Requestions> page = requestionRepository
 			.findAllByUserIdOrderByCreatedAtDesc(userId, pageable);
 
-		// 2) 요청서 ID 목록 추출
 		List<Long> requestionIds = page.stream()
 			.map(Requestions::getId)
 			.toList();
 
-		// 요청서가 없으면 바로 매핑해서 리턴
 		if (requestionIds.isEmpty()) {
 			return page.map(MyRequestListDTO::new);
 		}
 
-		// 3) Matching을 요청서 ID 기준으로 한 번에 로드 (pro의 user까지 fetch join)
+		// 2) 매칭 한 번에 조회
 		List<Matching> matchings = matchingRepository.findAllWithProByRequestionIds(requestionIds);
-
-		// 4) requestionId → Matching 매핑
 		Map<Long, Matching> matchingMap = matchings.stream()
 			.collect(Collectors.toMap(m -> m.getRequestion().getId(), m -> m));
 
-		// 5) DTO 매핑 + pro 정보 세팅
+		// 3) DTO 변환
 		return page.map(req -> {
 			MyRequestListDTO dto = new MyRequestListDTO(req);
 			Matching m = matchingMap.get(req.getId());
 			if (m != null) {
-				// pro 닉네임 / proId 세팅
 				dto.setProNickname(m.getSuggestion().getProProfile().getUser().getNickname());
 				dto.setProProfileId(m.getSuggestion().getProProfile().getId());
+
+				// 매칭 상태가 COMPLETED일 때만 리뷰 작성 가능
+				dto.setCanWriteReview(m.getStatus() == MatchingStatus.COMPLETED);
 			}
 			return dto;
 		});
@@ -112,7 +112,7 @@ public class ProfileServiceImpl implements ProfileService {
 
 	@Override
 	public Page<MyReviewListDTO> findMyReviews(Long userId, Pageable pageable) {
-		Page<Review> reviews = reviewRepository.findAllByUserIdOrderByCreatedAt(userId, pageable);
+		Page<Review> reviews = reviewRepository.findAllByUserIdOrderByCreatedAtDesc(userId, pageable);
 		return reviews.map(MyReviewListDTO::from);
 	}
 
@@ -162,9 +162,20 @@ public class ProfileServiceImpl implements ProfileService {
 		if (user.getProProfile() == null) {
 			throw new GeneralException(ErrorStatus.MEMBER_NOT_FOUND);
 		}
-		Page<Review> reviews = reviewRepository.findAllByProProfile_IdOrderByCreatedAt(user.getProProfile().getId(),
+		Page<Review> reviews = reviewRepository.findAllByProProfile_IdOrderByCreatedAtDesc(user.getProProfile().getId(),
 			pageable);
 		return reviews.map(MyReviewListDTO::from);
+	}
+
+	@Override
+	public Page<ReviewListDto> findProProReviews(Long userId, Pageable pageable) {
+		Users user = findUserById(userId);
+		if (user.getProProfile() == null) {
+			throw new GeneralException(ErrorStatus.MEMBER_NOT_FOUND);
+		}
+		Page<Review> reviews = reviewRepository.findAllByProProfile_IdOrderByCreatedAtDesc(user.getProProfile().getId(),
+			pageable);
+		return reviews.map(ReviewListDto::from);
 	}
 
 	@Override
@@ -180,7 +191,7 @@ public class ProfileServiceImpl implements ProfileService {
 
 		Long proId = user.getProProfile().getId();
 
-		Page<Review> reviews = reviewRepository.findAllByProProfile_IdOrderByCreatedAt(proId, pageable);
+		Page<Review> reviews = reviewRepository.findAllByProProfile_IdOrderByCreatedAtDesc(proId, pageable);
 
 		return reviews.map(MyReviewListDTO::from);
 	}

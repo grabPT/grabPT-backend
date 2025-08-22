@@ -14,6 +14,7 @@ import com.grabpt.dto.response.MyRequestListDTO;
 import com.grabpt.dto.response.MyReviewListDTO;
 import com.grabpt.dto.response.ProProfileResponseDTO;
 import com.grabpt.dto.response.ProfileResponseDTO;
+import com.grabpt.dto.response.ReviewListDto;
 
 public interface ProfileService {
 	ProfileResponseDTO.MyProfileDTO findMyUserProfile(Long userId);
@@ -30,6 +31,8 @@ public interface ProfileService {
 	Page<MyReviewListDTO> findProReviews(Long userId, Pageable pageable);
 
 	ProProfileResponseDTO findProProfileByUser(Long userId);
+
+	Page<ReviewListDto> findProProReviews(Long userId, Pageable pageable);
 
 	Page<MyReviewListDTO> findReviewsByUserId(Long userId, Pageable pageable);
 

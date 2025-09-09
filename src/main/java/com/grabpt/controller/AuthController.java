@@ -3,7 +3,6 @@ package com.grabpt.controller;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -90,20 +89,12 @@ public class AuthController {
 	)
 	@PostMapping("/reissue")
 	public ResponseEntity<Void> reissueToken(HttpServletRequest request, HttpServletResponse response) {
-
 		log.info("reissue 진입");
 
-		String refreshToken = null;
-		if (request.getCookies() != null) {
-			for (var c : request.getCookies()) {
-				if ("refreshToken".equals(c.getName())) {
-					refreshToken = c.getValue();
-					break;
-				}
-			}
-		}
+		String refreshToken = findCookieValue(request,
+			"Refresh-Token", "refreshToken", "refresh", "REFRESH_TOKEN");
 
-		if (refreshToken == null) {
+		if (refreshToken == null || refreshToken.isBlank()) {
 			response.setHeader("X-Reason", "missing-cookie");
 			log.warn("[REISSUE] missing refresh cookie");
 			return unauthorizedAndClear(response);
@@ -140,7 +131,7 @@ public class AuthController {
 			return unauthorizedAndClear(response);
 		}
 
-		// 재발급 (회전)
+		// 회전
 		var userDetails = userDetailsService.loadUserByUsername(email);
 		var authentication = new UsernamePasswordAuthenticationToken(
 			userDetails, null, userDetails.getAuthorities());
@@ -148,21 +139,42 @@ public class AuthController {
 		String newAccessToken = jwtTokenProvider.generateToken(authentication);
 		String newRefreshToken = jwtTokenProvider.createRefreshToken(email);
 
-		// DB 교체(회전)
 		user.setRefreshToken(newRefreshToken);
 		userRepository.save(user);
 
-		// 쿠키 세팅
+		// 새 이름만 재발급
 		response.addHeader("Set-Cookie", CookieSupport.accessCookie(newAccessToken).toString());
 		response.addHeader("Set-Cookie", CookieSupport.refreshCookie(newRefreshToken).toString());
 
+		// 레거시 이름 정리(있다면 제거)
+		response.addHeader("Set-Cookie", CookieSupport.deleteCookieHostOnly("refreshToken").toString());
+		response.addHeader("Set-Cookie", CookieSupport.deleteCookieHostOnly("refresh").toString());
+
 		return ResponseEntity.noContent().build();
+	}
+
+	/** 여러 후보명 중 첫 번째로 발견되는 쿠키 값 */
+	private static String findCookieValue(HttpServletRequest req, String... names) {
+		var cs = req.getCookies();
+		if (cs == null)
+			return null;
+		for (String n : names) {
+			for (var c : cs) {
+				if (n.equals(c.getName()) && c.getValue() != null && !c.getValue().isBlank()) {
+					return c.getValue();
+				}
+			}
+		}
+		return null;
 	}
 
 	private ResponseEntity<Void> unauthorizedAndClear(HttpServletResponse res) {
 		res.addHeader("Set-Cookie", CookieSupport.deleteAccessCookie().toString());
 		res.addHeader("Set-Cookie", CookieSupport.deleteRefreshCookie().toString());
-		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		// 레거시 이름도 함께 제거
+		res.addHeader("Set-Cookie", CookieSupport.deleteCookieHostOnly("refreshToken").toString());
+		res.addHeader("Set-Cookie", CookieSupport.deleteCookieHostOnly("refresh").toString());
+		return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
 	}
 
 	@Operation(

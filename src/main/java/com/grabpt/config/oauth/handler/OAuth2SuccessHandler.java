@@ -18,6 +18,7 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 
 import com.grabpt.config.jwt.JwtTokenProvider;
+import com.grabpt.config.jwt.properties.CookieSupport;
 import com.grabpt.config.oauth.CookieProfiles;
 import com.grabpt.config.oauth.CookieUtils;
 import com.grabpt.config.oauth.HttpCookieOAuth2AuthorizationRequestRepository;
@@ -138,6 +139,9 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 				roleCookie(b64(roleStr), Duration.ofMinutes(10), prof).toString());
 			response.addHeader(HttpHeaders.SET_COOKIE,
 				userIdCookie(b64(oauthUser.getId().toString()), Duration.ofMinutes(10), prof).toString());
+
+			response.addHeader(HttpHeaders.SET_COOKIE, CookieSupport.deleteCookieHostOnly("refreshToken").toString());
+			response.addHeader(HttpHeaders.SET_COOKIE, CookieSupport.deleteCookieHostOnly("refresh").toString());
 
 			// 세션/컨텍스트 정리
 			org.springframework.security.core.context.SecurityContextHolder.clearContext();

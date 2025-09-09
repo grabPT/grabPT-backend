@@ -2,9 +2,7 @@ package com.grabpt.config.oauth;
 
 import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
-import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 
-import com.grabpt.config.oauth.handler.FrontendRoutingSupport;
 import com.nimbusds.oauth2.sdk.util.StringUtils;
 
 import jakarta.servlet.http.Cookie;
@@ -22,10 +20,12 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
 
 	@Override
 	public OAuth2AuthorizationRequest loadAuthorizationRequest(HttpServletRequest request) {
-		log.debug("[OAUTH][LOAD] uri={} method={} cookieCount={}",
+		log.debug("[OAUTH][LOAD] uri={} method={} sessionId={} cookieCount={}",
 			request.getRequestURI(), request.getMethod(),
+			request.getRequestedSessionId(),
 			request.getCookies() == null ? 0 : request.getCookies().length);
 
+		// 관심있는 쿠키만 길이/접두어 출력
 		if (request.getCookies() != null) {
 			for (Cookie c : request.getCookies()) {
 				if (c.getName().equals(OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME)
@@ -43,6 +43,7 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
 			var req = CookieUtils.getCookie(request, OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME)
 				.map(c -> CookieUtils.deserialize(c, OAuth2AuthorizationRequest.class))
 				.orElse(null);
+			log.debug("[OAUTH][LOAD] found? {}", req != null);
 			if (req != null) {
 				log.debug("[OAUTH][LOAD] clientId={} state={} redirectUri={}",
 					req.getClientId(), req.getState(), req.getRedirectUri());
@@ -59,52 +60,45 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
 		HttpServletRequest request,
 		HttpServletResponse response) {
 		boolean isNull = (authorizationRequest == null);
-		log.debug("[OAUTH][SAVE] uri={} isNull={} ua={}",
-			request.getRequestURI(), isNull, request.getHeader("User-Agent"));
+		log.debug("[OAUTH][SAVE] uri={} isNull={} referer={} ua={}",
+			request.getRequestURI(), isNull,
+			request.getHeader("Referer"), request.getHeader("User-Agent"));
 
 		if (authorizationRequest == null) {
-			// 성공/실패 시점에만 삭제
+			// ★ 여기선 삭제하지 않음 (조기 삭제 방지)
 			return;
 		}
 
-		// redirectUri를 '백엔드 기준'으로 강제 교체
-		String regId = (String)authorizationRequest.getAttributes().get(OAuth2ParameterNames.REGISTRATION_ID);
-		if (regId == null || regId.isBlank())
-			regId = "google"; // fallback
-		String backendBase = FrontendRoutingSupport.backendBase(request);
-		String fixedRedirect = backendBase + "/login/oauth2/code/" + regId;
+		log.debug("[OAUTH][SAVE] clientId={} state={} redirectUri={}",
+			authorizationRequest.getClientId(),
+			authorizationRequest.getState(),
+			authorizationRequest.getRedirectUri());
 
-		OAuth2AuthorizationRequest fixed =
-			OAuth2AuthorizationRequest.from(authorizationRequest)
-				.redirectUri(fixedRedirect)
-				.build();
-
-		log.debug("[OAUTH][SAVE] clientId={} state={} redirectUri={} (fixed)",
-			fixed.getClientId(), fixed.getState(), fixed.getRedirectUri());
-
-		// state(authorizationRequest) 쿠키 – 로컬/운영에 맞춰 굽기
-		String serialized = CookieUtils.serialize(fixed);
+		String serialized = CookieUtils.serialize(authorizationRequest);
 		log.debug("[OAUTH][SAVE] serializedLen={}", serialized.length());
-		FrontendRoutingSupport.addTempCookie(request, response,
-			OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME, serialized, COOKIE_EXPIRE_SECONDS, true);
+		CookieUtils.addCookie(response,
+			OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME,
+			serialized,
+			COOKIE_EXPIRE_SECONDS);
 
-		// (옵션) 프론트가 넘긴 redirect_uri 파라미터도 보존하고 싶다면
-		String redirectUriParam = request.getParameter(REDIRECT_URI_PARAM_COOKIE_NAME);
-		log.debug("[OAUTH][SAVE] redirect_uri param={}", redirectUriParam);
-		if (StringUtils.isNotBlank(redirectUriParam)) {
-			FrontendRoutingSupport.addTempCookie(request, response,
-				REDIRECT_URI_PARAM_COOKIE_NAME, redirectUriParam, COOKIE_EXPIRE_SECONDS, true);
+		String redirectUri = request.getParameter(REDIRECT_URI_PARAM_COOKIE_NAME);
+		log.debug("[OAUTH][SAVE] redirect_uri param={}", redirectUri);
+		if (StringUtils.isNotBlank(redirectUri)) {
+			CookieUtils.addCookie(response,
+				REDIRECT_URI_PARAM_COOKIE_NAME,
+				redirectUri,
+				COOKIE_EXPIRE_SECONDS);
 		}
 	}
 
-	// 실제 삭제는 여기서만 수행
+	// 실제 삭제는 여기서만 수행 (성공/실패 처리 시점)
 	@Override
 	public OAuth2AuthorizationRequest removeAuthorizationRequest(HttpServletRequest request,
 		HttpServletResponse response) {
 		log.debug("[OAUTH][REMOVE] uri={}", request.getRequestURI());
 		var req = loadAuthorizationRequest(request);
-		FrontendRoutingSupport.deleteTempCookie(request, response, OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME);
-		FrontendRoutingSupport.deleteTempCookie(request, response, REDIRECT_URI_PARAM_COOKIE_NAME);
+		CookieUtils.deleteCookie(response, OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME);
+		CookieUtils.deleteCookie(response, REDIRECT_URI_PARAM_COOKIE_NAME);
 		return req;
 	}
 }

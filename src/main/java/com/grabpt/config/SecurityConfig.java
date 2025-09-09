@@ -12,7 +12,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.web.SecurityFilterChain;
@@ -25,10 +24,8 @@ import com.grabpt.config.auth.PrincipalDetailsService;
 import com.grabpt.config.jwt.CsrfOriginFilter;
 import com.grabpt.config.jwt.JwtAuthenticationFilter;
 import com.grabpt.config.jwt.JwtTokenProvider;
-import com.grabpt.config.oauth.ForwardedAuthorizationRequestResolver;
 import com.grabpt.config.oauth.HttpCookieOAuth2AuthorizationRequestRepository;
 import com.grabpt.config.oauth.PrincipalOauth2UserService;
-import com.grabpt.config.oauth.handler.OAuth2FailureHandler;
 import com.grabpt.config.oauth.handler.OAuth2SuccessHandler;
 
 import lombok.RequiredArgsConstructor;
@@ -88,10 +85,7 @@ public class SecurityConfig {
 
 	@Bean
 	@Order(1)
-	public SecurityFilterChain filterChain(HttpSecurity http,
-		ClientRegistrationRepository clientRegistrationRepository) throws Exception {
-
-		var resolver = new ForwardedAuthorizationRequestResolver(clientRegistrationRepository);
+	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
 		http
 			.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -159,10 +153,8 @@ public class SecurityConfig {
 			.oauth2Login(oauth2 -> oauth2
 				.userInfoEndpoint(userInfo -> userInfo.userService(principalOauth2UserService))
 				.authorizationEndpoint(a -> a
-					.authorizationRequestResolver(resolver)
 					.authorizationRequestRepository(authorizationRequestRepository()))
 				.successHandler(oauth2SuccessHandler)
-				.failureHandler(new OAuth2FailureHandler())
 			);
 
 		return http.build();

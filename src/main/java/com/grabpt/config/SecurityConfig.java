@@ -89,9 +89,6 @@ public class SecurityConfig {
 
 		http
 			.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-			.securityContext(sc -> sc.securityContextRepository(
-				new org.springframework.security.web.context.NullSecurityContextRepository()
-			))
 			.cors(cors -> cors.configurationSource(corsConfigurationSource()))
 			.csrf(AbstractHttpConfigurer::disable)
 			.formLogin(AbstractHttpConfigurer::disable)

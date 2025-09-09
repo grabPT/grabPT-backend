@@ -43,10 +43,10 @@ public class SecurityConfig {
 	@Order(0)
 	public SecurityFilterChain wsFilterChain(HttpSecurity http) throws Exception {
 		http.securityMatcher(req -> {
-			String uri = req.getRequestURI(); // 예: //ws-connect/info
+			String uri = req.getRequestURI();            // 예: //ws-connect/info
 			if (uri == null)
 				return false;
-			String norm = uri.replaceAll("/{2,}", "/"); // // -> /
+			String norm = uri.replaceAll("/{2,}", "/");  // // -> /
 			return norm.startsWith("/ws-connect/");
 		});
 		http.authorizeHttpRequests(a -> a.anyRequest().permitAll())
@@ -86,9 +86,12 @@ public class SecurityConfig {
 	@Bean
 	@Order(1)
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
 		http
 			.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+			.securityContext(sc -> sc
+				.securityContextRepository(new org.springframework.security.web.context.NullSecurityContextRepository())
+			)
+
 			.cors(cors -> cors.configurationSource(corsConfigurationSource()))
 			.csrf(AbstractHttpConfigurer::disable)
 			.formLogin(AbstractHttpConfigurer::disable)
@@ -97,9 +100,10 @@ public class SecurityConfig {
 			.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
 
 			.authorizeHttpRequests(auth -> auth
-				// 1) 공개 엔드포인트(화이트리스트)
+				// 1) 공개 엔드포인트(화이트리스트) — 반드시 위쪽에!
 				.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 				.requestMatchers("/ws-connect/**").permitAll()
+
 				.requestMatchers(HttpMethod.GET, "/reviews/**").permitAll()
 
 				// 온보딩/인증 관련
@@ -130,10 +134,9 @@ public class SecurityConfig {
 
 			// 401/403 명확화
 			.exceptionHandling(ex -> ex
-				.authenticationEntryPoint(
-					new org.springframework.security.web.authentication.HttpStatusEntryPoint(
-						org.springframework.http.HttpStatus.UNAUTHORIZED)) // 401
-				.accessDeniedHandler((req, res, e) -> res.setStatus(403)) // 403
+				.authenticationEntryPoint(new org.springframework.security.web.authentication.HttpStatusEntryPoint(
+					org.springframework.http.HttpStatus.UNAUTHORIZED)) // 인증 없음 → 401
+				.accessDeniedHandler((req, res, e) -> res.setStatus(403)) // 인증됐지만 권한 없음 → 403
 			)
 
 			.headers(h -> h
@@ -148,8 +151,7 @@ public class SecurityConfig {
 
 			.oauth2Login(oauth2 -> oauth2
 				.userInfoEndpoint(userInfo -> userInfo.userService(principalOauth2UserService))
-				.authorizationEndpoint(a -> a
-					.authorizationRequestRepository(authorizationRequestRepository()))
+				.authorizationEndpoint(a -> a.authorizationRequestRepository(authorizationRequestRepository()))
 				.successHandler(oauth2SuccessHandler)
 			);
 
@@ -160,13 +162,15 @@ public class SecurityConfig {
 	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
 
-		// 패턴 기반(서브도메인/포트 허용) - 로컬 와일드카드 포함
+		// 패턴 기반(서브도메인/포트 허용)
 		configuration.setAllowedOriginPatterns(List.of(
 			"https://www.grabpt.com",
 			"https://grabpt.com",
-			"https://api.grabpt.com",
-			"http://localhost:*",
-			"http://127.0.0.1:*"
+			// --- local dev ---
+			"http://localhost:5173",
+			"http://127.0.0.1:5173",
+			"http://localhost:3000",
+			"http://127.0.0.1:3000"
 		));
 		configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
 		configuration.setAllowedHeaders(List.of("*"));

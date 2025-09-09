@@ -100,4 +100,14 @@ public final class CookieSupport {
 			.domain("grabpt.com").path("/")
 			.maxAge(60 * 30).build();
 	}
+
+	public static ResponseCookie deleteCookieHostOnly(String name) {
+		return ResponseCookie.from(name, "")
+			.path("/")
+			.maxAge(0)          // 즉시 만료
+			.httpOnly(true)
+			.secure(true)       // HTTPS 배포 환경 가정
+			.sameSite("None")   // cross-site 허용
+			.build();
+	}
 }

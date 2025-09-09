@@ -90,13 +90,20 @@ public class AuthController {
 	)
 	@PostMapping("/reissue")
 	public ResponseEntity<Void> reissueToken(HttpServletRequest request, HttpServletResponse response) {
+
 		log.info("reissue 진입");
 
-		// 1) 다양한 쿠키 이름 허용 (과거/현재 혼재 대응)
-		String refreshToken = findRefreshCookie(request,
-			"Refresh-Token", "refreshToken", "refresh", "REFRESH_TOKEN");
+		String refreshToken = null;
+		if (request.getCookies() != null) {
+			for (var c : request.getCookies()) {
+				if ("refreshToken".equals(c.getName())) {
+					refreshToken = c.getValue();
+					break;
+				}
+			}
+		}
 
-		if (refreshToken == null || refreshToken.isBlank()) {
+		if (refreshToken == null) {
 			response.setHeader("X-Reason", "missing-cookie");
 			log.warn("[REISSUE] missing refresh cookie");
 			return unauthorizedAndClear(response);
@@ -133,7 +140,7 @@ public class AuthController {
 			return unauthorizedAndClear(response);
 		}
 
-		// 2) 회전 재발급
+		// 재발급 (회전)
 		var userDetails = userDetailsService.loadUserByUsername(email);
 		var authentication = new UsernamePasswordAuthenticationToken(
 			userDetails, null, userDetails.getAuthorities());
@@ -141,44 +148,20 @@ public class AuthController {
 		String newAccessToken = jwtTokenProvider.generateToken(authentication);
 		String newRefreshToken = jwtTokenProvider.createRefreshToken(email);
 
-		// DB 저장(회전)
+		// DB 교체(회전)
 		user.setRefreshToken(newRefreshToken);
 		userRepository.save(user);
 
-		// 3) 쿠키 재세팅 — 배포 정책(도메인 grabpt.com, Secure, SameSite=None)은 CookieSupport가 하도록 유지
+		// 쿠키 세팅
 		response.addHeader("Set-Cookie", CookieSupport.accessCookie(newAccessToken).toString());
 		response.addHeader("Set-Cookie", CookieSupport.refreshCookie(newRefreshToken).toString());
-
-		// 4) 과거 이름 정리(있으면 제거)
-		response.addHeader("Set-Cookie", CookieSupport.deleteCookieHostOnly("refreshToken").toString());
-		response.addHeader("Set-Cookie", CookieSupport.deleteCookieHostOnly("refresh").toString());
 
 		return ResponseEntity.noContent().build();
 	}
 
-	/** 여러 후보 이름 중 첫 번째로 발견되는 refresh 쿠키 값을 반환 */
-	private static String findRefreshCookie(HttpServletRequest req, String... names) {
-		var cs = req.getCookies();
-		if (cs == null || names == null)
-			return null;
-		for (String n : names) {
-			for (var c : cs) {
-				if (n.equals(c.getName())) {
-					if (c.getValue() != null && !c.getValue().isBlank())
-						return c.getValue();
-				}
-			}
-		}
-		return null;
-	}
-
-	/** 401 + 토큰/레거시 쿠키 정리 */
 	private ResponseEntity<Void> unauthorizedAndClear(HttpServletResponse res) {
 		res.addHeader("Set-Cookie", CookieSupport.deleteAccessCookie().toString());
 		res.addHeader("Set-Cookie", CookieSupport.deleteRefreshCookie().toString());
-		// 레거시 이름도 함께 제거
-		res.addHeader("Set-Cookie", CookieSupport.deleteCookieHostOnly("refreshToken").toString());
-		res.addHeader("Set-Cookie", CookieSupport.deleteCookieHostOnly("refresh").toString());
 		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 	}
 

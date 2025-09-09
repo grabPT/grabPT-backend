@@ -65,7 +65,7 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
 			request.getHeader("Referer"), request.getHeader("User-Agent"));
 
 		if (authorizationRequest == null) {
-			// ★ 여기선 삭제하지 않음 (조기 삭제 방지)
+			// 여기선 삭제하지 않음 (조기 삭제 방지)
 			return;
 		}
 

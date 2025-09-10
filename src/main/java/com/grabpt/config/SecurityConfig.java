@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -19,6 +20,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.ForwardedHeaderFilter;
 
 import com.grabpt.config.auth.PrincipalDetailsService;
 import com.grabpt.config.jwt.CsrfOriginFilter;
@@ -43,17 +45,17 @@ public class SecurityConfig {
 	@Order(0)
 	public SecurityFilterChain wsFilterChain(HttpSecurity http) throws Exception {
 		http.securityMatcher(req -> {
-			String uri = req.getRequestURI();            // 예: //ws-connect/info
+			String uri = req.getRequestURI();
 			if (uri == null)
 				return false;
-			String norm = uri.replaceAll("/{2,}", "/");  // // -> /
+			String norm = uri.replaceAll("/{2,}", "/");
 			return norm.startsWith("/ws-connect/");
 		});
+
 		http.authorizeHttpRequests(a -> a.anyRequest().permitAll())
 			.csrf(AbstractHttpConfigurer::disable)
 			.cors(AbstractHttpConfigurer::disable)
 			.sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-		// 여기에는 커스텀 필터(JWT/CSRF) 절대 추가 X
 		return http.build();
 	}
 
@@ -91,22 +93,15 @@ public class SecurityConfig {
 			.securityContext(sc -> sc
 				.securityContextRepository(new org.springframework.security.web.context.NullSecurityContextRepository())
 			)
-
 			.cors(cors -> cors.configurationSource(corsConfigurationSource()))
 			.csrf(AbstractHttpConfigurer::disable)
 			.formLogin(AbstractHttpConfigurer::disable)
-
 			.addFilterBefore(new CsrfOriginFilter(), UsernamePasswordAuthenticationFilter.class)
 			.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
-
 			.authorizeHttpRequests(auth -> auth
-				// 1) 공개 엔드포인트(화이트리스트) — 반드시 위쪽에!
 				.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 				.requestMatchers("/ws-connect/**").permitAll()
-
 				.requestMatchers(HttpMethod.GET, "/reviews/**").permitAll()
-
-				// 온보딩/인증 관련
 				.requestMatchers(
 					"/favicon.ico",
 					"/api/auth/reissue",
@@ -115,8 +110,12 @@ public class SecurityConfig {
 					"/api/auth/pro-signup",
 					"/api/auth/check-nickname",
 					"/api/auth/api/temp-info",
-					"/swagger", "/swagger-ui.html", "/swagger-ui/**",
-					"/api-docs", "/api-docs/**", "/v3/api-docs/**",
+					"/swagger",
+					"/swagger-ui.html",
+					"/swagger-ui/**",
+					"/api-docs",
+					"/api-docs/**",
+					"/v3/api-docs/**",
 					"/api/v1/**",
 					"/api/users/**",
 					"/api/auth/**",
@@ -131,24 +130,19 @@ public class SecurityConfig {
 				.requestMatchers("/mypage", "/mypage/**").authenticated()
 				.anyRequest().authenticated()
 			)
-
-			// 401/403 명확화
 			.exceptionHandling(ex -> ex
 				.authenticationEntryPoint(new org.springframework.security.web.authentication.HttpStatusEntryPoint(
-					org.springframework.http.HttpStatus.UNAUTHORIZED)) // 인증 없음 → 401
-				.accessDeniedHandler((req, res, e) -> res.setStatus(403)) // 인증됐지만 권한 없음 → 403
+					org.springframework.http.HttpStatus.UNAUTHORIZED))
+				.accessDeniedHandler((req, res, e) -> res.setStatus(403))
 			)
-
 			.headers(h -> h
 				.frameOptions(f -> f.disable())
 				.contentSecurityPolicy(csp -> csp
 					.policyDirectives(
-						"frame-ancestors https://www.grabpt.com https://grabpt.com https://api.grabpt.com")
+						"frame-ancestors https://www.grabpt.com https://grabpt.com https://api.grabpt.com http://192.168.1.101:3000")
 				)
 			)
-
 			.authenticationProvider(authenticationProvider())
-
 			.oauth2Login(oauth2 -> oauth2
 				.userInfoEndpoint(userInfo -> userInfo.userService(principalOauth2UserService))
 				.authorizationEndpoint(a -> a.authorizationRequestRepository(authorizationRequestRepository()))
@@ -161,25 +155,30 @@ public class SecurityConfig {
 	@Bean
 	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
-
-		// 패턴 기반(서브도메인/포트 허용)
 		configuration.setAllowedOriginPatterns(List.of(
 			"https://www.grabpt.com",
 			"https://grabpt.com",
-			// --- local dev ---
 			"http://localhost:5173",
 			"http://127.0.0.1:5173",
 			"http://localhost:3000",
-			"http://127.0.0.1:3000"
+			"http://127.0.0.1:3000",
+			"http://192.168.1.101:3000",
+			"http://182.216.71.74:8080"
 		));
 		configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
 		configuration.setAllowedHeaders(List.of("*"));
 		configuration.setAllowCredentials(true);
 		configuration.setExposedHeaders(List.of("Authorization", "Location", "Content-Disposition", "Set-Cookie"));
 		configuration.setMaxAge(3600L);
-
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", configuration);
 		return source;
+	}
+
+	// 프록시/로드밸런서 환경에서 X-Forwarded-* 헤더 신뢰
+	@Bean
+	@Profile("prod")
+	public ForwardedHeaderFilter forwardedHeaderFilter() {
+		return new ForwardedHeaderFilter();
 	}
 }

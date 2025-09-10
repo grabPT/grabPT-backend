@@ -28,6 +28,7 @@ import com.grabpt.config.jwt.JwtAuthenticationFilter;
 import com.grabpt.config.jwt.JwtTokenProvider;
 import com.grabpt.config.oauth.HttpCookieOAuth2AuthorizationRequestRepository;
 import com.grabpt.config.oauth.PrincipalOauth2UserService;
+import com.grabpt.config.oauth.handler.OAuth2FailureHandler;
 import com.grabpt.config.oauth.handler.OAuth2SuccessHandler;
 
 import lombok.RequiredArgsConstructor;
@@ -40,6 +41,7 @@ public class SecurityConfig {
 	private final PrincipalDetailsService principalDetailsService;
 	private final JwtTokenProvider jwtTokenProvider;
 	private final OAuth2SuccessHandler oauth2SuccessHandler;
+	private final OAuth2FailureHandler oauth2FailureHandler;
 
 	@Bean
 	@Order(0)
@@ -125,8 +127,7 @@ public class SecurityConfig {
 					"/api/category-proprofile/**",
 					"/api/*/reviews",
 					"/api/alarmList",
-					"/api/auth/reissue",
-					"/login", "/login/**"
+					"/api/auth/reissue"
 				).permitAll()
 				.requestMatchers("/mypage", "/mypage/**").authenticated()
 				.anyRequest().authenticated()
@@ -148,6 +149,7 @@ public class SecurityConfig {
 				.userInfoEndpoint(userInfo -> userInfo.userService(principalOauth2UserService))
 				.authorizationEndpoint(a -> a.authorizationRequestRepository(authorizationRequestRepository()))
 				.successHandler(oauth2SuccessHandler)
+				.failureHandler(oauth2FailureHandler)
 			);
 
 		return http.build();

@@ -176,6 +176,8 @@ public class SecurityConfig {
 		configuration.setAllowCredentials(true);
 		configuration.setExposedHeaders(List.of("Authorization", "Location", "Content-Disposition", "Set-Cookie"));
 		configuration.setMaxAge(3600L);
+		configuration.addAllowedOrigin("http://localhost:5173");
+		configuration.addAllowedOrigin("http://localhost:8080");
 
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", configuration);

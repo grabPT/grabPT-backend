@@ -67,7 +67,7 @@ spring:
               - email
               - profile
             authorization-grant-type: authorization_code
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            redirect-uri: "https://www.grabpt.com/login/oauth2/code/{registrationId}"
 
           kakao:
             client-id: ${KAKAO_CLIENT_ID}
@@ -77,7 +77,7 @@ spring:
               - profile_nickname
               - profile_image
             authorization-grant-type: authorization_code
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            redirect-uri: "https://www.grabpt.com/login/oauth2/code/{registrationId}"
 
           naver:
             client-id: ${NAVER_CLIENT_ID}
@@ -88,7 +88,7 @@ spring:
               - profile_image
             client-name: Naver
             authorization-grant-type: authorization_code
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            redirect-uri: "https://www.grabpt.com/login/oauth2/code/{registrationId}"
 
         provider:
           naver:

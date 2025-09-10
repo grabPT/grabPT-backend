@@ -11,7 +11,6 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
-import org.springframework.security.oauth2.client.web.HttpSessionOAuth2AuthorizationRequestRepository;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -61,10 +60,9 @@ public class SecurityConfig {
 		return new BCryptPasswordEncoder();
 	}
 
-	// OAuth2 AuthorizationRequest를 세션에 저장 (쿠키 의존 제거)
 	@Bean
 	public AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository() {
-		return new HttpSessionOAuth2AuthorizationRequestRepository();
+		return new com.grabpt.config.oauth.HttpCookieOAuth2AuthorizationRequestRepository();
 	}
 
 	@Bean

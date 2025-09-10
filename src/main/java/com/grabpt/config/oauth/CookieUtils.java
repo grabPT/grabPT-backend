@@ -84,29 +84,61 @@ public class CookieUtils {
 	}
 
 	/** OAuth state/redirect 전용: prod는 None+Secure+Domain, dev는 Lax+insecure+host-only */
-	public static void addOAuthStateCookie(HttpServletResponse response, String name, String value, int maxAgeSeconds) {
-		boolean prod = isProdProfile();
+	public static void addOAuthStateCookie(HttpServletRequest request,
+		HttpServletResponse response,
+		String name, String value, int maxAgeSeconds) {
+		// 1) 프록시 환경 고려: X-Forwarded-Proto/Host 우선
+		String xfProto = opt(request.getHeader("X-Forwarded-Proto"));
+		String xfHost = opt(request.getHeader("X-Forwarded-Host"));
+		String scheme = xfProto != null ? xfProto : request.getScheme(); // http/https
+		String host = xfHost != null ? xfHost : request.getServerName(); // api.grabpt.com, localhost 등
+
+		// 포트 제거
+		if (host != null && host.contains(":"))
+			host = host.substring(0, host.indexOf(':'));
+
+		boolean isHttps = "https".equalsIgnoreCase(scheme);
+		boolean isLocal = isLocalHost(host);
+
 		ResponseCookie.ResponseCookieBuilder b = ResponseCookie.from(name, value)
 			.path("/")
 			.httpOnly(true)
 			.maxAge(Duration.ofSeconds(maxAgeSeconds));
 
-		if (prod) {
-			b.secure(true)
-				.sameSite("None")
-				.domain(PROD_COOKIE_DOMAIN_FOR_OAUTH);
+		if (isLocal) {
+			// 로컬은 host-only + Lax + Secure=false
+			b.sameSite("Lax").secure(false);
+			// domain 지정 X
 		} else {
-			b.secure(false)
-				.sameSite("Lax");
+			// 운영/스테이징: 쿠키가 Cross-Site로 콜백에 실려야 하므로 None + Secure
+			b.sameSite("None").secure(true);
+			// ⚠️ Domain은 "요청 Host"로 박아준다 (프록시 뒤에서도 일치)
+			// ex) api.grabpt.com
+			if (host != null && !host.isBlank() && !isIp(host)) {
+				b.domain(host);
+			}
 		}
 
-		var built = b.build();
-		log.debug(
-			"[COOKIE][ADD][OAUTH] name={} len={} domain={} path={} sameSite={} secure={} httpOnly={} maxAge={} -> {}",
-			name, value == null ? 0 : value.length(),
-			built.getDomain(), built.getPath(), built.getSameSite(), built.isSecure(),
-			built.isHttpOnly(), built.getMaxAge().getSeconds(), built.toString());
+		ResponseCookie built = b.build();
 		response.addHeader(HttpHeaders.SET_COOKIE, built.toString());
+
+		log.debug("[COOKIE][ADD][OAUTH] host={} scheme={} name={} sameSite={} secure={} domain={}",
+			host, scheme, name, built.getSameSite(), built.isSecure(), built.getDomain());
+	}
+
+	private static boolean isLocalHost(String host) {
+		if (host == null)
+			return true;
+		String h = host.toLowerCase();
+		return h.equals("localhost") || h.equals("127.0.0.1") || h.startsWith("192.168.") || isIp(h);
+	}
+
+	private static boolean isIp(String host) {
+		return host != null && host.matches("\\d+\\.\\d+\\.\\d+\\.\\d+");
+	}
+
+	private static String opt(String s) {
+		return (s == null || s.isBlank()) ? null : s;
 	}
 
 	private static void addDeletion(HttpServletResponse response, String name, String domainOrNull) {

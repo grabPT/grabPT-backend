@@ -1,7 +1,7 @@
 server:
   port: 8080
   address: 0.0.0.0
-  forward-headers-strategy: none
+  forward-headers-strategy: framework
 
 #  servlet:
 #    session:

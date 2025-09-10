@@ -2,6 +2,11 @@ server:
   port: 8080
   address: 0.0.0.0
   forward-headers-strategy: framework
+  servlet:
+    session:
+      cookie:
+        secure: true
+        same-site: None
 
 #  servlet:
 #    session:

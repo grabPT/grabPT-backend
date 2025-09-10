@@ -75,14 +75,13 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
 		String serialized = CookieUtils.serialize(authorizationRequest);
 		log.debug("[OAUTH][SAVE] serializedLen={}", serialized.length());
 
-		// OAuth state/redirect는 전용 발급자 사용 (SameSite=None;Secure;Domain=api.grabpt.com in prod)
-		CookieUtils.addOAuthStateCookie(response,
+		// 요청 Host에 맞춰 도메인/속성 동적 세팅
+		CookieUtils.addOAuthStateCookie(request, response,
 			OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME, serialized, COOKIE_EXPIRE_SECONDS);
 
 		String redirectUri = request.getParameter(REDIRECT_URI_PARAM_COOKIE_NAME);
-		log.debug("[OAUTH][SAVE] redirect_uri param={}", redirectUri);
 		if (StringUtils.isNotBlank(redirectUri)) {
-			CookieUtils.addOAuthStateCookie(response,
+			CookieUtils.addOAuthStateCookie(request, response,
 				REDIRECT_URI_PARAM_COOKIE_NAME, redirectUri, COOKIE_EXPIRE_SECONDS);
 		}
 	}

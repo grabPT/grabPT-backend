@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 
 import com.grabpt.config.jwt.JwtTokenProvider;
 import com.grabpt.config.oauth.DynamicCookieSupport;
-import com.grabpt.config.oauth.RedirectTargetResolver;
+import com.grabpt.config.oauth.support.RedirectTargetResolver;
 import com.grabpt.domain.entity.Users;
 import com.grabpt.domain.enums.Role;
 import com.grabpt.repository.UserRepository.UserRepository;
@@ -48,13 +48,14 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 		res.addHeader(HttpHeaders.SET_COOKIE, c.toString());
 	}
 
-	private static String getCookieValue(HttpServletRequest request, String name) {
+	private static String getCookieValue(HttpServletRequest request, String... names) {
 		Cookie[] cookies = request.getCookies();
 		if (cookies == null)
 			return null;
-		for (Cookie c : cookies)
-			if (name.equals(c.getName()))
-				return c.getValue();
+		for (String n : names)
+			for (Cookie c : cookies)
+				if (n.equals(c.getName()))
+					return c.getValue();
 		return null;
 	}
 
@@ -73,11 +74,13 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 		Authentication authentication)
 		throws IOException, ServletException {
 
-		// 0) 최종 리다이렉트 대상(frontend base) 판별 (세션 → 쿠키 → 헤더)
+		// 0) 최종 리다이렉트 대상(frontend base) 판별: 세션 → 쿠키(redirect_uri / redirect_uri_hint) → 헤더
 		HttpSession session = request.getSession(false);
 		String sessionHint = session == null ? null :
 			(String)session.getAttribute(RedirectTargetResolver.REDIRECT_URI_COOKIE);
-		String cookieHint = getCookieValue(request, RedirectTargetResolver.REDIRECT_URI_COOKIE);
+		String cookieHint = getCookieValue(request,
+			RedirectTargetResolver.REDIRECT_URI_COOKIE,
+			RedirectTargetResolver.ALT_REDIRECT_URI_COOKIE);
 
 		String frontendBase = RedirectTargetResolver.resolveFrontendBase(
 			request, sessionHint != null ? sessionHint : cookieHint);
@@ -113,18 +116,24 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 			oauthId = oauthProvider + "-" + (resp != null ? str(resp.get("id")) : null);
 		}
 
-		// 2) 기존 회원 확인
+		// 2) 기존 회원 여부
 		Users oauthUser = userRepository.findByOauthProviderAndOauthId(oauthProvider, oauthId).orElse(null);
 
 		if (oauthUser != null) {
-			// 기존 회원: 토큰 발급
+			// === 기존 회원: 토큰 발급 + refresh 회전(DB 저장) ===
 			String accessToken = jwtTokenProvider.generateToken(oauthUser);
-			String refreshToken = oauthUser.getRefreshToken();
+
+			// refresh는 항상 회전 (JWT)
+			String emailForRefresh = oauthUser.getEmail() != null ? oauthUser.getEmail() : email;
+			String newRefreshToken = jwtTokenProvider.createRefreshToken(emailForRefresh);
+
+			oauthUser.setRefreshToken(newRefreshToken);
+			userRepository.save(oauthUser);
 
 			// HttpOnly 토큰 쿠키
 			add(response, DynamicCookieSupport.newCookie("ACCESS_TOKEN", accessToken, request)
 				.maxAge(Duration.ofHours(4)).build());
-			add(response, DynamicCookieSupport.newCookie("REFRESH_TOKEN", refreshToken, request)
+			add(response, DynamicCookieSupport.newCookie("REFRESH_TOKEN", newRefreshToken, request)
 				.maxAge(Duration.ofDays(30)).build());
 
 			// 공개 쿠키 (프론트 읽음)
@@ -145,7 +154,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 			return;
 		}
 
-		// 신규 회원: 임시 공개 쿠키 3분 + 세션 보관 + /signup
+		// === 신규 회원: 임시 공개 쿠키 3분 + 세션 보관 + /signup ===
 		add(response, DynamicCookieSupport.asPublic(
 				DynamicCookieSupport.newCookie("oauthEmail", b64(email), request))
 			.maxAge(Duration.ofMinutes(3)).build());

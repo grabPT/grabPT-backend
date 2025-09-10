@@ -95,7 +95,7 @@ public class AuthController {
 
 		log.info("reissue 진입");
 
-		// 1) 쿠키에서 refresh 읽기 (신/구 이름 모두 허용)
+		// 1) 쿠키에서 refresh 읽기 (신/구 이름 모두 허용)E
 		String refreshToken = findCookie(request, "REFRESH_TOKEN", "refreshToken");
 		if (refreshToken == null || refreshToken.isBlank()) {
 			response.setHeader("X-Reason", "missing-cookie");

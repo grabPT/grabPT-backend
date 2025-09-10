@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -14,7 +15,6 @@ import org.springframework.util.StringUtils;
 
 import com.grabpt.config.auth.PrincipalDetails;
 import com.grabpt.config.auth.PrincipalDetailsService;
-import com.grabpt.config.jwt.properties.Constants;
 import com.grabpt.config.jwt.properties.JwtProperties;
 import com.grabpt.domain.entity.Users;
 
@@ -90,16 +90,17 @@ public class JwtTokenProvider {
 
 	}
 
-	public static String resolveToken(HttpServletRequest request) {
-		String bearerToken = request.getHeader(Constants.AUTH_HEADER);
-		if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(Constants.TOKEN_PREFIX)) {
-			return bearerToken.substring(Constants.TOKEN_PREFIX.length());
+	public static String resolveToken(HttpServletRequest req) {
+		// 1) Authorization: Bearer ...
+		String bearer = req.getHeader(HttpHeaders.AUTHORIZATION);
+		if (StringUtils.hasText(bearer) && bearer.startsWith("Bearer ")) {
+			return bearer.substring(7);
 		}
-		Cookie[] cookies = request.getCookies();
-		if (cookies != null) {
-			for (Cookie cookie : cookies) {
-				if ("accessToken".equals(cookie.getName())) {
-					return cookie.getValue();
+		// 2) Cookie (신/구 이름 모두)
+		if (req.getCookies() != null) {
+			for (Cookie c : req.getCookies()) {
+				if ("ACCESS_TOKEN".equals(c.getName()) || "accessToken".equals(c.getName())) {
+					return c.getValue();
 				}
 			}
 		}

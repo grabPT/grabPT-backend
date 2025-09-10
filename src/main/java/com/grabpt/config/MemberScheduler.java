@@ -23,18 +23,7 @@ public class MemberScheduler {
 		LocalDateTime deleteDate = LocalDateTime.now().minusDays(30);
 		List<Users> expiredUsers = userRepository.findByRoleAndDeletedAtBefore(Role.DELETED, deleteDate);
 
-		for (Users user : expiredUsers) {
-			user.setUsername("탈퇴한 회원");
-			user.setNickname("탈퇴한 회원");
-			user.setEmail("deleted@" + user.getId());
-			user.setOauthId(null);
-			user.setOauthProvider(null);
-			user.setPhone_number("");
-			user.setProfileImageUrl(null);
-			user.setRefreshToken(null);
-			user.setUserProfile(null);
-			user.setProProfile(null);
-		}
+		for (Users user : expiredUsers) userRepository.delete(user);
 
 
 	}

@@ -38,25 +38,15 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 	private final UserRepository userRepository;
 
 	// ===== helpers =====
+
 	private static String b64(String s) {
 		if (s == null)
 			return "";
 		return Base64.getEncoder().encodeToString(s.getBytes(StandardCharsets.UTF_8));
 	}
 
-	private void add(HttpServletResponse res, ResponseCookie c) {
-		res.addHeader(HttpHeaders.SET_COOKIE, c.toString());
-	}
-
-	private static String getCookieValue(HttpServletRequest request, String... names) {
-		Cookie[] cookies = request.getCookies();
-		if (cookies == null)
-			return null;
-		for (String n : names)
-			for (Cookie c : cookies)
-				if (n.equals(c.getName()))
-					return c.getValue();
-		return null;
+	private static String str(Object o) {
+		return o == null ? null : String.valueOf(o);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -64,9 +54,51 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 		return (o instanceof Map<?, ?> m) ? (Map<String, Object>)m : null;
 	}
 
-	private static String str(Object o) {
-		return o == null ? null : String.valueOf(o);
+	private static String getCookieValue(HttpServletRequest request, String... names) {
+		Cookie[] cookies = request.getCookies();
+		if (cookies == null)
+			return null;
+		for (String n : names) {
+			for (Cookie c : cookies)
+				if (n.equals(c.getName()))
+					return c.getValue();
+		}
+		return null;
 	}
+
+	private void addCookie(HttpServletResponse res, ResponseCookie c) {
+		res.addHeader(HttpHeaders.SET_COOKIE, c.toString());
+	}
+
+	private static boolean isLocalTarget(String base) {
+		if (base == null)
+			return false;
+		String b = base.toLowerCase();
+		return b.startsWith("http://localhost:")
+			|| b.startsWith("http://127.0.0.1")
+			|| b.startsWith("http://0.0.0.0")
+			|| b.startsWith("http://[::1]");
+	}
+
+	private static String jsQuote(String s) {
+		if (s == null)
+			return "\"\"";
+		return "\"" + s.replace("\\", "\\\\").replace("\"", "\\\"") + "\"";
+	}
+
+	private void bridgeRedirectIfLocal(HttpServletResponse response, String target) throws IOException {
+		response.setStatus(HttpServletResponse.SC_OK);
+		response.setContentType("text/html; charset=UTF-8");
+		String html = """
+			<!doctype html>
+			<meta http-equiv="refresh" content="0;url='%s'">
+			<script>location.replace(%s);</script>
+			""".formatted(target, jsQuote(target));
+		response.getWriter().write(html);
+		response.getWriter().flush();
+	}
+
+	// ===== main =====
 
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest request,
@@ -74,7 +106,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 		Authentication authentication)
 		throws IOException, ServletException {
 
-		// 0) 최종 리다이렉트 대상(frontend base) 판별: 세션 → 쿠키(redirect_uri / redirect_uri_hint) → 헤더
+		// 0) 최종 리다이렉트 베이스 결정: 세션 → 쿠키(redirect_uri / redirect_uri_hint) → 헤더 추론
 		HttpSession session = request.getSession(false);
 		String sessionHint = session == null ? null :
 			(String)session.getAttribute(RedirectTargetResolver.REDIRECT_URI_COOKIE);
@@ -91,7 +123,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 		log.debug("[OAUTH][SUCCESS] frontendBase={} (sessionHint={}, cookieHint={})",
 			frontendBase, sessionHint, cookieHint);
 
-		// 1) 공급자/속성 파싱
+		// 1) 공급자/프로필 파싱
 		OAuth2User oAuth2User = (OAuth2User)authentication.getPrincipal();
 		OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken)authentication;
 		String oauthProvider = oauthToken.getAuthorizedClientRegistrationId();
@@ -120,28 +152,29 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 		Users oauthUser = userRepository.findByOauthProviderAndOauthId(oauthProvider, oauthId).orElse(null);
 
 		if (oauthUser != null) {
-			// === 기존 회원: 토큰 발급 + refresh 회전(DB 저장) ===
+			// === 기존 회원: 액세스 발급 + 리프레시 회전(항상 새로) ===
 			String accessToken = jwtTokenProvider.generateToken(oauthUser);
 
-			// refresh는 항상 회전 (JWT)
+			// refresh는 항상 회전 (JWT). 이메일이 null 가능하면 대체 subject 사용 고려.
 			String emailForRefresh = oauthUser.getEmail() != null ? oauthUser.getEmail() : email;
 			String newRefreshToken = jwtTokenProvider.createRefreshToken(emailForRefresh);
 
+			// DB 저장
 			oauthUser.setRefreshToken(newRefreshToken);
 			userRepository.save(oauthUser);
 
 			// HttpOnly 토큰 쿠키
-			add(response, DynamicCookieSupport.newCookie("ACCESS_TOKEN", accessToken, request)
+			addCookie(response, DynamicCookieSupport.newCookie("ACCESS_TOKEN", accessToken, request)
 				.maxAge(Duration.ofHours(4)).build());
-			add(response, DynamicCookieSupport.newCookie("REFRESH_TOKEN", newRefreshToken, request)
+			addCookie(response, DynamicCookieSupport.newCookie("REFRESH_TOKEN", newRefreshToken, request)
 				.maxAge(Duration.ofDays(30)).build());
 
-			// 공개 쿠키 (프론트 읽음)
+			// 공개 쿠키 (프론트에서 읽음)
 			String roleStr = oauthUser.getRole() == Role.PRO ? "EXPERT" : oauthUser.getRole().name();
-			add(response, DynamicCookieSupport.asPublic(
+			addCookie(response, DynamicCookieSupport.asPublic(
 					DynamicCookieSupport.newCookie("ROLE", b64(roleStr), request))
 				.maxAge(Duration.ofDays(30)).build());
-			add(response, DynamicCookieSupport.asPublic(
+			addCookie(response, DynamicCookieSupport.asPublic(
 					DynamicCookieSupport.newCookie("USER_ID", b64(oauthUser.getId().toString()), request))
 				.maxAge(Duration.ofDays(30)).build());
 
@@ -150,21 +183,27 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 			if (session != null)
 				session.invalidate();
 
-			response.sendRedirect(frontendBase + "/authcallback");
+			// 최종 이동: 로컬은 브리지(200 HTML → JS redirect), 운영은 302
+			String target = frontendBase + "/authcallback";
+			if (isLocalTarget(frontendBase)) {
+				bridgeRedirectIfLocal(response, target);
+			} else {
+				response.sendRedirect(target);
+			}
 			return;
 		}
 
-		// === 신규 회원: 임시 공개 쿠키 3분 + 세션 보관 + /signup ===
-		add(response, DynamicCookieSupport.asPublic(
+		// === 신규 회원: 임시 공개 쿠키 3분 + 세션 보관 + /signup 이동 ===
+		addCookie(response, DynamicCookieSupport.asPublic(
 				DynamicCookieSupport.newCookie("oauthEmail", b64(email), request))
 			.maxAge(Duration.ofMinutes(3)).build());
-		add(response, DynamicCookieSupport.asPublic(
+		addCookie(response, DynamicCookieSupport.asPublic(
 				DynamicCookieSupport.newCookie("oauthName", b64(name), request))
 			.maxAge(Duration.ofMinutes(3)).build());
-		add(response, DynamicCookieSupport.asPublic(
+		addCookie(response, DynamicCookieSupport.asPublic(
 				DynamicCookieSupport.newCookie("oauthId", b64(oauthId), request))
 			.maxAge(Duration.ofMinutes(3)).build());
-		add(response, DynamicCookieSupport.asPublic(
+		addCookie(response, DynamicCookieSupport.asPublic(
 				DynamicCookieSupport.newCookie("oauthProvider", b64(oauthProvider), request))
 			.maxAge(Duration.ofMinutes(3)).build());
 
@@ -175,6 +214,11 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 		session.setAttribute("tempOauthProvider", oauthProvider);
 		session.setAttribute("tempOauthId", oauthId);
 
-		response.sendRedirect(frontendBase + "/signup");
+		String target = frontendBase + "/signup";
+		if (isLocalTarget(frontendBase)) {
+			bridgeRedirectIfLocal(response, target);
+		} else {
+			response.sendRedirect(target);
+		}
 	}
 }

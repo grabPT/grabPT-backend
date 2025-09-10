@@ -76,18 +76,24 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
 
 		String serialized = CookieUtils.serialize(authorizationRequest);
 		log.debug("[OAUTH][SAVE] serializedLen={}", serialized.length());
-		CookieUtils.addCookie(response,
+
+		// OAuth state/redirect 전용 쿠키: SameSite=None; Secure (prod 기준), 도메인은 CookieUtils에서 분기
+		CookieUtils.addOAuthStateCookie(
+			response,
 			OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME,
 			serialized,
-			COOKIE_EXPIRE_SECONDS);
+			COOKIE_EXPIRE_SECONDS
+		);
 
 		String redirectUri = request.getParameter(REDIRECT_URI_PARAM_COOKIE_NAME);
 		log.debug("[OAUTH][SAVE] redirect_uri param={}", redirectUri);
 		if (StringUtils.isNotBlank(redirectUri)) {
-			CookieUtils.addCookie(response,
+			CookieUtils.addOAuthStateCookie(
+				response,
 				REDIRECT_URI_PARAM_COOKIE_NAME,
 				redirectUri,
-				COOKIE_EXPIRE_SECONDS);
+				COOKIE_EXPIRE_SECONDS
+			);
 		}
 	}
 
@@ -97,8 +103,11 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
 		HttpServletResponse response) {
 		log.debug("[OAUTH][REMOVE] uri={}", request.getRequestURI());
 		var req = loadAuthorizationRequest(request);
+
+		// 삭제는 기존 로직 유지(여러 도메인/호스트로 한 번에 제거)
 		CookieUtils.deleteCookie(response, OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME);
 		CookieUtils.deleteCookie(response, REDIRECT_URI_PARAM_COOKIE_NAME);
+
 		return req;
 	}
 }

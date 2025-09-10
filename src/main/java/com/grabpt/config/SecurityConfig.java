@@ -13,6 +13,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.client.web.HttpSessionOAuth2AuthorizationRequestRepository;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
@@ -62,18 +63,25 @@ public class SecurityConfig {
 	@Order(1)
 	public SecurityFilterChain oauth2Chain(HttpSecurity http) throws Exception {
 		http
+			// ★ 인가 시작 + 콜백 둘 다 이 체인으로!
 			.securityMatcher(new OrRequestMatcher(
-				new AntPathRequestMatcher("/oauth2/**"),         // 인가 시작
-				new AntPathRequestMatcher("/login/oauth2/**")    // 콜백 ★
+				new AntPathRequestMatcher("/oauth2/**"),          // /oauth2/authorization/**
+				new AntPathRequestMatcher("/login/oauth2/**")     // /login/oauth2/code/**
 			))
+			// ★ 세션 반드시 생성/유지
 			.sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+			// ★ 세션 기반 SecurityContext 저장(명시)
+			.securityContext(sc -> sc
+				.securityContextRepository(new HttpSessionSecurityContextRepository()))
 			.csrf(AbstractHttpConfigurer::disable)
 			.cors(c -> c.configurationSource(corsConfigurationSource()))
 			.authorizeHttpRequests(a -> a.anyRequest().permitAll())
 			.oauth2Login(oauth2 -> oauth2
-				.userInfoEndpoint(u -> u.userService(principalOauth2UserService))
 				.authorizationEndpoint(a -> a
-					.authorizationRequestRepository(new HttpSessionOAuth2AuthorizationRequestRepository()))
+					// ★ 세션 저장소 기반으로 AuthorizationRequest 저장
+					.authorizationRequestRepository(
+						new HttpSessionOAuth2AuthorizationRequestRepository()))
+				.userInfoEndpoint(u -> u.userService(principalOauth2UserService))
 				.successHandler(oauth2SuccessHandler)
 				.failureHandler(oauth2FailureHandler)
 			);

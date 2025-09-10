@@ -84,6 +84,7 @@ public class SecurityConfig {
 	@Order(1)
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http
+			// OAuth state 쿠키는 세션과 무관하지만, 혹시 모를 제약 피하려면 IF_REQUIRED로 둬도 무방
 			.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.securityContext(sc -> sc.securityContextRepository(
 				new org.springframework.security.web.context.NullSecurityContextRepository()))
@@ -96,7 +97,6 @@ public class SecurityConfig {
 				.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 				.requestMatchers("/ws-connect/**").permitAll()
 				.requestMatchers(HttpMethod.GET, "/reviews/**").permitAll()
-				// 공개 엔드포인트들
 				.requestMatchers(
 					"/favicon.ico",
 					"/api/auth/reissue", "/api/auth/logout",
@@ -108,16 +108,14 @@ public class SecurityConfig {
 					"/matching/**", "/payment/**", "/api/sms/**",
 					"/api/category-proprofile/**", "/api/*/reviews",
 					"/api/alarmList", "/api/auth/reissue",
-					// 실패 URL을 프론트로 보내지 않는다 해도, 기본 실패 URL을 쓴다면 허용
 					"/login", "/login/**"
 				).permitAll()
 				.requestMatchers("/mypage", "/mypage/**").authenticated()
 				.anyRequest().authenticated()
 			)
 			.exceptionHandling(ex -> ex
-				.authenticationEntryPoint(
-					new org.springframework.security.web.authentication.HttpStatusEntryPoint(
-						org.springframework.http.HttpStatus.UNAUTHORIZED))
+				.authenticationEntryPoint(new org.springframework.security.web.authentication.HttpStatusEntryPoint(
+					org.springframework.http.HttpStatus.UNAUTHORIZED))
 				.accessDeniedHandler((req, res, e) -> res.setStatus(403))
 			)
 			.headers(h -> h
@@ -129,10 +127,9 @@ public class SecurityConfig {
 			.oauth2Login(oauth2 -> oauth2
 				.userInfoEndpoint(userInfo -> userInfo.userService(principalOauth2UserService))
 				.authorizationEndpoint(a -> a
-					.authorizationRequestRepository(new HttpSessionOAuth2AuthorizationRequestRepository())
-				)
+					.authorizationRequestRepository(authorizationRequestRepository()))
 				.successHandler(oauth2SuccessHandler)
-				.failureHandler(oauth2FailureHandler) // 있으면 유지, 없으면 생략 가능
+				.failureHandler(oauth2FailureHandler)
 			);
 
 		return http.build();

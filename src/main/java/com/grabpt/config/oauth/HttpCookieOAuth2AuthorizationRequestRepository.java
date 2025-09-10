@@ -16,7 +16,7 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
 
 	public static final String OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME = "oauth2_auth_request";
 	public static final String REDIRECT_URI_PARAM_COOKIE_NAME = "redirect_uri";
-	private static final int COOKIE_EXPIRE_SECONDS = 180; // 3분
+	private static final int COOKIE_EXPIRE_SECONDS = 180;
 
 	@Override
 	public OAuth2AuthorizationRequest loadAuthorizationRequest(HttpServletRequest request) {
@@ -25,7 +25,6 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
 			request.getRequestedSessionId(),
 			request.getCookies() == null ? 0 : request.getCookies().length);
 
-		// 관심있는 쿠키만 길이/접두어 출력
 		if (request.getCookies() != null) {
 			for (Cookie c : request.getCookies()) {
 				if (c.getName().equals(OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME)
@@ -65,7 +64,6 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
 			request.getHeader("Referer"), request.getHeader("User-Agent"));
 
 		if (authorizationRequest == null) {
-			// 여기선 삭제하지 않음 (조기 삭제 방지)
 			return;
 		}
 
@@ -77,37 +75,25 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
 		String serialized = CookieUtils.serialize(authorizationRequest);
 		log.debug("[OAUTH][SAVE] serializedLen={}", serialized.length());
 
-		// OAuth state/redirect 전용 쿠키: SameSite=None; Secure (prod 기준), 도메인은 CookieUtils에서 분기
-		CookieUtils.addOAuthStateCookie(
-			response,
-			OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME,
-			serialized,
-			COOKIE_EXPIRE_SECONDS
-		);
+		// OAuth state/redirect는 전용 발급자 사용 (SameSite=None;Secure;Domain=api.grabpt.com in prod)
+		CookieUtils.addOAuthStateCookie(response,
+			OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME, serialized, COOKIE_EXPIRE_SECONDS);
 
 		String redirectUri = request.getParameter(REDIRECT_URI_PARAM_COOKIE_NAME);
 		log.debug("[OAUTH][SAVE] redirect_uri param={}", redirectUri);
 		if (StringUtils.isNotBlank(redirectUri)) {
-			CookieUtils.addOAuthStateCookie(
-				response,
-				REDIRECT_URI_PARAM_COOKIE_NAME,
-				redirectUri,
-				COOKIE_EXPIRE_SECONDS
-			);
+			CookieUtils.addOAuthStateCookie(response,
+				REDIRECT_URI_PARAM_COOKIE_NAME, redirectUri, COOKIE_EXPIRE_SECONDS);
 		}
 	}
 
-	// 실제 삭제는 여기서만 수행 (성공/실패 처리 시점)
 	@Override
 	public OAuth2AuthorizationRequest removeAuthorizationRequest(HttpServletRequest request,
 		HttpServletResponse response) {
 		log.debug("[OAUTH][REMOVE] uri={}", request.getRequestURI());
 		var req = loadAuthorizationRequest(request);
-
-		// 삭제는 기존 로직 유지(여러 도메인/호스트로 한 번에 제거)
 		CookieUtils.deleteCookie(response, OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME);
 		CookieUtils.deleteCookie(response, REDIRECT_URI_PARAM_COOKIE_NAME);
-
 		return req;
 	}
 }

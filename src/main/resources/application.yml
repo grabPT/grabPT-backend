@@ -2,11 +2,6 @@ server:
   port: 8080
   address: 0.0.0.0
   forward-headers-strategy: framework
-  servlet:
-    session:
-      cookie:
-        secure: true
-        same-site: None
 
 #  servlet:
 #    session:
@@ -72,7 +67,7 @@ spring:
               - email
               - profile
             authorization-grant-type: authorization_code
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            redirect-uri: "https://www.grabpt.com/login/oauth2/code/{registrationId}"
 
           kakao:
             client-id: ${KAKAO_CLIENT_ID}
@@ -82,7 +77,7 @@ spring:
               - profile_nickname
               - profile_image
             authorization-grant-type: authorization_code
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            redirect-uri: "https://www.grabpt.com/login/oauth2/code/{registrationId}"
 
           naver:
             client-id: ${NAVER_CLIENT_ID}
@@ -93,7 +88,7 @@ spring:
               - profile_image
             client-name: Naver
             authorization-grant-type: authorization_code
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            redirect-uri: "https://www.grabpt.com/login/oauth2/code/{registrationId}"
 
         provider:
           naver:
@@ -152,9 +147,3 @@ logging:
     com.grabpt.config.oauth: DEBUG
     org.springframework.security.oauth2.client.web: DEBUG
     org.springframework.security.oauth2.client: DEBUG
-    com.grabpt: DEBUG
-    org.springframework.security: INFO
-    org.springframework.security.oauth2: DEBUG
-    org.springframework.security.web.authentication: DEBUG
-
-

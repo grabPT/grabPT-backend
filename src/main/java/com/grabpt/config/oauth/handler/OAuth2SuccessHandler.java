@@ -1,11 +1,12 @@
 package com.grabpt.config.oauth.handler;
 
+import static com.grabpt.config.jwt.properties.CookieSupport.*;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Base64;
 import java.util.Map;
-import java.util.Optional;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -35,97 +36,37 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 	private final JwtTokenProvider jwtTokenProvider;
 	private final UserRepository userRepository;
 
-	// === D안: host[:port] → FE base 매핑 ===
-	private static final Map<String, String> HOSTPORT_TO_FE = Map.of(
-		// prod
-		"api.grabpt.com", "https://www.grabpt.com",
-		// local / dev
-		"localhost:5173", "http://localhost:5173",
-		"localhost:8080", "http://localhost:8080",
-		"182.216.71.74:8080", "http://182.216.71.74:8080",
-		"192.168.1.101:3000", "http://192.168.1.101:3000"
-	);
+	private static final String SHARED_DOMAIN = "grabpt.com"; // 앞에 점(.) 금지
 
 	private static String b64(String s) {
 		if (s == null)
 			return "";
-		return Base64.getEncoder().encodeToString(s.getBytes(StandardCharsets.UTF_8));
+		return Base64.getEncoder()
+			.encodeToString(s.getBytes(StandardCharsets.UTF_8));
 	}
 
-	// 로컬/운영에 맞춘 쿠키 속성 자동 분기
-	private static void addCookieAdaptive(HttpServletRequest req, HttpServletResponse res,
-		String name, String value, Duration maxAge, boolean httpOnly) {
-
-		String proto = Optional.ofNullable(req.getHeader("X-Forwarded-Proto"))
-			.orElse(req.isSecure() ? "https" : "http");
-		String host = Optional.ofNullable(req.getHeader("X-Forwarded-Host"))
-			.orElse(req.getServerName());
-
-		boolean secure = "https".equalsIgnoreCase(proto);
-		boolean isGrabpt = host != null && (host.equals("api.grabpt.com") || host.endsWith(".grabpt.com"));
-
-		ResponseCookie.ResponseCookieBuilder b = ResponseCookie.from(name, value == null ? "" : value)
+	private static void addCookie(HttpServletResponse res, String name, String value,
+		Duration maxAge, boolean httpOnly) {
+		ResponseCookie c = ResponseCookie.from(name, value == null ? "" : value)
+			.domain(SHARED_DOMAIN)
 			.path("/")
 			.maxAge(maxAge)
+			.secure(true)
 			.httpOnly(httpOnly)
-			.sameSite(secure ? "None" : "Lax")
-			.secure(secure);
-
-		if (isGrabpt) {
-			// 운영만 최상위 도메인 공유
-			b.domain("grabpt.com");
-		}
-		res.addHeader(HttpHeaders.SET_COOKIE, b.build().toString());
-	}
-
-	// 요청에서 host:port 도출 → 매핑 → 기본값
-	private static String resolveClientBase(HttpServletRequest req) {
-		String xfHost = req.getHeader("X-Forwarded-Host");
-		String xfProto = req.getHeader("X-Forwarded-Proto");
-		String xfPort = req.getHeader("X-Forwarded-Port");
-
-		String host = (xfHost != null && !xfHost.isBlank()) ? xfHost : req.getServerName();
-		String proto = (xfProto != null && !xfProto.isBlank()) ? xfProto : (req.isSecure() ? "https" : "http");
-
-		int portNum = req.getServerPort();
-		if (xfPort != null && !xfPort.isBlank()) {
-			try {
-				portNum = Integer.parseInt(xfPort);
-			} catch (NumberFormatException ignored) {
-			}
-		}
-
-		if ("api.grabpt.com".equalsIgnoreCase(host)) {
-			return "https://www.grabpt.com";
-		}
-
-		// 표준 포트는 생략된 경우가 있어 host만도 한번 매핑 시도
-		String hostPort = (portNum > 0) ? (host + ":" + portNum) : host;
-
-		// 1) host:port 매핑 우선
-		String mapped = HOSTPORT_TO_FE.get(hostPort);
-		if (mapped != null)
-			return mapped;
-
-		// 2) host만으로도 한 번 시도 (운영 표준 포트 등)
-		mapped = HOSTPORT_TO_FE.get(host);
-		if (mapped != null)
-			return mapped;
-
-		// 3) 기본값 (운영 FE)
-		return "https://www.grabpt.com";
+			.sameSite("None")
+			.build();
+		res.addHeader(HttpHeaders.SET_COOKIE, c.toString());
 	}
 
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
-		Authentication authentication)
-		throws IOException, ServletException {
+		Authentication authentication) throws IOException, ServletException {
 
 		OAuth2User oAuth2User = (OAuth2User)authentication.getPrincipal();
 		OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken)authentication;
 		String oauthProvider = oauthToken.getAuthorizedClientRegistrationId();
-		Map<String, Object> attributes = oAuth2User.getAttributes();
 
+		Map<String, Object> attributes = oAuth2User.getAttributes();
 		String email = null;
 		String name = null;
 		String oauthId = null;
@@ -134,9 +75,11 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 			email = (String)attributes.get("email");
 			name = (String)attributes.get("name");
 			oauthId = oauthProvider + "-" + attributes.get("sub");
+			// Google은 gender 제공 안함 → null
 		} else if (oauthProvider.equals("kakao")) {
 			Map<String, Object> kakaoAccount = (Map<String, Object>)attributes.get("kakao_account");
 			Map<String, Object> profile = (Map<String, Object>)kakaoAccount.get("profile");
+
 			email = kakaoAccount.get("email") != null ? (String)kakaoAccount.get("email") : null;
 			name = profile != null ? (String)profile.get("nickname") : null;
 			oauthId = oauthProvider + "-" + attributes.get("id");
@@ -148,50 +91,59 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 		}
 
 		Users oauthUser = userRepository.findByOauthProviderAndOauthId(oauthProvider, oauthId).orElse(null);
-
-		// D안: 요청의 host:port 기준으로 프론트 베이스 계산
-		String clientBase = resolveClientBase(request);
-		String donePath = "/authcallback";
-		String signupPath = "/signup";
-
 		if (oauthUser != null) {
-			log.info("기존 존재 회원 로직 진입 - {}", oauthUser.getEmail());
+			log.info("기존 존재 회원 로직에 들어옴");
 
+			// 토큰 직접 생성
 			String accessToken = jwtTokenProvider.generateToken(oauthUser);
 			String refreshToken = oauthUser.getRefreshToken();
+			log.info("기존 유저 refreshToken 존재 확인: " + refreshToken);
 
-			// 환경별 속성으로 쿠키 발급
-			addCookieAdaptive(request, response, "Authorization", accessToken, Duration.ofHours(1), true);
-			addCookieAdaptive(request, response, "Refresh-Token", refreshToken, Duration.ofDays(14), true);
-			addCookieAdaptive(request, response, "role",
-				b64(oauthUser.getRole() == Role.PRO ? "EXPERT" : oauthUser.getRole().name()), Duration.ofDays(7),
-				false);
-			addCookieAdaptive(request, response, "userId",
-				b64(oauthUser.getId().toString()), Duration.ofDays(7), false);
+			// 3) 쿠키 정리 + 재발급 (충돌 방지)
+			// response.addHeader(HttpHeaders.SET_COOKIE, deleteRefreshCookieAtRoot().toString());
+			// response.addHeader(HttpHeaders.SET_COOKIE, deleteRefreshCookie().toString());
+
+			// access/refresh 표준 발급
+			response.addHeader(HttpHeaders.SET_COOKIE, accessCookie(accessToken).toString());
+			response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie(refreshToken).toString());
+			log.info("기존 유저 refreshToken 발급: " + refreshCookie(refreshToken));
+
+			// (임시 치유, 1~2주): 루트 경로에도 한 번 더 동일 값 덮어쓰기
+			// 중복 쿠키가 남아 있던 브라우저를 자동 치유합니다.
+			response.addHeader(HttpHeaders.SET_COOKIE, refreshCookieAtRoot(refreshToken).toString());
+
+			// 프론트에서 읽을 쿠키들
+			response.addHeader(HttpHeaders.SET_COOKIE,
+				roleCookie(b64(oauthUser.getRole() == Role.PRO ? "EXPERT" : oauthUser.getRole().name())).toString());
+			response.addHeader(HttpHeaders.SET_COOKIE,
+				userIdCookie(b64(oauthUser.getId().toString())).toString());
 
 			org.springframework.security.core.context.SecurityContextHolder.clearContext();
 			var session = request.getSession(false);
 			if (session != null)
 				session.invalidate();
 
-			response.sendRedirect(clientBase + donePath);
+			response.sendRedirect("https://www.grabpt.com/authcallback");
 			return;
 		}
 
-		// 신규 회원: 임시 쿠키/세션
-		addCookieAdaptive(request, response, "oauthEmail", b64(email), Duration.ofMinutes(3), false);
-		addCookieAdaptive(request, response, "oauthName", b64(name), Duration.ofMinutes(3), false);
-		addCookieAdaptive(request, response, "oauthId", b64(oauthId), Duration.ofMinutes(3), false);
-		addCookieAdaptive(request, response, "oauthProvider", b64(oauthProvider), Duration.ofMinutes(3), false);
+		// 쿠키 생성
+		// 신규 회원: 프론트가 읽을 임시 쿠키 (ASCII만 허용 → Base64)
+		addCookie(response, "oauthEmail", b64(email), Duration.ofMinutes(3), false);
+		addCookie(response, "oauthName", b64(name), Duration.ofMinutes(3), false);
+		addCookie(response, "oauthId", b64(oauthId), Duration.ofMinutes(3), false);
+		addCookie(response, "oauthProvider", b64(oauthProvider), Duration.ofMinutes(3), false);
 
+		// 신규 회원 → 세션에 임시 정보 저장 (null 허용)
 		HttpSession session = request.getSession();
 		session.setAttribute("tempEmail", email);
 		session.setAttribute("tempName", name);
 		session.setAttribute("tempOauthProvider", oauthProvider);
 		session.setAttribute("tempOauthId", oauthId);
 
-		log.info("신규 회원 소셜 로그인 - provider: {}, email: {}, name: {}", oauthProvider, email, name);
+		log.info("신규 회원 소셜 로그인 - provider: {}, email: {}, name: {}",
+			oauthProvider, email, name);
 
-		response.sendRedirect(clientBase + signupPath);
+		response.sendRedirect("https://www.grabpt.com/signup");
 	}
 }

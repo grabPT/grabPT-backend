@@ -125,7 +125,8 @@ public class SecurityConfig {
 					"/api/category-proprofile/**",
 					"/api/*/reviews",
 					"/api/alarmList",
-					"/api/auth/reissue"
+					"/api/auth/reissue",
+					"/login", "/login/**"
 				).permitAll()
 				.requestMatchers("/mypage", "/mypage/**").authenticated()
 				.anyRequest().authenticated()

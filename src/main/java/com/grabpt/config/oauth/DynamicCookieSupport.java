@@ -5,9 +5,9 @@ import org.springframework.http.ResponseCookie;
 import jakarta.servlet.http.HttpServletRequest;
 
 /**
- * 환경(로컬/프로덕션)에 따라 domain, SameSite, Secure 동적 적용 유틸.
+ * 환경(로컬/운영)에 따라 Domain/SameSite/Secure 동적 적용.
  * - 일반 쿠키: newCookie(...)
- * - OAuth 시작 쿠키(크로스사이트 필수): newCrossSiteAuthCookie(...)
+ * - OAuth 시작 쿠키(콜백에 반드시 전송): newCrossSiteAuthCookie(...)
  * - 공개 쿠키 변환: asPublic(...)
  */
 public class DynamicCookieSupport {
@@ -34,10 +34,10 @@ public class DynamicCookieSupport {
 		String host = headerOr(req, "X-Forwarded-Host", req.getServerName());
 		boolean isLocal = host != null && host.contains("localhost");
 		if (isLocal) {
-			// 로컬: HTTP, 호스트 전용, Lax, Secure=false
+			// 로컬: http, host-only, SameSite=Lax, Secure=false
 			return new CookieProfile(null, "Lax", false);
 		} else {
-			// 운영: grabpt.com 공유, None+Secure
+			// 운영: grabpt.com 공유, SameSite=None, Secure=true
 			return new CookieProfile("grabpt.com", "None", true);
 		}
 	}
@@ -55,27 +55,24 @@ public class DynamicCookieSupport {
 		return b;
 	}
 
-	/**
-	 * OAuth 시작용(authorization_request, redirect_uri_hint 등) - 콜백 시 반드시 전송되어야 하는 쿠키.
-	 * 운영: None+Secure+Domain=grabpt.com / 로컬: Lax+insecure+host-only (http에서 None 불가)
-	 */
+	/** OAuth 시작(authorization_request/redirect_uri) 전용: 콜백에도 전송 보장 */
 	public static ResponseCookie.ResponseCookieBuilder newCrossSiteAuthCookie(String name, String value,
 		HttpServletRequest req) {
 		String host = headerOr(req, "X-Forwarded-Host", req.getServerName());
 		boolean isLocal = host != null && host.contains("localhost");
-
 		ResponseCookie.ResponseCookieBuilder b = ResponseCookie.from(name, value == null ? "" : value)
 			.path("/")
 			.httpOnly(true);
 		if (isLocal) {
-			b.sameSite("Lax").secure(false); // http 환경 제한
+			// http 환경: None+Secure 불가 → Lax/host-only
+			b.sameSite("Lax").secure(false);
 		} else {
 			b.sameSite("None").secure(true).domain("grabpt.com");
 		}
 		return b;
 	}
 
-	/** 공개 쿠키로 전환(프론트에서 읽게) */
+	/** 공개 쿠키(프론트에서 읽게) */
 	public static ResponseCookie.ResponseCookieBuilder asPublic(ResponseCookie.ResponseCookieBuilder b) {
 		return b.httpOnly(false);
 	}

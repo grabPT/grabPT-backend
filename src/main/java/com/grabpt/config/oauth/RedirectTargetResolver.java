@@ -1,11 +1,14 @@
-package com.grabpt.config.oauth;
+package com.grabpt.config.oauth.support;
 
 import org.springframework.util.StringUtils;
 
 import jakarta.servlet.http.HttpServletRequest;
 
 public class RedirectTargetResolver {
+
+	/** 힌트 쿠키/세션 키 (실제 저장은 'redirect_uri' 로 통일, 아래 ALT도 호환 읽기) */
 	public static final String REDIRECT_URI_COOKIE = "redirect_uri";
+	public static final String ALT_REDIRECT_URI_COOKIE = "redirect_uri_hint";
 
 	public enum EnvTarget {
 		LOCAL_FE("http://localhost:5173"),
@@ -18,9 +21,9 @@ public class RedirectTargetResolver {
 		}
 	}
 
-	public static String resolveFrontendBase(HttpServletRequest request, String cookieRedirectUri) {
-		if (StringUtils.hasText(cookieRedirectUri) && isAllowedRedirectBase(cookieRedirectUri.trim())) {
-			return cookieRedirectUri.trim();
+	public static String resolveFrontendBase(HttpServletRequest request, String cookieOrSessionHint) {
+		if (StringUtils.hasText(cookieOrSessionHint) && isAllowedRedirectBase(cookieOrSessionHint.trim())) {
+			return cookieOrSessionHint.trim();
 		}
 		String referer = request.getHeader("Referer");
 		String origin = request.getHeader("Origin");
@@ -33,8 +36,8 @@ public class RedirectTargetResolver {
 		if (contains(referer, "www.grabpt.com") || contains(origin, "www.grabpt.com"))
 			return EnvTarget.PROD_FE.base;
 		if (contains(host, "localhost"))
-			return EnvTarget.LOCAL_BE.base; // 기본 로컬
-		return EnvTarget.PROD_FE.base; // 기본 운영
+			return EnvTarget.LOCAL_BE.base;
+		return EnvTarget.PROD_FE.base;
 	}
 
 	public static boolean isAllowedRedirectBase(String base) {

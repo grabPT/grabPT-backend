@@ -7,7 +7,6 @@ import java.util.Map;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -89,11 +88,14 @@ public class AuthController {
 	}
 
 	// JWT 토큰 재발행
+	@Operation(summary = "JWT Refresh Token으로 인증 토큰 재발행",
+		description = "유효한 Refresh Token 전달 시 인증 토큰 재발행, access, refresh 토큰은 쿠키로 전달")
 	@PostMapping("/reissue")
 	public ResponseEntity<Void> reissueToken(HttpServletRequest request, HttpServletResponse response) {
+
 		log.info("reissue 진입");
 
-		// 1) 쿠키 읽기: 대/소문자 둘 다 허용 (구버전 호환)
+		// 1) 쿠키에서 refresh 읽기 (신/구 이름 모두 허용)
 		String refreshToken = findCookie(request, "REFRESH_TOKEN", "refreshToken");
 		if (refreshToken == null || refreshToken.isBlank()) {
 			response.setHeader("X-Reason", "missing-cookie");
@@ -145,15 +147,11 @@ public class AuthController {
 		user.setRefreshToken(newRefreshToken);
 		userRepository.save(user);
 
-		// 4) 쿠키 재설정 (운영: Domain=grabpt.com; SameSite=None; Secure / 로컬: host-only; Lax)
-		ResponseCookie access = DynamicCookieSupport
-			.newCookie("ACCESS_TOKEN", newAccessToken, request)
-			.maxAge(Duration.ofHours(4))
-			.build();
-		ResponseCookie refresh = DynamicCookieSupport
-			.newCookie("REFRESH_TOKEN", newRefreshToken, request)
-			.maxAge(Duration.ofDays(30))
-			.build();
+		// 4) 쿠키 재설정 (동적 속성)
+		var access = DynamicCookieSupport.newCookie("ACCESS_TOKEN", newAccessToken, request)
+			.maxAge(Duration.ofHours(4)).build();
+		var refresh = DynamicCookieSupport.newCookie("REFRESH_TOKEN", newRefreshToken, request)
+			.maxAge(Duration.ofDays(30)).build();
 
 		response.addHeader(HttpHeaders.SET_COOKIE, access.toString());
 		response.addHeader(HttpHeaders.SET_COOKIE, refresh.toString());
@@ -161,11 +159,10 @@ public class AuthController {
 		return ResponseEntity.noContent().build();
 	}
 
-	/** 401 응답 + 쿠키 정리(구/신 이름 모두) */
 	private ResponseEntity<Void> unauthorizedAndClear(HttpServletResponse res) {
 		CookieUtils.deleteCookie(res, "ACCESS_TOKEN");
 		CookieUtils.deleteCookie(res, "REFRESH_TOKEN");
-		CookieUtils.deleteCookie(res, "accessToken"); // 구버전 대비
+		CookieUtils.deleteCookie(res, "accessToken"); // 구버전 호환
 		CookieUtils.deleteCookie(res, "refreshToken");
 		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 	}
@@ -175,10 +172,9 @@ public class AuthController {
 		if (cs == null)
 			return null;
 		for (String n : names) {
-			for (var c : cs) {
+			for (var c : cs)
 				if (n.equals(c.getName()))
 					return c.getValue();
-			}
 		}
 		return null;
 	}

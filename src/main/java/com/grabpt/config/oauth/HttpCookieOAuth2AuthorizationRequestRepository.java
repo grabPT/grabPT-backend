@@ -16,7 +16,7 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
 
 	public static final String OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME = "oauth2_auth_request";
 	public static final String REDIRECT_URI_PARAM_COOKIE_NAME = "redirect_uri";
-	private static final int COOKIE_EXPIRE_SECONDS = 180;
+	private static final int COOKIE_EXPIRE_SECONDS = 180; // 3분
 
 	@Override
 	public OAuth2AuthorizationRequest loadAuthorizationRequest(HttpServletRequest request) {
@@ -25,6 +25,7 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
 			request.getRequestedSessionId(),
 			request.getCookies() == null ? 0 : request.getCookies().length);
 
+		// 관심있는 쿠키만 길이/접두어 출력
 		if (request.getCookies() != null) {
 			for (Cookie c : request.getCookies()) {
 				if (c.getName().equals(OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME)
@@ -64,6 +65,7 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
 			request.getHeader("Referer"), request.getHeader("User-Agent"));
 
 		if (authorizationRequest == null) {
+			// ★ 여기선 삭제하지 않음 (조기 삭제 방지)
 			return;
 		}
 
@@ -74,18 +76,22 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
 
 		String serialized = CookieUtils.serialize(authorizationRequest);
 		log.debug("[OAUTH][SAVE] serializedLen={}", serialized.length());
-
-		// 요청 Host에 맞춰 도메인/속성 동적 세팅
-		CookieUtils.addOAuthStateCookie(request, response,
-			OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME, serialized, COOKIE_EXPIRE_SECONDS);
+		CookieUtils.addCookie(response,
+			OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME,
+			serialized,
+			COOKIE_EXPIRE_SECONDS);
 
 		String redirectUri = request.getParameter(REDIRECT_URI_PARAM_COOKIE_NAME);
+		log.debug("[OAUTH][SAVE] redirect_uri param={}", redirectUri);
 		if (StringUtils.isNotBlank(redirectUri)) {
-			CookieUtils.addOAuthStateCookie(request, response,
-				REDIRECT_URI_PARAM_COOKIE_NAME, redirectUri, COOKIE_EXPIRE_SECONDS);
+			CookieUtils.addCookie(response,
+				REDIRECT_URI_PARAM_COOKIE_NAME,
+				redirectUri,
+				COOKIE_EXPIRE_SECONDS);
 		}
 	}
 
+	// 실제 삭제는 여기서만 수행 (성공/실패 처리 시점)
 	@Override
 	public OAuth2AuthorizationRequest removeAuthorizationRequest(HttpServletRequest request,
 		HttpServletResponse response) {

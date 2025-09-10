@@ -1,10 +1,13 @@
 package com.grabpt.controller;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -21,6 +24,8 @@ import org.springframework.web.multipart.MultipartFile;
 import com.grabpt.apiPayload.ApiResponse;
 import com.grabpt.config.jwt.JwtTokenProvider;
 import com.grabpt.config.jwt.properties.CookieSupport;
+import com.grabpt.config.oauth.CookieUtils;
+import com.grabpt.config.oauth.DynamicCookieSupport;
 import com.grabpt.domain.entity.Users;
 import com.grabpt.dto.request.RefreshTokenRequestDto;
 import com.grabpt.dto.request.SignupRequest;
@@ -84,30 +89,19 @@ public class AuthController {
 	}
 
 	// JWT 토큰 재발행
-	@Operation(
-		summary = "JWT Refresh Token으로 인증 토큰 재발행",
-		description = "유효한 Refresh Token 전달 시 인증 토큰 재발행, access, refresh 토큰은 쿠키로 전달"
-	)
 	@PostMapping("/reissue")
 	public ResponseEntity<Void> reissueToken(HttpServletRequest request, HttpServletResponse response) {
-
 		log.info("reissue 진입");
 
-		String refreshToken = null;
-		if (request.getCookies() != null) {
-			for (var c : request.getCookies()) {
-				if ("refreshToken".equals(c.getName())) {
-					refreshToken = c.getValue();
-					break;
-				}
-			}
-		}
-
-		if (refreshToken == null) {
+		// 1) 쿠키 읽기: 대/소문자 둘 다 허용 (구버전 호환)
+		String refreshToken = findCookie(request, "REFRESH_TOKEN", "refreshToken");
+		if (refreshToken == null || refreshToken.isBlank()) {
 			response.setHeader("X-Reason", "missing-cookie");
 			log.warn("[REISSUE] missing refresh cookie");
 			return unauthorizedAndClear(response);
 		}
+
+		// 2) 유효성 검사
 		if (!jwtTokenProvider.validateToken(refreshToken)) {
 			response.setHeader("X-Reason", "invalid-or-expired");
 			try {
@@ -140,7 +134,7 @@ public class AuthController {
 			return unauthorizedAndClear(response);
 		}
 
-		// 재발급 (회전)
+		// 3) 재발급(회전)
 		var userDetails = userDetailsService.loadUserByUsername(email);
 		var authentication = new UsernamePasswordAuthenticationToken(
 			userDetails, null, userDetails.getAuthorities());
@@ -148,21 +142,45 @@ public class AuthController {
 		String newAccessToken = jwtTokenProvider.generateToken(authentication);
 		String newRefreshToken = jwtTokenProvider.createRefreshToken(email);
 
-		// DB 교체(회전)
 		user.setRefreshToken(newRefreshToken);
 		userRepository.save(user);
 
-		// 쿠키 세팅
-		response.addHeader("Set-Cookie", CookieSupport.accessCookie(newAccessToken).toString());
-		response.addHeader("Set-Cookie", CookieSupport.refreshCookie(newRefreshToken).toString());
+		// 4) 쿠키 재설정 (운영: Domain=grabpt.com; SameSite=None; Secure / 로컬: host-only; Lax)
+		ResponseCookie access = DynamicCookieSupport
+			.newCookie("ACCESS_TOKEN", newAccessToken, request)
+			.maxAge(Duration.ofHours(4))
+			.build();
+		ResponseCookie refresh = DynamicCookieSupport
+			.newCookie("REFRESH_TOKEN", newRefreshToken, request)
+			.maxAge(Duration.ofDays(30))
+			.build();
+
+		response.addHeader(HttpHeaders.SET_COOKIE, access.toString());
+		response.addHeader(HttpHeaders.SET_COOKIE, refresh.toString());
 
 		return ResponseEntity.noContent().build();
 	}
 
+	/** 401 응답 + 쿠키 정리(구/신 이름 모두) */
 	private ResponseEntity<Void> unauthorizedAndClear(HttpServletResponse res) {
-		res.addHeader("Set-Cookie", CookieSupport.deleteAccessCookie().toString());
-		res.addHeader("Set-Cookie", CookieSupport.deleteRefreshCookie().toString());
+		CookieUtils.deleteCookie(res, "ACCESS_TOKEN");
+		CookieUtils.deleteCookie(res, "REFRESH_TOKEN");
+		CookieUtils.deleteCookie(res, "accessToken"); // 구버전 대비
+		CookieUtils.deleteCookie(res, "refreshToken");
 		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+	}
+
+	private static String findCookie(HttpServletRequest request, String... names) {
+		var cs = request.getCookies();
+		if (cs == null)
+			return null;
+		for (String n : names) {
+			for (var c : cs) {
+				if (n.equals(c.getName()))
+					return c.getValue();
+			}
+		}
+		return null;
 	}
 
 	@Operation(

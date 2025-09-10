@@ -52,7 +52,7 @@ public class SecurityConfig {
 		http.authorizeHttpRequests(a -> a.anyRequest().permitAll())
 			.csrf(AbstractHttpConfigurer::disable)
 			.cors(AbstractHttpConfigurer::disable)
-			.sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+			.sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
 		return http.build();
 	}
 
@@ -128,7 +128,9 @@ public class SecurityConfig {
 			.authenticationProvider(authenticationProvider())
 			.oauth2Login(oauth2 -> oauth2
 				.userInfoEndpoint(userInfo -> userInfo.userService(principalOauth2UserService))
-				.authorizationEndpoint(a -> a.authorizationRequestRepository(authorizationRequestRepository()))
+				.authorizationEndpoint(a -> a
+					.authorizationRequestRepository(new HttpSessionOAuth2AuthorizationRequestRepository())
+				)
 				.successHandler(oauth2SuccessHandler)
 				.failureHandler(oauth2FailureHandler) // 있으면 유지, 없으면 생략 가능
 			);

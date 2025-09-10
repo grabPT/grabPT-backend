@@ -14,6 +14,7 @@ import org.springframework.security.oauth2.client.web.HttpSessionOAuth2Authoriza
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -61,22 +62,21 @@ public class SecurityConfig {
 	@Order(1)
 	public SecurityFilterChain oauth2Chain(HttpSecurity http) throws Exception {
 		http
-			.securityMatcher(new AntPathRequestMatcher("/oauth2/**"))
-			// OAuth2 핸드셰이크 구간만 세션 생성 허용
+			.securityMatcher(new OrRequestMatcher(
+				new AntPathRequestMatcher("/oauth2/**"),         // 인가 시작
+				new AntPathRequestMatcher("/login/oauth2/**")    // 콜백 ★
+			))
 			.sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
-			// 기본 SecurityContextRepository 사용(세션 기반)
 			.csrf(AbstractHttpConfigurer::disable)
 			.cors(c -> c.configurationSource(corsConfigurationSource()))
 			.authorizeHttpRequests(a -> a.anyRequest().permitAll())
 			.oauth2Login(oauth2 -> oauth2
 				.userInfoEndpoint(u -> u.userService(principalOauth2UserService))
-				// 세션 저장소 기반 AuthorizationRequest 저장소 사용 (핸드셰이크 안정화)
 				.authorizationEndpoint(a -> a
 					.authorizationRequestRepository(new HttpSessionOAuth2AuthorizationRequestRepository()))
 				.successHandler(oauth2SuccessHandler)
 				.failureHandler(oauth2FailureHandler)
 			);
-
 		return http.build();
 	}
 

@@ -16,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class CookieUtils {
 
-	private static final String COOKIE_DOMAIN = null; // 앞에 점(.) 금지
+	private static final String COOKIE_DOMAIN = null;
 
 	private static String abbr(String s) {
 		if (s == null)
@@ -89,9 +89,7 @@ public class CookieUtils {
 	}
 
 	public static void deleteCookie(HttpServletResponse response, String name) {
-		addDeletion(response, name, null);              // host-only
-		addDeletion(response, name, "api.grabpt.com");  // 서브도메인
-		addDeletion(response, name, "grabpt.com");      // 최상위 도메인
+		addDeletion(response, name, null);
 	}
 
 	public static String serialize(Object object) {

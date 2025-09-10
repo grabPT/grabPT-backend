@@ -134,6 +134,8 @@ public class MyProfileController {
 		Long userId = principalDetails.getUser().getId();
 
 		profileService.deleteUser(userId, requestDto);
+
+
 		log.info("[WITHDRAW] User data deleted for userId: {}", userId);
 
 		log.info("[WITHDRAW] Starting session & cookie cleanup process...");

@@ -28,6 +28,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.cfg.CacheSettings;
 
 @Entity
 @Getter
@@ -85,9 +86,6 @@ public class Users extends BaseEntity {
 	@Column(length = 500)
 	private String deletionReason; // 회원탈퇴 사유
 
-	@Enumerated(EnumType.STRING)
-	private Role previousRole;
-
 	// 선택 약관 (마케팅 정보 수신 동의)
 	private Boolean agreeMarketing;
 	private LocalDateTime agreeMarketingAt;
@@ -98,6 +96,9 @@ public class Users extends BaseEntity {
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<UserChatRoom> userChatRooms = new ArrayList<>();
 
+	@OneToMany(mappedBy = "otherUser", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<UserChatRoom> otherUserChatRooms = new ArrayList<>();
+
 	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Address address;
 
@@ -105,11 +106,20 @@ public class Users extends BaseEntity {
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Requestions> requestions = new ArrayList<>();
 
+	@OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<Messages> sentMessages = new ArrayList<>();
+
 	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
 	private UserProfile userProfile;
 
 	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
 	private ProProfile proProfile;
+
+	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+	private PreviousUser previousUser;
+
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<Alarm> alarms = new ArrayList<>();
 
 	public void setAddress(Address address) {
 		this.address = address;
@@ -137,6 +147,13 @@ public class Users extends BaseEntity {
 		this.requestions.add(requestion);
 		if (requestion.getUser() != this) {
 			requestion.setUser(this);
+		}
+	}
+
+	public void setPreviousUser(PreviousUser previousUser) {
+		this.previousUser = previousUser;
+		if (previousUser != null && previousUser.getUser() != this) {
+			previousUser.setUser(this);
 		}
 	}
 

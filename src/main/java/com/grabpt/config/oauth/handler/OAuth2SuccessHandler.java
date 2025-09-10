@@ -1,7 +1,5 @@
 package com.grabpt.config.oauth.handler;
 
-import static com.grabpt.config.jwt.properties.CookieSupport.*;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -28,7 +26,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -45,36 +42,24 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 	private static String b64(String s) {
 		if (s == null)
 			return "";
-		return Base64.getEncoder()
-			.encodeToString(s.getBytes(StandardCharsets.UTF_8));
-	}
-
-	private static void addCookie(HttpServletResponse res, String name, String value,
-		Duration maxAge, boolean httpOnly) {
-		ResponseCookie c = ResponseCookie.from(name, value == null ? "" : value)
-			.domain(SHARED_DOMAIN)
-			.path("/")
-			.maxAge(maxAge)
-			.secure(true)
-			.httpOnly(httpOnly)
-			.sameSite("None")
-			.build();
-		res.addHeader(HttpHeaders.SET_COOKIE, c.toString());
+		return Base64.getEncoder().encodeToString(s.getBytes(StandardCharsets.UTF_8));
 	}
 
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
 		Authentication authentication) throws IOException, ServletException {
 
-		// 쿠키에서 redirect_uri를 가져오거나 기본값을 사용합니다.
 		Optional<String> redirectUriOptional = CookieUtils.getCookie(request,
 				HttpCookieOAuth2AuthorizationRequestRepository.REDIRECT_URI_PARAM_COOKIE_NAME)
 			.map(Cookie::getValue);
 
-		// 최종 리디렉션 URL을 결정합니다. 쿠키에 값이 없으면 기본값(www.grabpt.com)을 사용합니다.
+		// 리다이렉션 URL 결정: 쿠키에서 찾거나 기본값 사용
 		String authCallbackUrl = redirectUriOptional.orElse("https://www.grabpt.com/authcallback");
 		String signupUrl = redirectUriOptional.map(uri -> uri.replace("authcallback", "signup"))
 			.orElse("https://www.grabpt.com/signup");
+
+		// 리다이렉션 URL에서 도메인 추출
+		String domain = getDomainFromRedirectUri(authCallbackUrl);
 
 		OAuth2User oAuth2User = (OAuth2User)authentication.getPrincipal();
 		OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken)authentication;
@@ -109,44 +94,49 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
 			String accessToken = jwtTokenProvider.generateToken(oauthUser);
 			String refreshToken = oauthUser.getRefreshToken();
-			log.info("기존 유저 refreshToken 존재 확인: " + refreshToken);
 
-			response.addHeader(HttpHeaders.SET_COOKIE, accessCookie(accessToken).toString());
-			response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie(refreshToken).toString());
-			log.info("기존 유저 refreshToken 발급: " + refreshCookie(refreshToken));
+			addCookie(response, "accessToken", accessToken, Duration.ofMinutes(15), true, domain);
+			addCookie(response, "refreshToken", refreshToken, Duration.ofDays(7), true, domain);
+			addCookie(response, "role", b64(oauthUser.getRole() == Role.PRO ? "EXPERT" : oauthUser.getRole().name()),
+				Duration.ofDays(7), false, domain);
+			addCookie(response, "userId", b64(oauthUser.getId().toString()), Duration.ofDays(7), false, domain);
 
-			response.addHeader(HttpHeaders.SET_COOKIE, refreshCookieAtRoot(refreshToken).toString());
-
-			response.addHeader(HttpHeaders.SET_COOKIE,
-				roleCookie(b64(oauthUser.getRole() == Role.PRO ? "EXPERT" : oauthUser.getRole().name())).toString());
-			response.addHeader(HttpHeaders.SET_COOKIE,
-				userIdCookie(b64(oauthUser.getId().toString())).toString());
-
-			org.springframework.security.core.context.SecurityContextHolder.clearContext();
-			var session = request.getSession(false);
-			if (session != null)
-				session.invalidate();
-
-			// 동적으로 결정된 URL로 리디렉션
 			response.sendRedirect(authCallbackUrl);
 			return;
 		}
 
-		addCookie(response, "oauthEmail", b64(email), Duration.ofMinutes(3), false);
-		addCookie(response, "oauthName", b64(name), Duration.ofMinutes(3), false);
-		addCookie(response, "oauthId", b64(oauthId), Duration.ofMinutes(3), false);
-		addCookie(response, "oauthProvider", b64(oauthProvider), Duration.ofMinutes(3), false);
+		addCookie(response, "oauthEmail", b64(email), Duration.ofMinutes(3), false, domain);
+		addCookie(response, "oauthName", b64(name), Duration.ofMinutes(3), false, domain);
+		addCookie(response, "oauthId", b64(oauthId), Duration.ofMinutes(3), false, domain);
+		addCookie(response, "oauthProvider", b64(oauthProvider), Duration.ofMinutes(3), false, domain);
 
-		HttpSession session = request.getSession();
-		session.setAttribute("tempEmail", email);
-		session.setAttribute("tempName", name);
-		session.setAttribute("tempOauthProvider", oauthProvider);
-		session.setAttribute("tempOauthId", oauthId);
-
-		log.info("신규 회원 소셜 로그인 - provider: {}, email: {}, name: {}",
-			oauthProvider, email, name);
-
-		// 동적으로 결정된 URL로 리디렉션
 		response.sendRedirect(signupUrl);
+	}
+
+	private String getDomainFromRedirectUri(String redirectUri) {
+		try {
+			java.net.URI uri = new java.net.URI(redirectUri);
+			String host = uri.getHost();
+			if (host != null && host.contains("localhost")) {
+				return "localhost";
+			}
+			return SHARED_DOMAIN;
+		} catch (Exception e) {
+			return SHARED_DOMAIN;
+		}
+	}
+
+	// 이 메서드는 CookieUtils.java로 이동해야 함
+	private static void addCookie(HttpServletResponse res, String name, String value,
+		Duration maxAge, boolean httpOnly, String domain) {
+		ResponseCookie c = ResponseCookie.from(name, value == null ? "" : value)
+			.domain(domain)
+			.path("/")
+			.maxAge(maxAge)
+			.secure(true)
+			.httpOnly(httpOnly)
+			.sameSite("None")
+			.build();
+		res.addHeader(HttpHeaders.SET_COOKIE, c.toString());
 	}
 }

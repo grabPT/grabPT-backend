@@ -10,10 +10,10 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
-import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
+import org.springframework.security.oauth2.client.web.HttpSessionOAuth2AuthorizationRequestRepository;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -38,6 +38,7 @@ public class SecurityConfig {
 	private final OAuth2SuccessHandler oauth2SuccessHandler;
 	private final OAuth2FailureHandler oauth2FailureHandler;
 
+	/** WebSocket 체인: 기존 그대로 */
 	@Bean
 	@Order(0)
 	public SecurityFilterChain wsFilterChain(HttpSecurity http) throws Exception {
@@ -55,34 +56,35 @@ public class SecurityConfig {
 		return http.build();
 	}
 
-	@Bean
-	public BCryptPasswordEncoder passwordEncoder() {
-		return new BCryptPasswordEncoder();
-	}
-
-	@Bean
-	public AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository() {
-		return new com.grabpt.config.oauth.HttpCookieOAuth2AuthorizationRequestRepository();
-	}
-
-	@Bean
-	public JwtAuthenticationFilter jwtAuthenticationFilter() {
-		return new JwtAuthenticationFilter(jwtTokenProvider);
-	}
-
-	@Bean
-	public AuthenticationProvider authenticationProvider() {
-		DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-		provider.setUserDetailsService(principalDetailsService);
-		provider.setPasswordEncoder(passwordEncoder());
-		return provider;
-	}
-
+	/** OAuth2 전용 체인: /oauth2/** 만 세션 허용 + 세션 저장소 기반 AuthorizationRequest 사용 */
 	@Bean
 	@Order(1)
-	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+	public SecurityFilterChain oauth2Chain(HttpSecurity http) throws Exception {
 		http
-			// OAuth state 쿠키는 세션과 무관하지만, 혹시 모를 제약 피하려면 IF_REQUIRED로 둬도 무방
+			.securityMatcher(new AntPathRequestMatcher("/oauth2/**"))
+			// OAuth2 핸드셰이크 구간만 세션 생성 허용
+			.sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+			// 기본 SecurityContextRepository 사용(세션 기반)
+			.csrf(AbstractHttpConfigurer::disable)
+			.cors(c -> c.configurationSource(corsConfigurationSource()))
+			.authorizeHttpRequests(a -> a.anyRequest().permitAll())
+			.oauth2Login(oauth2 -> oauth2
+				.userInfoEndpoint(u -> u.userService(principalOauth2UserService))
+				// 세션 저장소 기반 AuthorizationRequest 저장소 사용 (핸드셰이크 안정화)
+				.authorizationEndpoint(a -> a
+					.authorizationRequestRepository(new HttpSessionOAuth2AuthorizationRequestRepository()))
+				.successHandler(oauth2SuccessHandler)
+				.failureHandler(oauth2FailureHandler)
+			);
+
+		return http.build();
+	}
+
+	/** 메인 API 체인: 기존처럼 STATELESS + JWT */
+	@Bean
+	@Order(2)
+	public SecurityFilterChain apiChain(HttpSecurity http) throws Exception {
+		http
 			.sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.securityContext(sc -> sc.securityContextRepository(
 				new org.springframework.security.web.context.NullSecurityContextRepository()))
@@ -122,15 +124,29 @@ public class SecurityConfig {
 					"frame-ancestors https://www.grabpt.com https://grabpt.com https://api.grabpt.com"))
 			)
 			.authenticationProvider(authenticationProvider())
-			.oauth2Login(oauth2 -> oauth2
-				.userInfoEndpoint(userInfo -> userInfo.userService(principalOauth2UserService))
-				.authorizationEndpoint(a -> a
-					.authorizationRequestRepository(authorizationRequestRepository()))
-				.successHandler(oauth2SuccessHandler)
-				.failureHandler(oauth2FailureHandler)
-			);
-
+		;
 		return http.build();
+	}
+
+	// ===== Common beans =====
+
+	@Bean
+	public BCryptPasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
+
+	/** JWT 필터는 메인 체인에서만 사용됨 */
+	@Bean
+	public JwtAuthenticationFilter jwtAuthenticationFilter() {
+		return new JwtAuthenticationFilter(jwtTokenProvider);
+	}
+
+	@Bean
+	public AuthenticationProvider authenticationProvider() {
+		DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+		provider.setUserDetailsService(principalDetailsService);
+		provider.setPasswordEncoder(passwordEncoder());
+		return provider;
 	}
 
 	@Bean

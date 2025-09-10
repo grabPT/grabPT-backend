@@ -12,8 +12,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
-import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -65,11 +63,8 @@ public class SecurityConfig {
 	}
 
 	@Bean
-	public AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository() {
-		var repo = new HttpCookieOAuth2AuthorizationRequestRepository();
-		org.slf4j.LoggerFactory.getLogger(SecurityConfig.class)
-			.warn("[SECURITY] Using {}", repo.getClass().getName());
-		return repo;
+	public HttpCookieOAuth2AuthorizationRequestRepository authRequestRepository() {
+		return new HttpCookieOAuth2AuthorizationRequestRepository();
 	}
 
 	@Bean
@@ -128,7 +123,8 @@ public class SecurityConfig {
 					"/api/category-proprofile/**",
 					"/api/*/reviews",
 					"/api/alarmList",
-					"/api/auth/reissue"
+					"/api/auth/reissue",
+					"/login/**"
 				).permitAll()
 				.requestMatchers("/mypage", "/mypage/**").authenticated()
 				.anyRequest().authenticated()
@@ -153,7 +149,7 @@ public class SecurityConfig {
 
 			.oauth2Login(oauth2 -> oauth2
 				.userInfoEndpoint(userInfo -> userInfo.userService(principalOauth2UserService))
-				.authorizationEndpoint(a -> a.authorizationRequestRepository(authorizationRequestRepository()))
+				.authorizationEndpoint(a -> a.authorizationRequestRepository(authRequestRepository()))
 				.successHandler(oauth2SuccessHandler)
 				.failureHandler(oAuth2FailureHandler)
 			);

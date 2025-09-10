@@ -36,8 +36,8 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 	private final UserRepository userRepository;
 
 	// === D안: host[:port] → FE base 매핑 ===
-	private static final java.util.Map<String, String> HOSTPORT_TO_FE = java.util.Map.of(
-		// prod (표준 포트는 host만 들어오는 경우가 많으므로 별도 처리 아래에서 함께 함)
+	private static final Map<String, String> HOSTPORT_TO_FE = Map.of(
+		// prod
 		"api.grabpt.com", "https://www.grabpt.com",
 		// local / dev
 		"localhost:5173", "http://localhost:5173",
@@ -93,6 +93,10 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 				portNum = Integer.parseInt(xfPort);
 			} catch (NumberFormatException ignored) {
 			}
+		}
+
+		if ("api.grabpt.com".equalsIgnoreCase(host)) {
+			return "https://www.grabpt.com";
 		}
 
 		// 표준 포트는 생략된 경우가 있어 host만도 한번 매핑 시도

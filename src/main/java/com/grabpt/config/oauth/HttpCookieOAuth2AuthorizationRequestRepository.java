@@ -6,7 +6,6 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 
-import com.grabpt.config.oauth.support.RedirectTargetResolver;
 import com.nimbusds.oauth2.sdk.util.StringUtils;
 
 import jakarta.servlet.http.HttpServletRequest;

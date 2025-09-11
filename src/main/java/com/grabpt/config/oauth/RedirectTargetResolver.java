@@ -1,4 +1,4 @@
-package com.grabpt.config.oauth.support;
+package com.grabpt.config.oauth;
 
 import org.springframework.util.StringUtils;
 

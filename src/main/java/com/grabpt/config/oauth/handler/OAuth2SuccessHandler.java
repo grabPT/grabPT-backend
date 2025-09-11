@@ -151,10 +151,10 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 			// 로컬 환경인 경우에만 URL 파라미터로 토큰을 전달합니다.
 			if (frontendBase.contains("localhost") || frontendBase.contains("127.0.0.1")) {
 				targetUrl = UriComponentsBuilder.fromUriString(frontendBase + "/authcallback")
-					.queryParam("access_token", b64(accessToken))
-					.queryParam("refresh_token", b64(newRefreshToken))
-					.queryParam("role", b64(roleStr))
-					.queryParam("user_id", b64(oauthUser.getId().toString()))
+					.queryParam("access_token", accessToken)
+					.queryParam("refresh_token", newRefreshToken)
+					.queryParam("role", roleStr)
+					.queryParam("user_id", oauthUser.getId().toString())
 					.build().toUriString();
 			} else {
 				// 운영 환경인 경우, 쿠키만 사용하고 URL 파라미터는 추가하지 않습니다.
@@ -170,10 +170,10 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 		String targetUrl;
 		if (frontendBase.contains("localhost") || frontendBase.contains("127.0.0.1")) {
 			targetUrl = UriComponentsBuilder.fromUriString(frontendBase + "/signup")
-				.queryParam("oauthEmail", b64(email))
-				.queryParam("oauthName", b64(name))
-				.queryParam("oauthId", b64(oauthId))
-				.queryParam("oauthProvider", b64(oauthProvider))
+				.queryParam("oauthEmail", email)
+				.queryParam("oauthName", name)
+				.queryParam("oauthId", oauthId)
+				.queryParam("oauthProvider", oauthProvider)
 				.build().toUriString();
 		} else {
 			// 운영 환경에서는 쿠키를 사용하므로 URL 파라미터를 추가하지 않습니다.

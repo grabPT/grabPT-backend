@@ -35,4 +35,6 @@ public interface UserRepository extends JpaRepository<Users, Long> {
 	boolean existsActiveByPhone(@Param("phone") String phone);
 
 	List<Users> findByRoleAndDeletedAtBefore(Role role, LocalDateTime deletedAt);
+
+	boolean existsByEmail(String email);
 }

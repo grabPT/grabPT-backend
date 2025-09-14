@@ -30,4 +30,11 @@ public class UserResponseDto {
 		private String streetCode;
 		private String specAddress;
 	}
+
+	@Getter
+	@Builder
+	public static class DuplicateEmailDto {
+		private boolean duplicate;
+		private String oauthProvider;
+	}
 }

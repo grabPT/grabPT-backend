@@ -3,6 +3,7 @@ package com.grabpt.controller;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -10,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.grabpt.apiPayload.ApiResponse;
+import com.grabpt.config.auth.PrincipalDetails;
 import com.grabpt.config.jwt.JwtTokenProvider;
 import com.grabpt.config.jwt.properties.CookieSupport;
 import com.grabpt.config.oauth.CookieUtils;
@@ -28,9 +31,12 @@ import com.grabpt.config.oauth.DynamicCookieSupport;
 import com.grabpt.domain.entity.Users;
 import com.grabpt.dto.request.RefreshTokenRequestDto;
 import com.grabpt.dto.request.SignupRequest;
+import com.grabpt.dto.response.UserResponseDto;
 import com.grabpt.repository.UserRepository.UserRepository;
 import com.grabpt.service.AuthService.AuthService;
+import com.grabpt.service.UserService.UserQueryService;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
@@ -52,6 +58,7 @@ public class AuthController {
 	private final UserRepository userRepository;
 	private final UserDetailsService userDetailsService;
 	private final AuthService authService;
+	private final UserQueryService userQueryService;
 
 	@Operation(summary = "User 회원가입 요청 (Multipart)",
 		description = "JSON 데이터와 프로필 이미지를 동시에 전송하는 회원가입")
@@ -108,7 +115,7 @@ public class AuthController {
 			response.setHeader("X-Reason", "invalid-or-expired");
 			try {
 				jwtTokenProvider.getUserEmail(refreshToken);
-			} catch (io.jsonwebtoken.ExpiredJwtException e) {
+			} catch (ExpiredJwtException e) {
 				response.setHeader("X-Reason", "expired");
 			}
 			log.warn("[REISSUE] invalid/expired refresh");
@@ -234,7 +241,7 @@ public class AuthController {
 
 		// 3-2) (보조) 인증 정보가 있다면 그 유저의 refreshToken 도 제거
 		if (!revoked && authentication != null &&
-			authentication.getPrincipal() instanceof com.grabpt.config.auth.PrincipalDetails pd) {
+			authentication.getPrincipal() instanceof PrincipalDetails pd) {
 			Users u = pd.getUser();
 			u.setRefreshToken(null);
 			userRepository.save(u);
@@ -244,7 +251,7 @@ public class AuthController {
 		var session = req.getSession(false);
 		if (session != null)
 			session.invalidate();
-		org.springframework.security.core.context.SecurityContextHolder.clearContext();
+		SecurityContextHolder.clearContext();
 		log.info("[LOGOUT] Logout process completed");
 
 		return ApiResponse.onSuccess("로그아웃 완료");
@@ -259,8 +266,38 @@ public class AuthController {
 		@Parameter(name = "nickname", description = "중복 닉네임", required = true, example = "닉네임")
 	})
 	public ApiResponse<Boolean> checkNickname(@RequestParam String nickname) {
-		boolean isDuplicate = userRepository.existsByNickname(nickname);
+		boolean isDuplicate = userQueryService.existsByNickname(nickname);
 		return ApiResponse.onSuccess(isDuplicate);
+	}
+
+	@GetMapping("/check-email")
+	@Operation(
+		summary = "이메일 중복 검증",
+		description = "이메일 파라미터 전송 시 중복 여부와 가입된 OAuth 제공자 정보를 반환합니다."
+			+ "이메일 중복이면 isDuplicate=true, oauthProvider는 해당하는 유저의 oauthProvider는(google, kakao, naver 중 하나 / "
+			+ "이메일 중복이 아니면 isDuplicate=false, oauthProvider는 null로 반환합니다."
+	)
+	@Parameters({
+		@Parameter(name = "email", description = "중복 이메일", required = true, example = "test@gmail.com")
+	})
+	public ApiResponse<UserResponseDto.DuplicateEmailDto> checkEmail(@RequestParam String email) {
+		Optional<Users> userOptional = userRepository.findByEmail(email);
+
+		boolean isDuplicate = userOptional.isPresent();
+		String oauthProvider = null;
+
+		if (isDuplicate) {
+			oauthProvider = userOptional.get().getOauthProvider();
+		}
+
+		log.info("Email duplication check for {}: {}", email, isDuplicate);
+
+		UserResponseDto.DuplicateEmailDto dto = UserResponseDto.DuplicateEmailDto.builder()
+			.duplicate(isDuplicate)
+			.oauthProvider(oauthProvider)
+			.build();
+
+		return ApiResponse.onSuccess(dto);
 	}
 
 	@GetMapping("/api/temp-info")

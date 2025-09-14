@@ -178,6 +178,20 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 		} else {
 			// 운영 환경에서는 쿠키를 사용하므로 URL 파라미터를 추가하지 않습니다.
 			// (참고: 이 로직은 DynamicCookieSupport.asPublic을 사용하므로 쿠키를 통해 정보 전달)
+
+			add(response, DynamicCookieSupport.asPublic(
+					DynamicCookieSupport.newCookie("oauthEmail", b64(email), request))
+				.maxAge(Duration.ofMinutes(3)).build());
+			add(response, DynamicCookieSupport.asPublic(
+					DynamicCookieSupport.newCookie("oauthName", b64(name), request))
+				.maxAge(Duration.ofMinutes(3)).build());
+			add(response, DynamicCookieSupport.asPublic(
+					DynamicCookieSupport.newCookie("oauthId", b64(oauthId), request))
+				.maxAge(Duration.ofMinutes(3)).build());
+			add(response, DynamicCookieSupport.asPublic(
+					DynamicCookieSupport.newCookie("oauthProvider", b64(oauthProvider), request))
+				.maxAge(Duration.ofMinutes(3)).build());
+
 			targetUrl = UriComponentsBuilder.fromUriString(frontendBase + "/signup")
 				.build().toUriString();
 		}

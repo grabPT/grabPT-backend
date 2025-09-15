@@ -7,4 +7,9 @@ public class AuthHandler extends GeneralException {
 	public AuthHandler(BaseErrorCode errorCode) {
 		super(errorCode);
 	}
+
+	@Override
+	public BaseErrorCode getCode() {
+		return super.getCode();
+	}
 }

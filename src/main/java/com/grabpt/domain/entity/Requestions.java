@@ -1,8 +1,11 @@
 package com.grabpt.domain.entity;
 
+import static java.util.List.*;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
@@ -10,6 +13,7 @@ import org.hibernate.annotations.DynamicUpdate;
 import com.grabpt.domain.common.BaseEntity;
 import com.grabpt.domain.enums.Gender;
 import com.grabpt.domain.enums.RequestStatus;
+import com.grabpt.dto.request.RequestionUpdateDto;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
@@ -137,4 +141,52 @@ public class Requestions extends BaseEntity {
 		this.availableTimes = new ArrayList<>(availableTimes);
 	}
 
+	public void applyUpdate(RequestionUpdateDto u) {
+		Objects.requireNonNull(u, "update dto is null");
+
+		// requireEditable(); // 편집 가능 검증 로직 추가 가능
+
+		if (u.category() != null)
+			this.category = u.category();
+		if (u.price() != null)
+			this.price = u.price();
+		if (u.sessionCount() != null)
+			this.sessionCount = u.sessionCount();
+
+		if (u.purpose() != null)
+			this.purpose = copyOf(u.purpose());
+		if (u.etcPurposeContent() != null)
+			this.etcPurposeContent = u.etcPurposeContent();
+		if (u.content() != null)
+			this.content = u.content();
+
+		if (u.ageGroup() != null)
+			this.ageGroup = normalize(u.ageGroup());
+		if (u.userGender() != null)
+			this.userGender = u.userGender();
+
+		if (u.availableDays() != null)
+			this.availableDays = copyOf(u.availableDays());
+		if (u.availableTimes() != null)
+			this.availableTimes = copyOf(u.availableTimes());
+
+		if (u.trainerGender() != null)
+			this.trainerGender = u.trainerGender();
+		if (u.startPreference() != null)
+			this.startPreference = u.startPreference();
+		if (u.location() != null)
+			this.location = normalize(u.location());
+	}
+
+	private String normalize(String s) {
+		return (s == null) ? null : s.trim().replaceAll("\\s+", " ");
+	}
+
+	/// 편집 가능 검증 로직, 나중에 추가 가능
+	// private void requireEditable() {
+	// 	// 예: 매칭 진행 전(MATCHING)일 때만 수정 가능
+	// 	if (this.status != null && this.status != RequestStatus.MATCHING) {
+	// 		throw new IllegalStateException("Requestion is not editable in status: " + this.status);
+	// 	}
+	// }
 }

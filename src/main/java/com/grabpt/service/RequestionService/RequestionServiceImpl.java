@@ -22,12 +22,10 @@ import com.grabpt.domain.enums.RequestStatus;
 import com.grabpt.dto.request.RequestionRequestDto;
 import com.grabpt.dto.response.RequestionResponseDto;
 import com.grabpt.dto.response.UserResponseDto;
-import com.grabpt.repository.CategoryRepository.CategoryRepository;
-import com.grabpt.repository.MatchingRepository.MatchingRepository;
-import com.grabpt.repository.ProProfileRepository.ProProfileRepository;
 import com.grabpt.repository.RequestionRepository.RequestionRepository;
-import com.grabpt.repository.UserRepository.UserRepository;
 import com.grabpt.service.AlarmService.AlarmService;
+import com.grabpt.service.CategoryService.CategoryQueryService;
+import com.grabpt.service.MatchingService.MatchingService;
 import com.grabpt.service.ProfileService.ProfileService;
 import com.grabpt.service.UserService.UserQueryService;
 
@@ -41,13 +39,11 @@ import lombok.extern.slf4j.Slf4j;
 public class RequestionServiceImpl implements RequestionService {
 
 	private final RequestionRepository requestionRepository;
-	private final CategoryRepository categoryRepository;
-	private final UserRepository userRepository;
+	private final CategoryQueryService categoryQueryService;
 	private final UserQueryService userQueryService;
 	private final ProfileService profileService;
 	private final AlarmService alarmService;
-	private final MatchingRepository matchingRepository;
-	private final ProProfileRepository proProfileRepository;
+	private final MatchingService matchingService;
 
 	@Override
 	public List<Requestions> getReqeustions(String categoryCode, Pageable pageable) {
@@ -56,11 +52,10 @@ public class RequestionServiceImpl implements RequestionService {
 
 	@Override
 	public Requestions save(RequestionRequestDto dto, String email) {
-		Users user = userRepository.findByEmail(email)
-			.orElseThrow(() -> new RuntimeException("사용자 없음"));
+		Users user = userQueryService.findByEmail(email)
+			.orElseThrow(() -> new UserHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
-		Category category = categoryRepository.findById(dto.getCategoryId())
-			.orElseThrow(() -> new RuntimeException("카테고리 없음"));
+		Category category = categoryQueryService.findById(dto.getCategoryId());
 
 		Requestions requestion = Requestions.builder()
 			.user(user)  // JWT 기반으로 추출된 사용자
@@ -104,11 +99,10 @@ public class RequestionServiceImpl implements RequestionService {
 		String sortBy,
 		Pageable pageable) throws IllegalAccessException {
 		UserResponseDto.UserInfoDTO userInfo = userQueryService.getUserInfo(request);
-		Users findProUser = userRepository.findByEmail(userInfo.getEmail()).orElseThrow(
+		Users findProUser = userQueryService.findByEmail(userInfo.getEmail()).orElseThrow(
 			() -> new UserHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
 		Address addr = findProUser.getAddress();
-		findProUser.getProProfile().getCategory().getId();
 		String proAddressPrefix = buildAddressPrefix(addr); // "서울 강남구 역삼동"
 		log.info("RequestServiceImpl pro address prefix = {}", proAddressPrefix);
 
@@ -128,24 +122,21 @@ public class RequestionServiceImpl implements RequestionService {
 		}
 
 		return requestionPage.map(req -> {
-			Users user = req.getUser();
-			String username = req.getUser().getNickname();
-			String userStreet = req.getLocation(); // Requestions 주소 기준으로 수정하였습니다
-
+			Users u = req.getUser(); // 한번만 접근해 지역 변수에 담아 사용 (4) 미세 최적화
 			return RequestionResponseDto.RequestionResponsePagingDto.builder()
-				.username(username)
-				.userStreet(userStreet)
+				.username(u.getNickname())
+				.userStreet(req.getLocation())
 				.sessionCount(req.getSessionCount())
 				.price(req.getPrice())
 				.categoryName(req.getCategory().getName())
 				.availableDays(req.getAvailableDays())
 				.availableTimes(req.getAvailableTimes())
 				.status(req.getStatus())
-				.userProfileImageUrl(user.getProfileImageUrl())
+				.userProfileImageUrl(u.getProfileImageUrl())
 				.requestId(req.getId())
 				.location(req.getLocation())
 				.content(req.getContent())
-				.nickname(user.getNickname())
+				.nickname(u.getNickname())
 				.etcPurposeContent(req.getEtcPurposeContent())
 				.build();
 		});
@@ -157,52 +148,49 @@ public class RequestionServiceImpl implements RequestionService {
 		Requestions requestion = requestionRepository.findById(requestionId)
 			.orElseThrow(() -> new RequestionHandler(ErrorStatus.REQUESTION_NOT_FOUND));
 
-		if (!requestion.getUser().getEmail().equals(email)) {
-			throw new RequestionHandler(ErrorStatus.INVALID_USER); // 작성자 아님
-		}
+		assertOwner(requestion, email);
 
-		Category category = categoryRepository.findById(dto.getCategoryId())
-			.orElseThrow(() -> new RequestionHandler(ErrorStatus.CATEGORY_NOT_FOUND));
+		Category category = categoryQueryService.findById(dto.getCategoryId());
 
 		// 값 변경
-		requestion.setCategory(category);
-		requestion.setPrice(dto.getPrice());
-		requestion.setSessionCount(dto.getSessionCount());
-		requestion.setPurpose(dto.getPurpose());
-		requestion.setEtcPurposeContent(dto.getEtcPurposeContent());
-		requestion.setContent(dto.getContent());
-		requestion.setAgeGroup(dto.getAgeGroup());
-		requestion.setUserGender(Gender.fromKorean(dto.getUserGender()));
-		requestion.setAvailableDays(dto.getAvailableDays());
-		requestion.setAvailableTimes(dto.getAvailableTimes());
-		requestion.setTrainerGender(Gender.fromKorean(dto.getTrainerGender()));
-		requestion.setStartPreference(dto.getStartPreference());
-		requestion.setLocation(dto.getLocation());
+		var cmd = com.grabpt.dto.request.RequestionUpdateDto.builder()
+			.category(category)
+			.price(dto.getPrice())
+			.sessionCount(dto.getSessionCount())
+			.purpose(dto.getPurpose())
+			.etcPurposeContent(dto.getEtcPurposeContent())
+			.content(dto.getContent())
+			.ageGroup(dto.getAgeGroup())
+			.userGender(Gender.fromKorean(dto.getUserGender()))
+			.availableDays(dto.getAvailableDays())
+			.availableTimes(dto.getAvailableTimes())
+			.trainerGender(Gender.fromKorean(dto.getTrainerGender()))
+			.startPreference(dto.getStartPreference())
+			.location(dto.getLocation())
+			.build();
+
+		requestion.applyUpdate(cmd);
 	}
 
 	@Override
 	@Transactional
 	public void delete(Long requestionId, String email) {
-		// 1) 잠금 후 조회 (동시성 안전)
+		// 잠금 후 조회 (동시성 안전)
 		Requestions requestion = requestionRepository.findByIdForUpdate(requestionId)
 			.orElseThrow(() -> new RequestionHandler(ErrorStatus.REQUESTION_NOT_FOUND));
 
-		// 2) 소유자 검사
+		// 소유자 검사
 		if (!requestion.getUser().getEmail().equals(email)) {
-			// 기존에 쓰던 에러가 있으면 그대로 사용해도 되고,
-			// 별도 코드가 있다면 REQUESTION_DELETE_NOT_OWNER 같은 걸 추천.
 			throw new RequestionHandler(ErrorStatus.REQUESTION_DELETE_NOT_OWNER);
 		}
 
-		// 3) 상태 검사: MATCHING(= 미매칭 상태)일 때만 삭제 허용
+		// 상태 검사: MATCHING(= 미매칭 상태)일 때만 삭제 허용
 		if (requestion.getStatus() != RequestStatus.MATCHING) {
-			// 프로젝트 규칙에 맞는 에러 코드 사용
 			throw new RequestionHandler(ErrorStatus.REQUESTION_DELETE_NOT_ALLOWED);
-			// 없다면 임시로 INVALID_USER 대신 별도 코드 추가 추천(아래 3) 참고)
 		}
 
-		// 4) 안전장치: 매칭 레코드가 이미 존재하면 삭제 불가
-		if (matchingRepository.existsByRequestionId(requestionId)) {
+		// 안전장치: 매칭 레코드가 이미 존재하면 삭제 불가
+		if (matchingService.existsByRequestionId(requestionId)) {
 			throw new RequestionHandler(ErrorStatus.REQUESTION_DELETE_NOT_ALLOWED);
 		}
 
@@ -225,7 +213,7 @@ public class RequestionServiceImpl implements RequestionService {
 			.toList();
 
 		// 2) 요청서 ID들에 대한 매칭을 한 번에 로드
-		var matchings = matchingRepository.findAllWithProByRequestionIds(reqIds);
+		var matchings = matchingService.findAllWithProByRequestionIds(reqIds);
 
 		// 3) reqId -> proProfileId 맵 구성
 		var reqIdToProId = matchings.stream()
@@ -238,13 +226,7 @@ public class RequestionServiceImpl implements RequestionService {
 		return page.map(req -> {
 			Long proProfileId = reqIdToProId.get(req.getId());
 
-			String proNickname = null;
-			if (proProfileId != null) {
-				proNickname = proProfileRepository.findById(proProfileId)
-					.map(pp -> pp.getUser())
-					.map(Users::getNickname)
-					.orElse(null); // Optional.get() 사용 금지
-			}
+			String proNickname = profileService.getProNicknameById(proProfileId);
 
 			return RequestionResponseDto.UserOwnRequestionDto.from(req, proProfileId, proNickname);
 		});
@@ -255,7 +237,13 @@ public class RequestionServiceImpl implements RequestionService {
 		Requestions requestion = requestionRepository.findById(requestionId)
 			.orElseThrow(() -> new RequestionHandler(ErrorStatus.REQUESTION_NOT_FOUND));
 
-		return requestion.getUser().getEmail().equals(email);
+		return isOwner(requestion, email);
+	}
+
+	@Override
+	public Requestions findById(Long requestionId) {
+		return requestionRepository.findById(requestionId)
+			.orElseThrow(() -> new RequestionHandler(ErrorStatus.REQUESTION_NOT_FOUND));
 	}
 
 	private String buildAddressPrefix(Address addr) {
@@ -274,4 +262,17 @@ public class RequestionServiceImpl implements RequestionService {
 		String joined = String.join(" ", parts).replaceAll("\\s+", " ").trim();
 		return joined;
 	}
+
+	private void assertOwner(Requestions r, String email) {
+		if (!isOwner(r, email)) {
+			throw new RequestionHandler(ErrorStatus.INVALID_USER);
+		}
+	}
+
+	private boolean isOwner(Requestions r, String email) {
+		return r.getUser() != null
+			&& r.getUser().getEmail() != null
+			&& r.getUser().getEmail().equalsIgnoreCase(email);
+	}
+
 }

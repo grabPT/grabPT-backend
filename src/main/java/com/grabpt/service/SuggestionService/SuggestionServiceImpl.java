@@ -14,8 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.grabpt.apiPayload.code.status.ErrorStatus;
-import com.grabpt.apiPayload.exception.handler.ProHandler;
-import com.grabpt.apiPayload.exception.handler.RequestionHandler;
 import com.grabpt.apiPayload.exception.handler.SuggestionHandler;
 import com.grabpt.apiPayload.exception.handler.UserHandler;
 import com.grabpt.aws.s3.AmazonS3Manager;
@@ -32,13 +30,11 @@ import com.grabpt.domain.enums.SuggestStatus;
 import com.grabpt.dto.request.SuggestionRequestDto;
 import com.grabpt.dto.response.SuggestionResponseDto;
 import com.grabpt.dto.response.UserResponseDto;
-import com.grabpt.repository.MatchingRepository.MatchingRepository;
-import com.grabpt.repository.ProProfileRepository.ProProfileRepository;
-import com.grabpt.repository.RequestionRepository.RequestionRepository;
 import com.grabpt.repository.SuggestionRepository.SuggestionRepository;
-import com.grabpt.repository.UserRepository.UserRepository;
 import com.grabpt.service.AlarmService.AlarmService;
 import com.grabpt.service.MatchingService.MatchingService;
+import com.grabpt.service.ProfileService.ProfileService;
+import com.grabpt.service.RequestionService.RequestionService;
 import com.grabpt.service.UserService.UserQueryService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -49,25 +45,21 @@ import lombok.RequiredArgsConstructor;
 public class SuggestionServiceImpl implements SuggestionService {
 
 	private final SuggestionRepository suggestionRepository;
-	private final UserRepository userRepository;
-	private final ProProfileRepository proProfileRepository;
-	private final RequestionRepository requestionRepository;
+	private final ProfileService profileService;
+	private final RequestionService requestionService;
 	private final UserQueryService userQueryService;
 	private final AmazonS3Manager amazonS3Manager;
 	private final AlarmService alarmService;
 	private final MatchingService matchingService;
-	private final MatchingRepository matchingRepository;
 
 	@Override
 	public Suggestions save(SuggestionRequestDto dto, String email, List<MultipartFile> photos) {
-		Users user = userRepository.findByEmail(email)
+		Users user = userQueryService.findByEmail(email)
 			.orElseThrow(() -> new UserHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
-		ProProfile proProfile = proProfileRepository.findByUser(user)
-			.orElseThrow(() -> new ProHandler(ErrorStatus.PRO_NOT_FOUND));
+		ProProfile proProfile = profileService.findByUser(user); // 에러 처리는 서비스단에 구현
 
-		Requestions requestion = requestionRepository.findById(dto.getRequestionId())
-			.orElseThrow(() -> new RequestionHandler(ErrorStatus.REQUESTION_NOT_FOUND));
+		Requestions requestion = requestionService.findById(dto.getRequestionId()); // 에러 처리는 서비스단에 구현
 
 		Suggestions suggestion = Suggestions.builder()
 			.price(dto.getPrice())
@@ -186,13 +178,10 @@ public class SuggestionServiceImpl implements SuggestionService {
 	@Override
 	@Transactional
 	public void updateSuggestion(Long suggestionId, SuggestionRequestDto dto, String email) {
-		// 작성자 검증
 		Suggestions suggestion = suggestionRepository.findById(suggestionId)
 			.orElseThrow(() -> new SuggestionHandler(ErrorStatus.SUGGESTION_NOT_FOUND));
 
-		if (!suggestion.getProProfile().getUser().getEmail().equals(email)) {
-			throw new SuggestionHandler(ErrorStatus.INVALID_PRO); // 작성자 아님
-		}
+		assertOwner(suggestion, email);
 
 		// 값 변경
 		suggestion.setPrice(dto.getPrice());
@@ -211,9 +200,7 @@ public class SuggestionServiceImpl implements SuggestionService {
 			.orElseThrow(() -> new SuggestionHandler(ErrorStatus.SUGGESTION_NOT_FOUND));
 
 		// 2) 작성자 확인
-		if (!suggestion.getProProfile().getUser().getEmail().equals(email)) {
-			throw new SuggestionHandler(ErrorStatus.INVALID_PRO); // 또는 SUGGESTION_DELETE_NOT_OWNER
-		}
+		assertOwner(suggestion, email);
 
 		// 3) 상태 검사: MATCHED면 삭제 불가
 		if (suggestion.getStatus() == SuggestStatus.MATCHED) {
@@ -229,6 +216,19 @@ public class SuggestionServiceImpl implements SuggestionService {
 		Suggestions suggestion = suggestionRepository.findById(suggestionId)
 			.orElseThrow(() -> new SuggestionHandler(ErrorStatus.SUGGESTION_NOT_FOUND));
 
-		return suggestion.getProProfile().getUser().getEmail().equals(email);
+		return isOwner(suggestion, email);
+	}
+
+	private void assertOwner(Suggestions s, String email) {
+		if (!isOwner(s, email)) {
+			throw new SuggestionHandler(ErrorStatus.INVALID_PRO);
+		}
+	}
+
+	private boolean isOwner(Suggestions s, String email) {
+		return s.getProProfile() != null
+			&& s.getProProfile().getUser() != null
+			&& s.getProProfile().getUser().getEmail() != null
+			&& s.getProProfile().getUser().getEmail().equalsIgnoreCase(email);
 	}
 }

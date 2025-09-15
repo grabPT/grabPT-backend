@@ -1,6 +1,7 @@
 package com.grabpt.service.MatchingService;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -128,5 +129,15 @@ public class MatchingServiceImpl implements MatchingService {
 	@Override
 	public Matching findMatchingBySuggestionId(Long suggestionId) {
 		return matchingRepository.findMatchingBySuggestionId(suggestionId);
+	}
+
+	@Override
+	public boolean existsByRequestionId(Long requestionId) {
+		return matchingRepository.existsByRequestionId(requestionId);
+	}
+
+	@Override
+	public List<Matching> findAllWithProByRequestionIds(List<Long> requestionIds) {
+		return matchingRepository.findAllWithProByRequestionIds(requestionIds);
 	}
 }

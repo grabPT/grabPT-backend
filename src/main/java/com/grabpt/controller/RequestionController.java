@@ -22,7 +22,6 @@ import com.grabpt.dto.request.RequestionRequestDto;
 import com.grabpt.dto.response.RequestionResponseDto;
 import com.grabpt.dto.response.UserResponseDto;
 import com.grabpt.service.RequestionService.RequestionService;
-import com.grabpt.service.SuggestionService.SuggestionService;
 import com.grabpt.service.UserService.UserQueryService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,7 +37,6 @@ public class RequestionController {
 
 	private final RequestionService requestionService;
 	private final UserQueryService userQueryService;
-	private final SuggestionService suggestionService;
 
 	@Operation(
 		summary = "요청서 작성 저장 API",

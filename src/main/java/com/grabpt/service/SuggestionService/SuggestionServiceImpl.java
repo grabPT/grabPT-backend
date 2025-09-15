@@ -178,13 +178,10 @@ public class SuggestionServiceImpl implements SuggestionService {
 	@Override
 	@Transactional
 	public void updateSuggestion(Long suggestionId, SuggestionRequestDto dto, String email) {
-		// 작성자 검증
 		Suggestions suggestion = suggestionRepository.findById(suggestionId)
 			.orElseThrow(() -> new SuggestionHandler(ErrorStatus.SUGGESTION_NOT_FOUND));
 
-		if (!suggestion.getProProfile().getUser().getEmail().equals(email)) {
-			throw new SuggestionHandler(ErrorStatus.INVALID_PRO); // 작성자 아님
-		}
+		assertOwner(suggestion, email);
 
 		// 값 변경
 		suggestion.setPrice(dto.getPrice());
@@ -203,9 +200,7 @@ public class SuggestionServiceImpl implements SuggestionService {
 			.orElseThrow(() -> new SuggestionHandler(ErrorStatus.SUGGESTION_NOT_FOUND));
 
 		// 2) 작성자 확인
-		if (!suggestion.getProProfile().getUser().getEmail().equals(email)) {
-			throw new SuggestionHandler(ErrorStatus.INVALID_PRO);
-		}
+		assertOwner(suggestion, email);
 
 		// 3) 상태 검사: MATCHED면 삭제 불가
 		if (suggestion.getStatus() == SuggestStatus.MATCHED) {
@@ -221,6 +216,19 @@ public class SuggestionServiceImpl implements SuggestionService {
 		Suggestions suggestion = suggestionRepository.findById(suggestionId)
 			.orElseThrow(() -> new SuggestionHandler(ErrorStatus.SUGGESTION_NOT_FOUND));
 
-		return suggestion.getProProfile().getUser().getEmail().equals(email);
+		return isOwner(suggestion, email);
+	}
+
+	private void assertOwner(Suggestions s, String email) {
+		if (!isOwner(s, email)) {
+			throw new SuggestionHandler(ErrorStatus.INVALID_PRO);
+		}
+	}
+
+	private boolean isOwner(Suggestions s, String email) {
+		return s.getProProfile() != null
+			&& s.getProProfile().getUser() != null
+			&& s.getProProfile().getUser().getEmail() != null
+			&& s.getProProfile().getUser().getEmail().equalsIgnoreCase(email);
 	}
 }

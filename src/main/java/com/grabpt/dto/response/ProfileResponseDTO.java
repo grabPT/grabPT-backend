@@ -11,27 +11,22 @@ import com.grabpt.domain.entity.Users;
 import lombok.Builder;
 import lombok.Getter;
 
-/**
- * 프로필 관련 응답 DTO들을 모아놓은 클래스입니다.
- */
+
 @Builder
 @Getter
 public class ProfileResponseDTO {
 
-	/**
-	 * 내 정보 조회 응답 DTO (일반 사용자용)
-	 */
+	// 일반 사용자용
 	@Getter
 	@Builder
 	public static class MyProfileDTO {
 		private Long userId;
 		private String profileImageUrl;
-		private String name;
-		private String nickname;
+		private String userName;
+		private String userNickName;
 		private String email;
 		private String categoryName;
-		// location
-		private List<MyProProfileDTO.AddressDTO> address;
+		private List<MyProProfileDTO.AddressDTO> userLocation;
 
 		@Getter
 		@Builder
@@ -54,23 +49,21 @@ public class ProfileResponseDTO {
 		}
 	}
 
-	/**
-	 * 내 정보 조회 응답 DTO (전문가용)
-	 */
+	// 전문가용
 	@Getter
 	@Builder
 	public static class MyProProfileDTO {
 		// 프로필 카드
-		private Long proId;
+		private Long userId;
 		private String profileImageUrl;
-		private String proName;
 		private String userName;
-		private String center;
+		private String userNickName;
+		private String proCenterName;
 		private String categoryName; // 카테고리 이름 추가
 		private Double averageRating; // 리뷰 평점 추가
 
 		private String description;
-		private String centerDescription;
+		private String proCenterDescription;
 
 		// 소개 이미지
 		private List<MyProProfileDTO.PhotoDTO> photos;
@@ -84,7 +77,7 @@ public class ProfileResponseDTO {
 		private List<PtPrice> ptPrices;
 
 		// location
-		private List<AddressDTO> address;
+		private List<AddressDTO> userLocations;
 
 		@Getter
 		@Builder
@@ -109,14 +102,14 @@ public class ProfileResponseDTO {
 		@Getter
 		@Builder
 		public static class ReviewDTO {
-			private String authorName;
+			private String reviewer;
 			private Double rating;
 			private String content;
 
 			public static ReviewDTO from(Review review) {
 				Users user = review.getUser();
 				return ReviewDTO.builder()
-					.authorName(user.getNickname())
+					.reviewer(user.getNickname())
 					.rating(review.getRating())
 					.content(review.getContent())
 					.build();

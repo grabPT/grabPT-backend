@@ -18,14 +18,14 @@ import lombok.Getter;
 public class ProProfileResponseDTO {
 
 	// 프로필 카드
-	private String name;
+	private String userNickName;
 	private String center;
 	private String profileImageUrl;
 
 	// pro의 userId
-	private Long proId;
+	private Long userId;
 
-	private String centerDescription;
+	private String proCenterDescription;
 
 	// 소개 글
 	private String introduction;
@@ -48,7 +48,7 @@ public class ProProfileResponseDTO {
 	private List<ReviewDTO> reviews;
 
 	// location
-	private List<ProfileResponseDTO.MyProProfileDTO.AddressDTO> address;
+	private List<ProfileResponseDTO.MyProProfileDTO.AddressDTO> userLocations;
 
 	@Getter
 	@Builder

@@ -1,5 +1,6 @@
 package com.grabpt.controller;
 
+import com.grabpt.config.SecurityUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -56,19 +57,16 @@ public class ReviewController {
 
 	@Operation(summary = "리뷰 작성 API", description = "사용자가 전문가에 대한 리뷰를 작성합니다.")
 	@PostMapping
-	public ApiResponse<String> addReview(HttpServletRequest request
-		, @RequestBody ReviewRequestDTO reviewRequestDTO) throws IllegalAccessException {
-		UserResponseDto.UserInfoDTO userInfo = userQueryService.getUserInfo(request);
-		Long userId = userInfo.getUserId();
+	public ApiResponse<String> addReview(@RequestBody ReviewRequestDTO reviewRequestDTO) {
+		Long userId = SecurityUtils.currentUserIdOrThrow();
 		reviewService.createReview(userId, reviewRequestDTO);
 		return ApiResponse.onSuccess("리뷰가 성공적으로 등록되었습니다.");
 	}
 
 	@Operation(summary = "리뷰 삭제 API")
 	@DeleteMapping
-	public ApiResponse<String> deleteReview(HttpServletRequest request,@RequestParam Long reviewId) throws IllegalAccessException {
-		UserResponseDto.UserInfoDTO userInfo = userQueryService.getUserInfo(request);
-		Long userId = userInfo.getUserId();
+	public ApiResponse<String> deleteReview(@RequestParam Long reviewId) {
+		Long userId = SecurityUtils.currentUserIdOrThrow();
 
 		reviewService.deleteReview(userId,reviewId);
 		return ApiResponse.onSuccess("리뷰가 성공적으로 삭제되었습니다.");

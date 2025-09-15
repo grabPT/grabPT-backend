@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.grabpt.domain.entity.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -15,7 +14,16 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.grabpt.apiPayload.code.status.ErrorStatus;
 import com.grabpt.apiPayload.exception.GeneralException;
+import com.grabpt.apiPayload.exception.handler.ProHandler;
 import com.grabpt.converter.ProfileConverter;
+import com.grabpt.domain.entity.Address;
+import com.grabpt.domain.entity.Matching;
+import com.grabpt.domain.entity.PreviousUser;
+import com.grabpt.domain.entity.ProProfile;
+import com.grabpt.domain.entity.PtPrice;
+import com.grabpt.domain.entity.Requestions;
+import com.grabpt.domain.entity.Review;
+import com.grabpt.domain.entity.Users;
 import com.grabpt.domain.enums.MatchingStatus;
 import com.grabpt.domain.enums.Role;
 import com.grabpt.dto.request.CenterUpdateRequestDTO;
@@ -358,9 +366,6 @@ public class ProfileServiceImpl implements ProfileService {
 
 		user.setAccessToken(null);
 		user.setRefreshToken(null);
-
-
-
 	}
 
 	@Override
@@ -412,4 +417,21 @@ public class ProfileServiceImpl implements ProfileService {
 		address.setZipcode(request.getZipcode());
 	}
 
+	@Override
+	@Transactional(readOnly = true)
+	public String getProNicknameById(Long proProfileId) {
+		if (proProfileId == null) {
+			return null;
+		}
+		return proProfileRepository.findById(proProfileId)
+			.map(proProfile -> proProfile.getUser())
+			.map(Users::getNickname)
+			.orElse(null);
+	}
+
+	@Override
+	public ProProfile findByUser(Users user) {
+		return proProfileRepository.findByUser(user)
+			.orElseThrow(() -> new ProHandler(ErrorStatus.PRO_NOT_FOUND));
+	}
 }

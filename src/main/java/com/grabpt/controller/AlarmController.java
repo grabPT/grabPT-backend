@@ -30,7 +30,7 @@ public class AlarmController {
 	@Operation(summary = "로그인 유저의 읽지 않은 알림을 모두 조회합니다")
 	@GetMapping("/api/alarmList")
 	@ResponseBody
-	public ApiResponse<List<AlarmResponseDto>> getAlarmList() throws IllegalAccessException {
+	public ApiResponse<List<AlarmResponseDto>> getAlarmList(){
 		Long userId = SecurityUtils.currentUserIdOrThrow();
 		List<Alarm> alarmList = alarmService.findAllUnReadAlarmByUserId(userId);
 		List<AlarmResponseDto> list = alarmList.stream().map(AlarmConverter::toAlarmResponseDto).toList();

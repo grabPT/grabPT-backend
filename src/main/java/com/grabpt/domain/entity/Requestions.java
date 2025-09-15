@@ -1,7 +1,6 @@
 package com.grabpt.domain.entity;
 
 import static java.util.List.*;
-import static sun.security.krb5.internal.ktab.KeyTab.*;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -177,6 +176,10 @@ public class Requestions extends BaseEntity {
 			this.startPreference = u.startPreference();
 		if (u.location() != null)
 			this.location = normalize(u.location());
+	}
+
+	private String normalize(String s) {
+		return (s == null) ? null : s.trim().replaceAll("\\s+", " ");
 	}
 
 	/// 편집 가능 검증 로직, 나중에 추가 가능

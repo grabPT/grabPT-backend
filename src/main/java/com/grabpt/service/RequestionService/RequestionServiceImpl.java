@@ -53,7 +53,7 @@ public class RequestionServiceImpl implements RequestionService {
 	@Override
 	public Requestions save(RequestionRequestDto dto, String email) {
 		Users user = userQueryService.findByEmail(email)
-			.orElseThrow(() -> new RuntimeException("사용자 없음"));
+			.orElseThrow(() -> new UserHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
 		Category category = categoryQueryService.findById(dto.getCategoryId());
 
@@ -103,7 +103,6 @@ public class RequestionServiceImpl implements RequestionService {
 			() -> new UserHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
 		Address addr = findProUser.getAddress();
-		findProUser.getProProfile().getCategory().getId();
 		String proAddressPrefix = buildAddressPrefix(addr); // "서울 강남구 역삼동"
 		log.info("RequestServiceImpl pro address prefix = {}", proAddressPrefix);
 
@@ -123,24 +122,21 @@ public class RequestionServiceImpl implements RequestionService {
 		}
 
 		return requestionPage.map(req -> {
-			Users user = req.getUser();
-			String username = req.getUser().getNickname();
-			String userStreet = req.getLocation(); // Requestions 주소 기준으로 수정하였습니다
-
+			Users u = req.getUser(); // 한번만 접근해 지역 변수에 담아 사용 (4) 미세 최적화
 			return RequestionResponseDto.RequestionResponsePagingDto.builder()
-				.username(username)
-				.userStreet(userStreet)
+				.username(u.getNickname())
+				.userStreet(req.getLocation())
 				.sessionCount(req.getSessionCount())
 				.price(req.getPrice())
 				.categoryName(req.getCategory().getName())
 				.availableDays(req.getAvailableDays())
 				.availableTimes(req.getAvailableTimes())
 				.status(req.getStatus())
-				.userProfileImageUrl(user.getProfileImageUrl())
+				.userProfileImageUrl(u.getProfileImageUrl())
 				.requestId(req.getId())
 				.location(req.getLocation())
 				.content(req.getContent())
-				.nickname(user.getNickname())
+				.nickname(u.getNickname())
 				.etcPurposeContent(req.getEtcPurposeContent())
 				.build();
 		});
@@ -152,26 +148,28 @@ public class RequestionServiceImpl implements RequestionService {
 		Requestions requestion = requestionRepository.findById(requestionId)
 			.orElseThrow(() -> new RequestionHandler(ErrorStatus.REQUESTION_NOT_FOUND));
 
-		if (!requestion.getUser().getEmail().equals(email)) {
-			throw new RequestionHandler(ErrorStatus.INVALID_USER); // 작성자 아님
-		}
+		assertOwner(requestion, email);
 
 		Category category = categoryQueryService.findById(dto.getCategoryId());
 
 		// 값 변경
-		requestion.setCategory(category);
-		requestion.setPrice(dto.getPrice());
-		requestion.setSessionCount(dto.getSessionCount());
-		requestion.setPurpose(dto.getPurpose());
-		requestion.setEtcPurposeContent(dto.getEtcPurposeContent());
-		requestion.setContent(dto.getContent());
-		requestion.setAgeGroup(dto.getAgeGroup());
-		requestion.setUserGender(Gender.fromKorean(dto.getUserGender()));
-		requestion.setAvailableDays(dto.getAvailableDays());
-		requestion.setAvailableTimes(dto.getAvailableTimes());
-		requestion.setTrainerGender(Gender.fromKorean(dto.getTrainerGender()));
-		requestion.setStartPreference(dto.getStartPreference());
-		requestion.setLocation(dto.getLocation());
+		var cmd = com.grabpt.dto.request.RequestionUpdateDto.builder()
+			.category(category)
+			.price(dto.getPrice())
+			.sessionCount(dto.getSessionCount())
+			.purpose(dto.getPurpose())
+			.etcPurposeContent(dto.getEtcPurposeContent())
+			.content(dto.getContent())
+			.ageGroup(dto.getAgeGroup())
+			.userGender(Gender.fromKorean(dto.getUserGender()))
+			.availableDays(dto.getAvailableDays())
+			.availableTimes(dto.getAvailableTimes())
+			.trainerGender(Gender.fromKorean(dto.getTrainerGender()))
+			.startPreference(dto.getStartPreference())
+			.location(dto.getLocation())
+			.build();
+
+		requestion.applyUpdate(cmd);
 	}
 
 	@Override
@@ -239,7 +237,13 @@ public class RequestionServiceImpl implements RequestionService {
 		Requestions requestion = requestionRepository.findById(requestionId)
 			.orElseThrow(() -> new RequestionHandler(ErrorStatus.REQUESTION_NOT_FOUND));
 
-		return requestion.getUser().getEmail().equals(email);
+		return isOwner(requestion, email);
+	}
+
+	@Override
+	public Requestions findById(Long requestionId) {
+		return requestionRepository.findById(requestionId)
+			.orElseThrow(() -> new RequestionHandler(ErrorStatus.REQUESTION_NOT_FOUND));
 	}
 
 	private String buildAddressPrefix(Address addr) {
@@ -259,10 +263,16 @@ public class RequestionServiceImpl implements RequestionService {
 		return joined;
 	}
 
-	@Override
-	public Requestions findById(Long requestionId) {
-		return requestionRepository.findById(requestionId)
-			.orElseThrow(() -> new RequestionHandler(ErrorStatus.REQUESTION_NOT_FOUND));
+	private void assertOwner(Requestions r, String email) {
+		if (!isOwner(r, email)) {
+			throw new RequestionHandler(ErrorStatus.INVALID_USER);
+		}
+	}
+
+	private boolean isOwner(Requestions r, String email) {
+		return r.getUser() != null
+			&& r.getUser().getEmail() != null
+			&& r.getUser().getEmail().equalsIgnoreCase(email);
 	}
 
 }

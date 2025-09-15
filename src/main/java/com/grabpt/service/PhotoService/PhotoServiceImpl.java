@@ -71,7 +71,7 @@ public class PhotoServiceImpl implements PhotoService {
 		// S3에 저장될 고유한 파일 키 생성
 		Uuid uuid = Uuid.builder().uuid(java.util.UUID.randomUUID().toString()).build();
 		uuidRepository.save(uuid);
-		String keyName = amazonS3Manager.generateUserPhotoKeyName(uuid); // 이 메소드 이름은 나중에 변경하시는 것을 추천합니다.
+		String keyName = amazonS3Manager.generateUserPhotoKeyName(uuid);
 
 		// S3에 파일 업로드 후 URL 반환
 		return amazonS3Manager.uploadFile(keyName, profileImage);

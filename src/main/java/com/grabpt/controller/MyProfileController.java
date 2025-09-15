@@ -52,9 +52,8 @@ public class MyProfileController {
 		summary = "유저의 프로필을 조회합니다."
 	)
 	@GetMapping
-	public ApiResponse<ProfileResponseDTO.MyProfileDTO> getMyUserProfile(HttpServletRequest request) throws
+	public ApiResponse<ProfileResponseDTO.MyProfileDTO> getMyUserProfile() throws
 		IllegalAccessException {
-		// Long userId = userQueryService.getUserId(request);
 		Long userId = SecurityUtils.currentUserIdOrThrow();
 		return ApiResponse.onSuccess(profileService.findMyUserProfile(userId));
 	}
@@ -68,14 +67,12 @@ public class MyProfileController {
 		IllegalAccessException { // 이미지는 선택사항으로 처리
 
 		Long userId = userQueryService.getUserId(requests);
-		// JSON 문자열을 DTO 객체로 변환
 		UserProfileUpdateRequestDTO request;
 
 		try {
-			// JSON 문자열을 DTO 객체로 변환
 			request = objectMapper.readValue(requestJson, UserProfileUpdateRequestDTO.class);
 		} catch (JsonProcessingException e) {
-			// JSON 파싱 실패 시, 400 Bad Request 에러를 발생시킵니다.
+
 			throw new GeneralException(ErrorStatus._BAD_REQUEST);
 		}
 
@@ -136,31 +133,31 @@ public class MyProfileController {
 		profileService.deleteUser(userId, requestDto);
 
 
-		log.info("[WITHDRAW] User data deleted for userId: {}", userId);
+		log.info("사용자 데이터 삭제 완료. userId = {}", userId);
 
-		log.info("[WITHDRAW] Starting session & cookie cleanup process...");
+		log.info("세션 및 쿠키 작업을 진행합니다...");
 
 		Cookie accessTokenCookie = new Cookie("access_token", null);
 		accessTokenCookie.setMaxAge(0);
 		accessTokenCookie.setPath("/");
 		res.addCookie(accessTokenCookie);
-		log.info("[WITHDRAW] Clearing cookie -> access_token");
+		log.info("쿠키 삭제 -> access_token");
 
 		Cookie refreshTokenCookie = new Cookie("refresh_token", null);
 		refreshTokenCookie.setMaxAge(0);
 		refreshTokenCookie.setPath("/");
 		res.addCookie(refreshTokenCookie);
-		log.info("[WITHDRAW] Clearing cookie -> refresh_token");
+		log.info("쿠키 삭제 -> refresh_token");
 
 		var session = req.getSession(false);
 		if (session != null) {
 			session.invalidate();
-			log.info("[WITHDRAW] HTTP session invalidated.");
+			log.info("HTTP 세션을 무효화합니다,");
 		}
 		SecurityContextHolder.clearContext();
-		log.info("[WITHDRAW] SecurityContextHolder cleared.");
+		log.info("SecurityContextHolder를 정리했습니다.");
 
-		log.info("[WITHDRAW] Withdrawal process completed successfully.");
+		log.info("회원 탈퇴 완료.");
 
 		return ApiResponse.onSuccess("회원 탈퇴가 성공적으로 처리되었습니다.");
 	}

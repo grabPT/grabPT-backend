@@ -19,23 +19,23 @@ public class SuggestionResponseDto {
 	@NoArgsConstructor
 	@AllArgsConstructor
 	public static class SuggestionDetailResponseDto {
-		private String nickname;
-		private String center;
+		private String suggestUserNickName;
+		private String suggestCenter;
 		private String profileImageUrl;
 
-		private Integer suggestedPrice;
-		private Integer originalPrice;
-		private Integer discountAmount; // = original - suggested
-		private Boolean isDiscounted;   // true if discount exists
+		private Integer suggestSuggestedPrice;
+		private Integer suggestOriginalPrice;
+		private Integer suggestDiscountAmount; // = original - suggested
+		private Boolean suggestIsDiscounted;   // true if discount exists
 
-		private String message;
-		private String location;
-		private List<String> photoUrls; // 트레이너 제안 사진들
+		private String suggestMessage;
+		private String suggestLocation;
+		private List<String> photos; // 트레이너 제안 사진들
 
-		private Long expertId;
-		private Long userId;
-		private Long matchingId;
-		private Long requestionId;
+		private Long suggestExpertId;
+		private Long suggestUserId;
+		private Long suggestMatchingId;
+		private Long suggestRequestionId;
 	}
 
 	@Getter
@@ -44,14 +44,14 @@ public class SuggestionResponseDto {
 	@AllArgsConstructor
 	@NoArgsConstructor
 	public static class SuggestionResponsePagingDto {
-		private String nickname;
-		private String center;
-		private String address;
-		private Integer price;
-		private Double averageRate; // 평점 추가
-		private Integer sessionCount;
-		private String profileImageUrl;
-		private Long suggestionId;
+		private String suggestUserNickName;
+		private String suggestCenter;
+		private String suggestAddress;
+		private Integer suggestPrice;
+		private Double suggestAverageRate; // 평점 추가
+		private Integer suggestSessionCount;
+		private String photos;
+		private Long suggestSuggestionId;
 
 	}
 
@@ -61,19 +61,19 @@ public class SuggestionResponseDto {
 	@NoArgsConstructor
 	@AllArgsConstructor
 	public static class MySuggestionPagingDto {
-		private String requestionNickname;
-		private Integer price;
-		private Integer sessionCount;
-		private MatchingStatus status;
-		private String profileImageUrl;
-		private Long requestionId;
-		private Long suggestionId;
+		private String suggestUserNickName; // 해당 suggestion의 requestion 유저의 nickname
+		private Integer suggestPrice;
+		private Integer suggestSessionCount;
+		private MatchingStatus suggestStatus;
+		private String photos;
+		private Long suggestRequestionId;
+		private Long suggestSuggestionId;
 	}
 
 	@Getter
 	@Builder
 	@AllArgsConstructor
 	public static class SuggestionSaveResponseDto {
-		private Long suggestionId;
+		private Long suggestSuggestionId;
 	}
 }

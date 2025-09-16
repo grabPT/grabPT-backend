@@ -16,8 +16,8 @@ import com.grabpt.domain.enums.PaymentStatus;
 import com.grabpt.dto.response.MemberPaymentDto;
 import com.grabpt.dto.response.UserDashboardDto;
 import com.grabpt.repository.OrderRepository.OrderRepository;
+import com.grabpt.repository.PaymentRepository.PaymentRepository;
 import com.grabpt.service.MatchingService.MatchingService;
-import com.grabpt.service.PaymentService.PaymentService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -27,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 public class OrderServiceImpl implements OrderService {
 
 	private final OrderRepository orderRepository;
-	private final PaymentService paymentService;
+	private final PaymentRepository paymentRepository;
 	private final MatchingService matchingService;
 
 	@Override
@@ -38,7 +38,7 @@ public class OrderServiceImpl implements OrderService {
 			.status(PaymentStatus.READY)
 			.build();
 
-		paymentService.save(testPayment);
+		paymentRepository.save(testPayment);
 
 		// 주문 생성 (제공받은 Order을 사용할 예정, 테스트용으로 만들었다)
 		Order testOrder = Order.builder()
@@ -65,7 +65,7 @@ public class OrderServiceImpl implements OrderService {
 			.status(PaymentStatus.READY)
 			.build();
 
-		paymentService.save(payment);
+		paymentRepository.save(payment);
 
 		// 주문 생성
 		Order order = Order.builder()

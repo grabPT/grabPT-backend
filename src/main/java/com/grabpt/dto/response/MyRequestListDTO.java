@@ -18,9 +18,9 @@ public class MyRequestListDTO {
 	private List<String> availableTimes;
 	private String categoryName;
 	private Integer sessionCount;
-	private String content;
-	private AddressDTO address;
-	private RequestStatus status;
+	private String requestContent;
+	private AddressDTO userLocations;
+	private RequestStatus requestStatus;
 
 	// 추가
 	private String proNickname;
@@ -62,12 +62,12 @@ public class MyRequestListDTO {
 		this.imageURL = requestion.getUser().getProfileImageUrl();
 		this.userId = requestion.getUser().getId();
 		Address addresses = requestion.getUser().getAddress();
-		this.address = AddressDTO.from(addresses);
+		this.userLocations = AddressDTO.from(addresses);
 		this.availableDays = requestion.getAvailableDays();
 		this.availableTimes = requestion.getAvailableTimes();
 		this.categoryName = requestion.getCategory().getName();
 		this.sessionCount = requestion.getSessionCount();
-		this.content = requestion.getContent();
-		this.status = requestion.getStatus();
+		this.requestContent = requestion.getContent();
+		this.requestStatus = requestion.getStatus();
 	}
 }

@@ -2,6 +2,7 @@ package com.grabpt.service.MatchingService;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -31,9 +32,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MatchingServiceImpl implements MatchingService {
 
+	private final MatchingRepository matchingRepository;
+
 	private final RequestionService requestionService;
 	private final SuggestionService suggestionService;
-	private final MatchingRepository matchingRepository;
 	private final ContractService contractService;
 
 	@Override
@@ -139,5 +141,20 @@ public class MatchingServiceImpl implements MatchingService {
 	@Override
 	public List<Matching> findAllWithProByRequestionIds(List<Long> requestionIds) {
 		return matchingRepository.findAllWithProByRequestionIds(requestionIds);
+	}
+
+	@Override
+	public Long getActiveClients(Long proProfileId, MatchingStatus matchingStatus) {
+		return matchingRepository.getActiveClients(proProfileId, matchingStatus);
+	}
+
+	@Override
+	public Long getActiveContractsByUser(Long userId, MatchingStatus matchingStatus) {
+		return matchingRepository.getActiveContractsByUser(userId, matchingStatus);
+	}
+
+	@Override
+	public Optional<Object> findById(Long matchingId) {
+		return Optional.of(matchingRepository.findById(matchingId));
 	}
 }

@@ -194,4 +194,9 @@ public class PaymentServiceImpl implements PaymentService {
 			throw new RuntimeException(e);
 		}
 	}
+
+	@Override
+	public void save(com.grabpt.domain.entity.Payment testPayment) {
+		paymentRepository.save(testPayment);
+	}
 }

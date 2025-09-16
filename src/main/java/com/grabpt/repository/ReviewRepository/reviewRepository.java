@@ -10,7 +10,7 @@ public interface reviewRepository extends JpaRepository<Review, Long> {
 	Page<Review> findAllByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
 
 	Review findByUser_IdAndIdOrderByCreatedAtDesc(Long userId, Long reviewId);
-	// JPA 규칙
-	Page<Review> findAllByProProfile_IdOrderByCreatedAtDesc(Long proProfileId, Pageable pageable); //// 전문가용
+
+	Page<Review> findAllByProProfile_IdOrderByCreatedAtDesc(Long proProfileId, Pageable pageable); // 전문가용
 
 }

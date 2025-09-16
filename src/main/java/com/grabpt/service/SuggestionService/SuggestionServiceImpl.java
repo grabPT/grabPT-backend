@@ -3,6 +3,7 @@ package com.grabpt.service.SuggestionService;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -217,6 +218,11 @@ public class SuggestionServiceImpl implements SuggestionService {
 			.orElseThrow(() -> new SuggestionHandler(ErrorStatus.SUGGESTION_NOT_FOUND));
 
 		return isOwner(suggestion, email);
+	}
+
+	@Override
+	public Optional<Object> findById(Long suggestionId) {
+		return Optional.of(suggestionRepository.findById(suggestionId));
 	}
 
 	private void assertOwner(Suggestions s, String email) {

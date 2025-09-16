@@ -19,9 +19,9 @@ import com.grabpt.domain.enums.RequestStatus;
 import com.grabpt.domain.enums.SuggestStatus;
 import com.grabpt.dto.response.ContractResponse;
 import com.grabpt.repository.MatchingRepository.MatchingRepository;
-import com.grabpt.repository.RequestionRepository.RequestionRepository;
-import com.grabpt.repository.SuggestionRepository.SuggestionRepository;
 import com.grabpt.service.ContractService.ContractService;
+import com.grabpt.service.RequestionService.RequestionService;
+import com.grabpt.service.SuggestionService.SuggestionService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,8 +31,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MatchingServiceImpl implements MatchingService {
 
-	private final RequestionRepository requestionRepository;
-	private final SuggestionRepository suggestionRepository;
+	private final RequestionService requestionService;
+	private final SuggestionService suggestionService;
 	private final MatchingRepository matchingRepository;
 	private final ContractService contractService;
 
@@ -43,7 +43,7 @@ public class MatchingServiceImpl implements MatchingService {
 		log.info("[MATCH] reqId={}", requestionId);
 
 		// 1) 잠금 걸고 가져오기
-		Requestions requestion = requestionRepository.findByIdForUpdate(requestionId)
+		Requestions requestion = (Requestions)requestionService.findByIdForUpdate(requestionId)
 			.orElseThrow(() -> new RequestionHandler(ErrorStatus.REQUESTION_NOT_FOUND));
 
 		log.info("[MATCH] req.status={} (enumName={})",
@@ -57,7 +57,7 @@ public class MatchingServiceImpl implements MatchingService {
 		}
 
 		// 3) 제안서 로드 + 연결 검증
-		Suggestions suggestion = suggestionRepository.findById(suggestionId)
+		Suggestions suggestion = (Suggestions)suggestionService.findById(suggestionId)
 			.orElseThrow(() -> new SuggestionHandler(ErrorStatus.SUGGESTION_NOT_FOUND));
 		if (!suggestion.getRequestion().getId().equals(requestionId)) {
 			log.warn("[MATCH] suggestion {} belongs to requestion {}, not {}",
@@ -73,7 +73,7 @@ public class MatchingServiceImpl implements MatchingService {
 			throw new SuggestionHandler(ErrorStatus.SUGGESTION_ALREADY_MATCHED);
 		}
 
-		// 5) 매칭 생성/저장 (최후 방어 포함)
+		// 5) 매칭 생성/저장
 		Matching matching = Matching.builder()
 			.requestion(requestion)
 			.suggestion(suggestion)
@@ -120,7 +120,7 @@ public class MatchingServiceImpl implements MatchingService {
 		if (newStatus == MatchingStatus.CANCELLED || newStatus == MatchingStatus.COMPLETED) {
 			Requestions requestion = matching.getRequestion();
 			requestion.setStatus(RequestStatus.MATCHING);
-			requestionRepository.save(requestion);
+			requestionService.save(requestion);
 		}
 
 		return matchingRepository.save(matching);

@@ -2,6 +2,7 @@ package com.grabpt.service.RequestionService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -244,6 +245,17 @@ public class RequestionServiceImpl implements RequestionService {
 	public Requestions findById(Long requestionId) {
 		return requestionRepository.findById(requestionId)
 			.orElseThrow(() -> new RequestionHandler(ErrorStatus.REQUESTION_NOT_FOUND));
+	}
+
+	@Override
+	public Optional<Object> findByIdForUpdate(Long requestionId) {
+		return Optional.ofNullable(requestionRepository.findByIdForUpdate(requestionId)
+			.orElse(null));
+	}
+
+	@Override
+	public Requestions save(Requestions requestions) {
+		return requestionRepository.save(requestions);
 	}
 
 	private String buildAddressPrefix(Address addr) {

@@ -1,6 +1,7 @@
 package com.grabpt.service.RequestionService;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,4 +33,8 @@ public interface RequestionService {
 	boolean canEditRequestion(Long requestionId, String email);
 
 	Requestions findById(Long requestionId);
+
+	Optional<Object> findByIdForUpdate(Long requestionId);
+
+	Requestions save(Requestions requestions);
 }

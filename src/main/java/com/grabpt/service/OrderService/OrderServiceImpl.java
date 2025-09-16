@@ -1,5 +1,6 @@
 package com.grabpt.service.OrderService;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -75,4 +76,18 @@ public class OrderServiceImpl implements OrderService {
 		return orderRepository.save(order);
 	}
 
+	@Override
+	public Optional<Object> findOrderAndPayment(String orderUid) {
+		return Optional.ofNullable(orderRepository.findOrderAndPayment(orderUid));
+	}
+
+	@Override
+	public void delete(Order order) {
+		orderRepository.delete(order);
+	}
+
+	@Override
+	public Optional<Object> findOrderAndPaymentAndMember(String orderUid) {
+		return Optional.ofNullable(orderRepository.findOrderAndPaymentAndMember(orderUid));
+	}
 }

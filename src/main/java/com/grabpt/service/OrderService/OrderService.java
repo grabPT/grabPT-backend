@@ -1,5 +1,7 @@
 package com.grabpt.service.OrderService;
 
+import java.util.Optional;
+
 import com.grabpt.domain.entity.Order;
 import com.grabpt.domain.entity.Users;
 
@@ -8,5 +10,11 @@ public interface OrderService {
 	Order order(Users users);
 
 	Order customOrder(Users user, Long price, String itemName, Long matchingId);
+
+	Optional<Object> findOrderAndPayment(String orderUid);
+
+	void delete(Order order);
+
+	Optional<Object> findOrderAndPaymentAndMember(String orderUid);
 
 }

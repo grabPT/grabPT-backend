@@ -125,7 +125,7 @@ public class RequestionServiceImpl implements RequestionService {
 		return requestionPage.map(req -> {
 			Users u = req.getUser(); // 한번만 접근해 지역 변수에 담아 사용 (4) 미세 최적화
 			return RequestionResponseDto.RequestionResponsePagingDto.builder()
-				.requestUsername(u.getNickname())
+				.requestUserName(u.getNickname())
 				.requestUserStreet(req.getLocation())
 				.requestSessionCount(req.getSessionCount())
 				.requestPrice(req.getPrice())
@@ -137,7 +137,7 @@ public class RequestionServiceImpl implements RequestionService {
 				.requestRequestId(req.getId())
 				.requestLocation(req.getLocation())
 				.requestContent(req.getContent())
-				.requestNickname(u.getNickname())
+				.requestUserNickName(u.getNickname())
 				.requestEtcPurposeContent(req.getEtcPurposeContent())
 				.build();
 		});

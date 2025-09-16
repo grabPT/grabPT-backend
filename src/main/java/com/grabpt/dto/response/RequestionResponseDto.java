@@ -23,7 +23,7 @@ public class RequestionResponseDto {
 	@NoArgsConstructor
 	@AllArgsConstructor
 	public static class RequestionDetailResponseDto {
-		private Long requestionId;
+		private Long requestRequestionId;
 		private Long requestCategoryId;
 		private List<String> requestPurpose;
 		private String requestAgeGroup;
@@ -39,14 +39,14 @@ public class RequestionResponseDto {
 		private String requestEtcPurposeContent; // 기타 목적
 
 		// 유저 정보
-		private String requestNickname;
+		private String requestUserNickName;
 		private String photos;
 
 		public static RequestionDetailResponseDto from(Requestions r) {
 			Users u = r.getUser();
 
 			return RequestionDetailResponseDto.builder()
-				.requestionId(r.getId())
+				.requestRequestionId(r.getId())
 				.requestCategoryId(r.getCategory().getId())
 				.requestPurpose(r.getPurpose())
 				.requestAgeGroup(r.getAgeGroup())
@@ -60,7 +60,7 @@ public class RequestionResponseDto {
 				.requestTrainerGender(convertGenderToKorean(r.getTrainerGender()))
 				.requestContent(r.getContent())
 				.requestEtcPurposeContent(r.getEtcPurposeContent())
-				.requestNickname(u.getNickname())
+				.requestUserNickName(u.getNickname())
 				.photos(u.getProfileImageUrl())
 				.build();
 		}
@@ -71,7 +71,7 @@ public class RequestionResponseDto {
 	@NoArgsConstructor
 	@AllArgsConstructor
 	public static class RequestionResponsePagingDto {
-		private String requestUsername;        // 일반 유저
+		private String requestUserName;        // 일반 유저
 		private String requestUserStreet;      // 주소 - 동
 		private Integer requestSessionCount;   // 세션 횟수
 		private Integer requestPrice;          // 1회당 가격
@@ -87,13 +87,13 @@ public class RequestionResponseDto {
 		private String requestCategoryName;
 
 		// 추가 정보
-		private String requestNickname;
+		private String requestUserNickName;
 		private String requestLocation;
 
 		public static RequestionResponsePagingDto from(Requestions r) {
 			Users u = r.getUser();
 			return RequestionResponsePagingDto.builder()
-				.requestUsername(u.getNickname())
+				.requestUserName(u.getNickname())
 				.requestUserStreet(u.getAddress().getStreet())
 				.requestSessionCount(r.getSessionCount())
 				.requestPrice(r.getPrice())
@@ -112,7 +112,7 @@ public class RequestionResponseDto {
 	@Builder
 	public static class UserOwnRequestionDto {
 		private Long requestRequestionId;
-		private String requestNickname;
+		private String requestUserNickName;
 		private String photos;
 
 		private String requestCity;
@@ -131,7 +131,7 @@ public class RequestionResponseDto {
 		// 추가
 		private RequestStatus requestStatus;
 		private Long requestProProfileId;
-		private String requestProNickname;
+		private String requestProNickName;
 
 		public static UserOwnRequestionDto from(Requestions requestion, Long proProfileId, String proNickname) {
 			Users user = requestion.getUser();
@@ -139,7 +139,7 @@ public class RequestionResponseDto {
 
 			return UserOwnRequestionDto.builder()
 				.requestRequestionId(requestion.getId())
-				.requestNickname(user.getNickname())
+				.requestUserNickName(user.getNickname())
 				.photos(user.getProfileImageUrl())
 				.requestCity(address.getCity())
 				.requestDistrict(address.getDistrict())
@@ -154,7 +154,7 @@ public class RequestionResponseDto {
 				.requestEtcPurposeContent(requestion.getEtcPurposeContent())
 				.requestStatus(requestion.getStatus())
 				.requestProProfileId(proProfileId)
-				.requestProNickname(proNickname)
+				.requestProNickName(proNickname)
 				.build();
 		}
 	}

@@ -1,6 +1,7 @@
 package com.grabpt.controller;
 
 import com.grabpt.apiPayload.ApiResponse;
+import com.grabpt.config.SecurityUtils;
 import com.grabpt.dto.request.ChatRequest;
 import com.grabpt.service.ChatService.ChatFileService;
 import com.grabpt.service.PhotoService.PhotoService;
@@ -18,9 +19,8 @@ public class ChatFileController {
 	private final ChatFileService chatFileService;
 
 	@PostMapping("/chatRoom/{roomId}/upload")
-	public ApiResponse<ChatRequest.MessageRequestDto> uploadChatFile(@PathVariable(name = "roomId") Long roomId, @RequestPart("file") MultipartFile file,
-																	 HttpServletRequest request) throws IllegalAccessException {
-		Long userId = userQueryService.getUserId(request);
+	public ApiResponse<ChatRequest.MessageRequestDto> uploadChatFile(@PathVariable(name = "roomId") Long roomId, @RequestPart("file") MultipartFile file){
+		Long userId = SecurityUtils.currentUserIdOrThrow();
 		return ApiResponse.onSuccess(chatFileService.uploadChatFile(roomId, userId, file));
 	}
 }

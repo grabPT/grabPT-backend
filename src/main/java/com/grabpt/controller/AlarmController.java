@@ -3,6 +3,7 @@ package com.grabpt.controller;
 import com.grabpt.apiPayload.ApiResponse;
 import com.grabpt.apiPayload.code.status.ErrorStatus;
 import com.grabpt.apiPayload.exception.handler.AlarmHandler;
+import com.grabpt.config.SecurityUtils;
 import com.grabpt.converter.AlarmConverter;
 import com.grabpt.domain.entity.Alarm;
 import com.grabpt.dto.response.AlarmResponseDto;
@@ -29,8 +30,8 @@ public class AlarmController {
 	@Operation(summary = "로그인 유저의 읽지 않은 알림을 모두 조회합니다")
 	@GetMapping("/api/alarmList")
 	@ResponseBody
-	public ApiResponse<List<AlarmResponseDto>> getAlarmList(HttpServletRequest request) throws IllegalAccessException {
-		Long userId = userQueryService.getUserId(request);
+	public ApiResponse<List<AlarmResponseDto>> getAlarmList(){
+		Long userId = SecurityUtils.currentUserIdOrThrow();
 		List<Alarm> alarmList = alarmService.findAllUnReadAlarmByUserId(userId);
 		List<AlarmResponseDto> list = alarmList.stream().map(AlarmConverter::toAlarmResponseDto).toList();
 		return ApiResponse.onSuccess(list);
@@ -41,11 +42,5 @@ public class AlarmController {
 	@ResponseBody
 	public ApiResponse<AlarmResponseDto> readAlarm(@PathVariable(name = "alarmId") Long alarmId){
 		return ApiResponse.onSuccess(alarmService.readAlarm(alarmId));
-	}
-
-	@GetMapping("/alarm-test")
-	public String test(HttpServletRequest request) throws IllegalAccessException {
-		Long userId = userQueryService.getUserId(request);
-		return "alarm-test";
 	}
 }

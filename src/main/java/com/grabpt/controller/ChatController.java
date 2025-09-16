@@ -1,6 +1,7 @@
 package com.grabpt.controller;
 
 import com.grabpt.apiPayload.ApiResponse;
+import com.grabpt.config.SecurityUtils;
 import com.grabpt.config.jwt.JwtTokenProvider;
 import com.grabpt.converter.ChatConverter;
 import com.grabpt.domain.entity.Messages;
@@ -48,8 +49,8 @@ public class ChatController {
 	)
 	@PostMapping("/chatRoom/{roomId}/readWhenExist")
 	@ResponseBody
-	public ApiResponse<String> updateLastReadMessageWhenExist(@PathVariable Long roomId, HttpServletRequest request) throws IllegalAccessException {
-		Long userId = userQueryService.getUserId(request);
+	public ApiResponse<String> updateLastReadMessageWhenExist(@PathVariable Long roomId){
+		Long userId = SecurityUtils.currentUserIdOrThrow();
 		chatService.updateLastReadMessageWhenExist(roomId,userId);
 		return ApiResponse.onSuccess("채팅방 접속 상태일 때 메시지 읽음 처리");
 	}
@@ -60,8 +61,8 @@ public class ChatController {
 	)
 	@PostMapping("/chatRoom/{roomId}/readWhenEnter")
 	@ResponseBody
-	public ApiResponse<String> updateLastReadMessageWhenEnter(@PathVariable Long roomId, HttpServletRequest request) throws IllegalAccessException {
-		Long userId = userQueryService.getUserId(request);
+	public ApiResponse<String> updateLastReadMessageWhenEnter(@PathVariable Long roomId){
+		Long userId = SecurityUtils.currentUserIdOrThrow();
 		chatService.updateLastReadMessageWhenEnter(roomId, userId);
 		return ApiResponse.onSuccess("채팅방 입장 시 메시지 읽음 처리");
 	}
@@ -105,9 +106,8 @@ public class ChatController {
 	)
 	@GetMapping("/chatRoom/list") //로그인 유저 정보
 	@ResponseBody
-	public ApiResponse<List<ChatResponse.ChatRoomPreviewDto>> getChatRoomList(@RequestParam(name = "keyword", required = false) String keyword,
-																			  HttpServletRequest request) throws IllegalAccessException {
-		Long userId = userQueryService.getUserId(request);
+	public ApiResponse<List<ChatResponse.ChatRoomPreviewDto>> getChatRoomList(@RequestParam(name = "keyword", required = false) String keyword){
+		Long userId = SecurityUtils.currentUserIdOrThrow();
 		return ApiResponse.onSuccess(chatService.getChatRoomList(userId, keyword));
 	}
 	@Operation(
@@ -115,14 +115,9 @@ public class ChatController {
 	)
 	@GetMapping("chat/unreadCount")
 	@ResponseBody
-	public ApiResponse<Long> getUnreadCount(HttpServletRequest request) throws IllegalAccessException {
-		Long userId = userQueryService.getUserId(request);
+	public ApiResponse<Long> getUnreadCount(){
+		Long userId = SecurityUtils.currentUserIdOrThrow();
 		Long allUnreadMessageCount = chatService.getAllUnreadMessageCount(userId);
 		return ApiResponse.onSuccess(allUnreadMessageCount);
-	}
-
-	@GetMapping("/chat-test")
-	public String chatTest(HttpServletRequest request) throws IllegalAccessException {
-		return "chat-test";
 	}
 }

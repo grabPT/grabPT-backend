@@ -246,6 +246,11 @@ public class RequestionServiceImpl implements RequestionService {
 			.orElseThrow(() -> new RequestionHandler(ErrorStatus.REQUESTION_NOT_FOUND));
 	}
 
+	@Override
+	public Page<Requestions> page(Long userId,Pageable pageable){
+		return requestionRepository.findAllByUserIdOrderByCreatedAtDesc(userId, pageable);
+	}
+
 	private String buildAddressPrefix(Address addr) {
 		if (addr == null)
 			return "";
@@ -274,5 +279,7 @@ public class RequestionServiceImpl implements RequestionService {
 			&& r.getUser().getEmail() != null
 			&& r.getUser().getEmail().equalsIgnoreCase(email);
 	}
+
+
 
 }

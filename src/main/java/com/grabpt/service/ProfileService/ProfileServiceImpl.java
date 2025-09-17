@@ -6,6 +6,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.grabpt.service.MatchingService.MatchingService;
+import com.grabpt.service.RequestionService.RequestionService;
+import com.grabpt.service.ReviewService.ReviewService;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -41,29 +45,39 @@ import com.grabpt.dto.response.MyReviewListDTO;
 import com.grabpt.dto.response.ProProfileResponseDTO;
 import com.grabpt.dto.response.ProfileResponseDTO;
 import com.grabpt.dto.response.ReviewListDto;
-import com.grabpt.repository.MatchingRepository.MatchingRepository;
 import com.grabpt.repository.ProProfileRepository.ProProfileRepository;
-import com.grabpt.repository.RequestionRepository.RequestionRepository;
-import com.grabpt.repository.ReviewRepository.reviewRepository;
 import com.grabpt.repository.UserRepository.UserRepository;
 import com.grabpt.service.CertificationService.CertificationService;
 import com.grabpt.service.PhotoService.PhotoService;
 
-import lombok.RequiredArgsConstructor;
 
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ProfileServiceImpl implements ProfileService {
 
 	private final UserRepository userRepository;
-	private final RequestionRepository requestionRepository;
-	private final reviewRepository reviewRepository;
-	private final MatchingRepository matchingRepository;
-
-	private final PhotoService photoService;
 	private final ProProfileRepository proProfileRepository;
+	private final PhotoService photoService;
 	private final CertificationService certificationService;
+	private final ReviewService reviewService;
+	private final RequestionService requestionService;
+	private final MatchingService matchingService;
+
+	public ProfileServiceImpl(UserRepository userRepository,
+							  ProProfileRepository proProfileRepository,
+							  PhotoService photoService,
+							  CertificationService certificationService,
+							  ReviewService reviewService,
+							  @Lazy RequestionService requestionService,
+							  MatchingService matchingService) {
+		this.userRepository = userRepository;
+		this.proProfileRepository = proProfileRepository;
+		this.photoService = photoService;
+		this.certificationService = certificationService;
+		this.reviewService = reviewService;
+		this.requestionService = requestionService;
+		this.matchingService = matchingService;
+	}
 
 	@Override
 	public ProfileResponseDTO.MyProfileDTO findMyUserProfile(Long userId) {
@@ -81,8 +95,7 @@ public class ProfileServiceImpl implements ProfileService {
 	@Transactional(readOnly = true)
 	public Page<MyRequestListDTO> findMyRequests(Long userId, Pageable pageable) {
 		// 1) 내 요청서 페이지 조회
-		Page<Requestions> page = requestionRepository
-			.findAllByUserIdOrderByCreatedAtDesc(userId, pageable);
+		Page<Requestions> page = requestionService.page(userId, pageable);
 
 		List<Long> requestionIds = page.stream()
 			.map(Requestions::getId)
@@ -93,7 +106,7 @@ public class ProfileServiceImpl implements ProfileService {
 		}
 
 		// 2) 매칭 한 번에 조회
-		List<Matching> matchings = matchingRepository.findAllWithProByRequestionIds(requestionIds);
+		List<Matching> matchings = matchingService.matchings(requestionIds);
 		Map<Long, Matching> matchingMap = matchings.stream()
 			.collect(Collectors.toMap(m -> m.getRequestion().getId(), m -> m));
 
@@ -114,7 +127,7 @@ public class ProfileServiceImpl implements ProfileService {
 
 	@Override
 	public Page<MyReviewListDTO> findMyReviews(Long userId, Pageable pageable) {
-		Page<Review> reviews = reviewRepository.findAllByUserIdOrderByCreatedAtDesc(userId, pageable);
+		Page<Review> reviews = reviewService.reviews(userId, pageable);
 		return reviews.map(MyReviewListDTO::from);
 	}
 
@@ -164,8 +177,7 @@ public class ProfileServiceImpl implements ProfileService {
 		if (user.getProProfile() == null) {
 			throw new GeneralException(ErrorStatus.MEMBER_NOT_FOUND);
 		}
-		Page<Review> reviews = reviewRepository.findAllByProProfile_IdOrderByCreatedAtDesc(user.getProProfile().getId(),
-			pageable);
+		Page<Review> reviews = reviewService.proReviews(user, pageable);
 		return reviews.map(MyReviewListDTO::from);
 	}
 
@@ -175,8 +187,7 @@ public class ProfileServiceImpl implements ProfileService {
 		if (user.getProProfile() == null) {
 			throw new GeneralException(ErrorStatus.MEMBER_NOT_FOUND);
 		}
-		Page<Review> reviews = reviewRepository.findAllByProProfile_IdOrderByCreatedAtDesc(user.getProProfile().getId(),
-			pageable);
+		Page<Review> reviews = reviewService.proReviews(user, pageable);
 		return reviews.map(ReviewListDto::from);
 	}
 
@@ -191,9 +202,7 @@ public class ProfileServiceImpl implements ProfileService {
 			throw new GeneralException(ErrorStatus.MEMBER_NOT_FOUND);
 		}
 
-		Long proId = user.getProProfile().getId();
-
-		Page<Review> reviews = reviewRepository.findAllByProProfile_IdOrderByCreatedAtDesc(proId, pageable);
+		Page<Review> reviews = reviewService.proReviews(user, pageable);
 
 		return reviews.map(MyReviewListDTO::from);
 	}
@@ -201,7 +210,8 @@ public class ProfileServiceImpl implements ProfileService {
 	@Override
 	@Transactional(readOnly = true)
 	public ProProfileResponseDTO findProProfileByUser(Long userId) {
-		ProProfile proProfile = proProfileRepository.findByUserId(userId);
+		Users user = findUserById(userId);
+		ProProfile proProfile = user.getProProfile();
 		if (proProfile == null) {
 			throw new GeneralException(ErrorStatus.MEMBER_NOT_FOUND);
 		}
@@ -323,7 +333,7 @@ public class ProfileServiceImpl implements ProfileService {
 	@Override
 	@Transactional
 	public void updateProCertifications(Long userId, CertificationUpdateRequestDTO request,
-		List<MultipartFile> images) {
+										List<MultipartFile> images) {
 		ProProfile proProfile = findUserById(userId).getProProfile();
 		if (proProfile == null) {
 			throw new GeneralException(ErrorStatus.MEMBER_NOT_FOUND);

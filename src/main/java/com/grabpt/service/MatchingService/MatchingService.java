@@ -16,4 +16,6 @@ public interface MatchingService {
 	List<Matching> findAllWithProByRequestionIds(List<Long> requestionIds);
 
 	boolean existsByRequestionId(Long requestionId);
+
+	List<Matching> matchings(List<Long> requestionIds);
 }

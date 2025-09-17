@@ -32,4 +32,6 @@ public interface RequestionService {
 	boolean canEditRequestion(Long requestionId, String email);
 
 	Requestions findById(Long requestionId);
+
+	Page<Requestions> page(Long userId,Pageable pageable);
 }

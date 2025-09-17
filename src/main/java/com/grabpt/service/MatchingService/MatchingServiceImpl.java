@@ -140,4 +140,9 @@ public class MatchingServiceImpl implements MatchingService {
 	public List<Matching> findAllWithProByRequestionIds(List<Long> requestionIds) {
 		return matchingRepository.findAllWithProByRequestionIds(requestionIds);
 	}
+
+	@Override
+	public List<Matching> matchings(List<Long> requestionIds){
+		return matchingRepository.findAllWithProByRequestionIds(requestionIds);
+	}
 }

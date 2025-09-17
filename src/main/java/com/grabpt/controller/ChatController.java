@@ -2,26 +2,22 @@ package com.grabpt.controller;
 
 import com.grabpt.apiPayload.ApiResponse;
 import com.grabpt.config.SecurityUtils;
-import com.grabpt.config.jwt.JwtTokenProvider;
 import com.grabpt.converter.ChatConverter;
 import com.grabpt.domain.entity.Messages;
 import com.grabpt.dto.request.ChatRequest;
 import com.grabpt.dto.response.ChatResponse;
-import com.grabpt.service.ChatService.ChatService;
+import com.grabpt.service.ChatService.ChatFacade;
+import com.grabpt.service.ChatService.ChatRoomService;
+import com.grabpt.service.ChatService.MessageService;
 import com.grabpt.service.UserService.UserQueryService;
 import io.swagger.v3.oas.annotations.Operation;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
 import java.util.List;
@@ -31,13 +27,15 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ChatController {
 
-	private final ChatService chatService;
+	private final ChatRoomService chatRoomService;
+	private final MessageService messageService;
+	private final ChatFacade chatFacade;
 	private final UserQueryService userQueryService;
 	private final SimpMessagingTemplate messagingTemplate;
 
 	@MessageMapping("/chat/{roomId}")
 	public void sendMessage(@DestinationVariable Long roomId, ChatRequest.MessageRequestDto request, Principal principal){
-		Messages newMessage = chatService.createChatMessage(request);
+		Messages newMessage = chatFacade.createChatMessage(request);
 		ChatResponse.MessageResponseDto response = ChatConverter.toMessageResponseDto(newMessage);
 		log.info("채팅 메시지 브로드캐스트", response.getContent());
 		messagingTemplate.convertAndSend("/subscribe/chat/"+roomId, response);
@@ -51,7 +49,7 @@ public class ChatController {
 	@ResponseBody
 	public ApiResponse<String> updateLastReadMessageWhenExist(@PathVariable Long roomId){
 		Long userId = SecurityUtils.currentUserIdOrThrow();
-		chatService.updateLastReadMessageWhenExist(roomId,userId);
+		messageService.updateLastReadMessageWhenExist(roomId,userId);
 		return ApiResponse.onSuccess("채팅방 접속 상태일 때 메시지 읽음 처리");
 	}
 
@@ -63,7 +61,7 @@ public class ChatController {
 	@ResponseBody
 	public ApiResponse<String> updateLastReadMessageWhenEnter(@PathVariable Long roomId){
 		Long userId = SecurityUtils.currentUserIdOrThrow();
-		chatService.updateLastReadMessageWhenEnter(roomId, userId);
+		messageService.updateLastReadMessageWhenEnter(roomId, userId);
 		return ApiResponse.onSuccess("채팅방 입장 시 메시지 읽음 처리");
 	}
 
@@ -74,7 +72,7 @@ public class ChatController {
 	@PostMapping("/chatRoom/request")
 	@ResponseBody
 	public ApiResponse<ChatResponse.CreateChatRoomResponseDto> createChatRoom(@RequestBody ChatRequest.CreateChatRoomRequestDto request){
-		return ApiResponse.onSuccess(chatService.getOrcreateChatRoom(request));
+		return ApiResponse.onSuccess(chatRoomService.getOrcreateChatRoom(request));
 	}
 
 	@Operation(
@@ -85,7 +83,7 @@ public class ChatController {
 	@ResponseBody
 	public ApiResponse<ChatResponse.MessageResponseByCursorDto> getMessagesByChatRoom(@PathVariable(name = "roomId") Long roomId,
 																					  @RequestParam(name = "cursor", required = false, defaultValue = "0") long cursor){
-		List<ChatResponse.MessageResponseDto> messageResponseDto = chatService.getMessagesByChatRoom(roomId, cursor);
+		List<ChatResponse.MessageResponseDto> messageResponseDto = messageService.getMessagesByChatRoom(roomId, cursor);
 
 		long newCursor = 0;
 		if (!messageResponseDto.isEmpty()) {
@@ -108,7 +106,7 @@ public class ChatController {
 	@ResponseBody
 	public ApiResponse<List<ChatResponse.ChatRoomPreviewDto>> getChatRoomList(@RequestParam(name = "keyword", required = false) String keyword){
 		Long userId = SecurityUtils.currentUserIdOrThrow();
-		return ApiResponse.onSuccess(chatService.getChatRoomList(userId, keyword));
+		return ApiResponse.onSuccess(chatRoomService.getChatRoomList(userId, keyword));
 	}
 	@Operation(
 		summary = "유저의 전체 안읽은 메시지 개수 조회"
@@ -117,7 +115,7 @@ public class ChatController {
 	@ResponseBody
 	public ApiResponse<Long> getUnreadCount(){
 		Long userId = SecurityUtils.currentUserIdOrThrow();
-		Long allUnreadMessageCount = chatService.getAllUnreadMessageCount(userId);
+		Long allUnreadMessageCount = messageService.getAllUnreadMessageCount(userId);
 		return ApiResponse.onSuccess(allUnreadMessageCount);
 	}
 }

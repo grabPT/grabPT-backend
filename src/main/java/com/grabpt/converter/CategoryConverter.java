@@ -28,7 +28,7 @@ public class CategoryConverter {
 				.matchStatus(requestion.getStatus())
 				.profileImageUrl(requestion.getUser().getProfileImageUrl())
 				.requestPrice(requestion.getPrice())
-				.requestCount(requestion.getSessionCount())
+				.requestSessionCount(requestion.getSessionCount())
 				.build())
 			.collect(Collectors.toList());
 	}
@@ -43,7 +43,7 @@ public class CategoryConverter {
 				.suggestPrice(
 					pro.getPricePerSession() != null ? pro.getPricePerSession() : 0 // pricePerSession null 방어
 				)
-				.suggestCount(
+				.suggestSessionCount(
 					pro.getTotalSessions() != null ? pro.getTotalSessions() : 0 // totalSessions도 null 가능하면 방어
 				)
 				.userId(pro.getUser().getId())

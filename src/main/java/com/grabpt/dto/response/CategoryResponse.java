@@ -31,8 +31,8 @@ public class CategoryResponse {
 		@Builder.Default
 		int suggestPrice = 0; //Proprofile.Suggestions.price
 		@Builder.Default
-		int suggestCount = 0;
-		String profileImageUrl; //?
+		int suggestSessionCount = 0;
+		String profileImageUrl;
 	}
 
 	//요청서 목록을 위한 Dto
@@ -43,7 +43,7 @@ public class CategoryResponse {
 		Long requestId;
 		String userNickName; //request.user.nickname
 		String requestLocation; //requestion.location
-		int requestCount; // requestion.sessionCount 없음
+		int requestSessionCount; // requestion.sessionCount 없음
 		int requestPrice;
 		RequestStatus matchStatus; //reqeustion.status
 		String profileImageUrl; // //UserProfile에 url없음

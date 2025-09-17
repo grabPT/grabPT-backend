@@ -1,7 +1,10 @@
 package com.grabpt.service.OrderService;
 
+import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,9 +13,11 @@ import com.grabpt.domain.entity.Order;
 import com.grabpt.domain.entity.Payment;
 import com.grabpt.domain.entity.Users;
 import com.grabpt.domain.enums.PaymentStatus;
-import com.grabpt.repository.MatchingRepository.MatchingRepository;
+import com.grabpt.dto.response.MemberPaymentDto;
+import com.grabpt.dto.response.UserDashboardDto;
 import com.grabpt.repository.OrderRepository.OrderRepository;
 import com.grabpt.repository.PaymentRepository.PaymentRepository;
+import com.grabpt.service.MatchingService.MatchingService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,7 +28,7 @@ public class OrderServiceImpl implements OrderService {
 
 	private final OrderRepository orderRepository;
 	private final PaymentRepository paymentRepository;
-	private final MatchingRepository matchingRepository;
+	private final MatchingService matchingService;
 
 	@Override
 	public Order order(Users users) {
@@ -51,7 +56,7 @@ public class OrderServiceImpl implements OrderService {
 	public Order customOrder(Users user, Long price, String itemName, Long matchingId) {
 
 		// 매칭 조회
-		Matching matching = matchingRepository.findById(matchingId)
+		Matching matching = (Matching)matchingService.findById(matchingId)
 			.orElseThrow(() -> new IllegalArgumentException("Matching not found with id: " + matchingId));
 
 		// 결제내역 생성
@@ -75,4 +80,48 @@ public class OrderServiceImpl implements OrderService {
 		return orderRepository.save(order);
 	}
 
+	@Override
+	public Optional<Object> findOrderAndPayment(String orderUid) {
+		return Optional.ofNullable(orderRepository.findOrderAndPayment(orderUid));
+	}
+
+	@Override
+	public void delete(Order order) {
+		orderRepository.delete(order);
+	}
+
+	@Override
+	public Optional<Object> findOrderAndPaymentAndMember(String orderUid) {
+		return Optional.ofNullable(orderRepository.findOrderAndPaymentAndMember(orderUid));
+	}
+
+	@Override
+	public Long getTrainerTotalEarnings(Long proProfileId, PaymentStatus paymentStatus) {
+		return orderRepository.getTrainerTotalEarnings(proProfileId, paymentStatus);
+	}
+
+	@Override
+	public Long getTrainerTotalOrders(Long proProfileId, PaymentStatus paymentStatus) {
+		return orderRepository.getTrainerTotalOrders(proProfileId, paymentStatus);
+	}
+
+	@Override
+	public Page<MemberPaymentDto> getMemberPayments(Long proProfileId, PaymentStatus paymentStatus, Pageable pageable) {
+		return orderRepository.getMemberPayments(proProfileId, paymentStatus, pageable);
+	}
+
+	@Override
+	public Long getUserTotalSpent(Long userId, PaymentStatus paymentStatus) {
+		return orderRepository.getUserTotalSpent(userId, paymentStatus);
+	}
+
+	@Override
+	public Long getUserTotalOrders(Long userId, PaymentStatus paymentStatus) {
+		return orderRepository.getUserTotalOrders(userId, paymentStatus);
+	}
+
+	@Override
+	public Page<UserDashboardDto> getUserPayments(Long userId, PaymentStatus paymentStatus, Pageable pageable) {
+		return orderRepository.getUserPayments(userId, paymentStatus, pageable);
+	}
 }

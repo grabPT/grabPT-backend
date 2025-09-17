@@ -13,8 +13,8 @@ public class UserResponseDto {
 	@AllArgsConstructor
 	public static class UserInfoDTO {
 		Long userId;
-		String nickname;
-		String username;
+		String userNickName;
+		String userName;
 		AddressDto address;
 		String email;
 		String role;

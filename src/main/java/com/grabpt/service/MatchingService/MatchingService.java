@@ -26,4 +26,10 @@ public interface MatchingService {
 
 	Optional<Object> findById(Long matchingId);
 
+
+	Long getActiveClients(Long proProfileId, MatchingStatus matchingStatus);
+
+	Long getActiveContractsByUser(Long userId, MatchingStatus matchingStatus);
+
+	Optional<Object> findById(Long matchingId);
 }

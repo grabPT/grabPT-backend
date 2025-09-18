@@ -34,7 +34,13 @@ public interface RequestionService {
 
 	Requestions findById(Long requestionId);
 
+
 	Page<Requestions> page(Long userId,Pageable pageable);
+
+	Optional<Object> findByIdForUpdate(Long requestionId);
+
+	Requestions save(Requestions requestions);
+
 
 	Optional<Object> findByIdForUpdate(Long requestionId);
 

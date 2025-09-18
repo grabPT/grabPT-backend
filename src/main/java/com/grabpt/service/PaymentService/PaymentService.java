@@ -18,4 +18,7 @@ public interface PaymentService {
 	IamportResponse<Payment> paymentByCallback(ImPortRequestDto.PaymentCallbackRequest request);
 
 	boolean paymentByCallbackBoolean(ImPortRequestDto.PaymentCallbackRequest request);
+
+	void save(com.grabpt.domain.entity.Payment testPayment);
+
 }

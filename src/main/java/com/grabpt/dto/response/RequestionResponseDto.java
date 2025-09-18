@@ -23,45 +23,45 @@ public class RequestionResponseDto {
 	@NoArgsConstructor
 	@AllArgsConstructor
 	public static class RequestionDetailResponseDto {
-		private Long requestionId;
-		private Long categoryId;
-		private List<String> purpose;
-		private String ageGroup;
-		private String userGender;
-		private Integer price;
-		private Integer sessionCount;
-		private String location;
-		private LocalDate startPreference;
-		private List<String> availableDays;
-		private List<String> availableTimes;
-		private String trainerGender;
-		private String content; // 상세 설명
-		private String etcPurposeContent; // 기타 목적
+		private Long requestRequestionId;
+		private Long requestCategoryId;
+		private List<String> requestPurpose;
+		private String requestAgeGroup;
+		private String requestUserGender;
+		private Integer requestPrice;
+		private Integer requestSessionCount;
+		private String requestLocation;
+		private LocalDate requestStartPreference;
+		private List<String> requestAvailableDays;
+		private List<String> requestAvailableTimes;
+		private String requestTrainerGender;
+		private String requestContent; // 상세 설명
+		private String requestEtcPurposeContent; // 기타 목적
 
 		// 유저 정보
-		private String nickname;
-		private String profileImageUrl;
+		private String requestUserNickName;
+		private String photos;
 
 		public static RequestionDetailResponseDto from(Requestions r) {
 			Users u = r.getUser();
 
 			return RequestionDetailResponseDto.builder()
-				.requestionId(r.getId())
-				.categoryId(r.getCategory().getId())
-				.purpose(r.getPurpose())
-				.ageGroup(r.getAgeGroup())
-				.userGender(convertGenderToKorean(r.getUserGender()))
-				.price(r.getPrice())
-				.sessionCount(r.getSessionCount())
-				.location(r.getLocation())
-				.startPreference(r.getStartPreference())
-				.availableDays(r.getAvailableDays())
-				.availableTimes(r.getAvailableTimes())
-				.trainerGender(convertGenderToKorean(r.getTrainerGender()))
-				.content(r.getContent())
-				.etcPurposeContent(r.getEtcPurposeContent())
-				.nickname(u.getNickname())
-				.profileImageUrl(u.getProfileImageUrl())
+				.requestRequestionId(r.getId())
+				.requestCategoryId(r.getCategory().getId())
+				.requestPurpose(r.getPurpose())
+				.requestAgeGroup(r.getAgeGroup())
+				.requestUserGender(convertGenderToKorean(r.getUserGender()))
+				.requestPrice(r.getPrice())
+				.requestSessionCount(r.getSessionCount())
+				.requestLocation(r.getLocation())
+				.requestStartPreference(r.getStartPreference())
+				.requestAvailableDays(r.getAvailableDays())
+				.requestAvailableTimes(r.getAvailableTimes())
+				.requestTrainerGender(convertGenderToKorean(r.getTrainerGender()))
+				.requestContent(r.getContent())
+				.requestEtcPurposeContent(r.getEtcPurposeContent())
+				.requestUserNickName(u.getNickname())
+				.photos(u.getProfileImageUrl())
 				.build();
 		}
 	}
@@ -71,37 +71,37 @@ public class RequestionResponseDto {
 	@NoArgsConstructor
 	@AllArgsConstructor
 	public static class RequestionResponsePagingDto {
-		private String username;        // 일반 유저
-		private String userStreet;      // 주소 - 동
-		private Integer sessionCount;   // 세션 횟수
-		private Integer price;          // 1회당 가격
-		private RequestStatus status;   // 상태 (대기중 등)
-		private String userProfileImageUrl; // 유저 프로필 이미지 링크
-		private Long requestId; // 리다이렉트를 위한 requestId
-		private String content; // 상세 설명
-		private String etcPurposeContent; // 기타 목적
+		private String requestUserName;        // 일반 유저
+		private String requestUserStreet;      // 주소 - 동
+		private Integer requestSessionCount;   // 세션 횟수
+		private Integer requestPrice;          // 1회당 가격
+		private RequestStatus requestStatus;   // 상태 (대기중 등)
+		private String photos; // 유저 프로필 이미지 링크
+		private Long requestRequestId; // 리다이렉트를 위한 requestId
+		private String requestContent; // 상세 설명
+		private String requestEtcPurposeContent; // 기타 목적
 
 		// 추가 정보
-		private List<String> availableDays;
-		private List<String> availableTimes;
-		private String categoryName;
+		private List<String> requestAvailableDays;
+		private List<String> requestAvailableTimes;
+		private String requestCategoryName;
 
 		// 추가 정보
-		private String nickname;
-		private String location;
+		private String requestUserNickName;
+		private String requestLocation;
 
 		public static RequestionResponsePagingDto from(Requestions r) {
 			Users u = r.getUser();
 			return RequestionResponsePagingDto.builder()
-				.username(u.getNickname())
-				.userStreet(u.getAddress().getStreet())
-				.sessionCount(r.getSessionCount())
-				.price(r.getPrice())
-				.status(r.getStatus())
-				.userProfileImageUrl(u.getProfileImageUrl())
-				.requestId(r.getId())
-				.content(r.getContent())
-				.etcPurposeContent(r.getEtcPurposeContent())
+				.requestUserName(u.getNickname())
+				.requestUserStreet(u.getAddress().getStreet())
+				.requestSessionCount(r.getSessionCount())
+				.requestPrice(r.getPrice())
+				.requestStatus(r.getStatus())
+				.photos(u.getProfileImageUrl())
+				.requestRequestId(r.getId())
+				.requestContent(r.getContent())
+				.requestEtcPurposeContent(r.getEtcPurposeContent())
 				.build();
 		}
 	}
@@ -111,50 +111,50 @@ public class RequestionResponseDto {
 	@AllArgsConstructor
 	@Builder
 	public static class UserOwnRequestionDto {
-		private Long requestionId;
-		private String nickname;
-		private String profileImageUrl;
+		private Long requestRequestionId;
+		private String requestUserNickName;
+		private String photos;
 
-		private String city;
-		private String district;
-		private String street;
-		private String zipcode;
-		private String streetCode;
-		private String specAddress;
-		private String etcPurposeContent; // 기타 목적
+		private String requestCity;
+		private String requestDistrict;
+		private String requestStreet;
+		private String requestZipcode;
+		private String requestStreetCode;
+		private String requestSpecAddress;
+		private String requestEtcPurposeContent; // 기타 목적
 
-		private String categoryName;
-		private List<String> availableDays;
-		private List<String> availableTimes;
-		private String content;
+		private String requestCategoryName;
+		private List<String> requestAvailableDays;
+		private List<String> requestAvailableTimes;
+		private String requestContent;
 
 		// 추가
-		private RequestStatus status;
-		private Long proProfileId;
-		private String proNickname;
+		private RequestStatus requestStatus;
+		private Long requestProProfileId;
+		private String requestProNickName;
 
 		public static UserOwnRequestionDto from(Requestions requestion, Long proProfileId, String proNickname) {
 			Users user = requestion.getUser();
 			Address address = user.getAddress();
 
 			return UserOwnRequestionDto.builder()
-				.requestionId(requestion.getId())
-				.nickname(user.getNickname())
-				.profileImageUrl(user.getProfileImageUrl())
-				.city(address.getCity())
-				.district(address.getDistrict())
-				.street(address.getStreet())
-				.zipcode(address.getZipcode())
-				.streetCode(address.getStreetCode())
-				.specAddress(address.getSpecAddress())
-				.categoryName(requestion.getCategory().getName())
-				.availableDays(requestion.getAvailableDays())
-				.availableTimes(requestion.getAvailableTimes())
-				.content(requestion.getContent())
-				.etcPurposeContent(requestion.getEtcPurposeContent())
-				.status(requestion.getStatus())
-				.proProfileId(proProfileId)
-				.proNickname(proNickname)
+				.requestRequestionId(requestion.getId())
+				.requestUserNickName(user.getNickname())
+				.photos(user.getProfileImageUrl())
+				.requestCity(address.getCity())
+				.requestDistrict(address.getDistrict())
+				.requestStreet(address.getStreet())
+				.requestZipcode(address.getZipcode())
+				.requestStreetCode(address.getStreetCode())
+				.requestSpecAddress(address.getSpecAddress())
+				.requestCategoryName(requestion.getCategory().getName())
+				.requestAvailableDays(requestion.getAvailableDays())
+				.requestAvailableTimes(requestion.getAvailableTimes())
+				.requestContent(requestion.getContent())
+				.requestEtcPurposeContent(requestion.getEtcPurposeContent())
+				.requestStatus(requestion.getStatus())
+				.requestProProfileId(proProfileId)
+				.requestProNickName(proNickname)
 				.build();
 		}
 	}
@@ -163,7 +163,7 @@ public class RequestionResponseDto {
 	@Builder
 	@AllArgsConstructor
 	public static class RequestionSaveResponseDto {
-		private Long requestionId;
+		private Long requestRequestionId;
 	}
 
 	private static String convertGenderToKorean(Gender gender) {

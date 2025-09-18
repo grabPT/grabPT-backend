@@ -146,7 +146,7 @@ public class MatchingServiceImpl implements MatchingService {
 	@Override
 	public List<Matching> matchings(List<Long> requestionIds){
 		return matchingRepository.findAllWithProByRequestionIds(requestionIds);
-
+	}
 	public Long getActiveClients(Long proProfileId, MatchingStatus matchingStatus) {
 		return matchingRepository.getActiveClients(proProfileId, matchingStatus);
 	}

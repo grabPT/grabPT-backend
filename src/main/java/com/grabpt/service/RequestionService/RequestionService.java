@@ -28,21 +28,15 @@ public interface RequestionService {
 	void delete(Long requestionId, String email);
 
 	Page<RequestionResponseDto.UserOwnRequestionDto> getRequestionsByUser(HttpServletRequest request,
-		Pageable pageable) throws IllegalAccessException;
+																		  Pageable pageable) throws IllegalAccessException;
 
 	boolean canEditRequestion(Long requestionId, String email);
 
 	Requestions findById(Long requestionId);
 
+	Optional<Object> findByIdForUpdate(Long requestionId);
+
+	Requestions save(Requestions requestions);
 
 	Page<Requestions> page(Long userId,Pageable pageable);
-
-	Optional<Object> findByIdForUpdate(Long requestionId);
-
-	Requestions save(Requestions requestions);
-
-
-	Optional<Object> findByIdForUpdate(Long requestionId);
-
-	Requestions save(Requestions requestions);
 }

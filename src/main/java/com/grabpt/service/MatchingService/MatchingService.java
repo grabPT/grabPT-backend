@@ -18,18 +18,12 @@ public interface MatchingService {
 
 	boolean existsByRequestionId(Long requestionId);
 
+	Long getActiveClients(Long proProfileId, MatchingStatus matchingStatus);
+
+	Long getActiveContractsByUser(Long userId, MatchingStatus matchingStatus);
+
+	Optional<Object> findById(Long matchingId);
+
 	List<Matching> matchings(List<Long> requestionIds);
 
-	Long getActiveClients(Long proProfileId, MatchingStatus matchingStatus);
-
-	Long getActiveContractsByUser(Long userId, MatchingStatus matchingStatus);
-
-	Optional<Object> findById(Long matchingId);
-
-
-	Long getActiveClients(Long proProfileId, MatchingStatus matchingStatus);
-
-	Long getActiveContractsByUser(Long userId, MatchingStatus matchingStatus);
-
-	Optional<Object> findById(Long matchingId);
 }

@@ -144,36 +144,23 @@ public class MatchingServiceImpl implements MatchingService {
 	}
 
 	@Override
+	public Long getActiveClients(Long proProfileId, MatchingStatus matchingStatus) {
+		return matchingRepository.getActiveClients(proProfileId, matchingStatus);
+	}
+
+	@Override
+	public Long getActiveContractsByUser(Long userId, MatchingStatus matchingStatus) {
+		return matchingRepository.getActiveContractsByUser(userId, matchingStatus);
+	}
+
+	@Override
+	public Optional<Object> findById(Long matchingId) {
+		return Optional.of(matchingRepository.findById(matchingId));
+	}
+
+	@Override
 	public List<Matching> matchings(List<Long> requestionIds){
 		return matchingRepository.findAllWithProByRequestionIds(requestionIds);
 	}
-	public Long getActiveClients(Long proProfileId, MatchingStatus matchingStatus) {
-		return matchingRepository.getActiveClients(proProfileId, matchingStatus);
-	}
 
-	@Override
-	public Long getActiveContractsByUser(Long userId, MatchingStatus matchingStatus) {
-		return matchingRepository.getActiveContractsByUser(userId, matchingStatus);
-	}
-
-	@Override
-	public Optional<Object> findById(Long matchingId) {
-		return Optional.of(matchingRepository.findById(matchingId));
-
-	}
-
-	@Override
-	public Long getActiveClients(Long proProfileId, MatchingStatus matchingStatus) {
-		return matchingRepository.getActiveClients(proProfileId, matchingStatus);
-	}
-
-	@Override
-	public Long getActiveContractsByUser(Long userId, MatchingStatus matchingStatus) {
-		return matchingRepository.getActiveContractsByUser(userId, matchingStatus);
-	}
-
-	@Override
-	public Optional<Object> findById(Long matchingId) {
-		return Optional.of(matchingRepository.findById(matchingId));
-	}
 }

@@ -6,7 +6,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.grabpt.service.ProProfileService.ProProfileService;
-import com.grabpt.service.ProfileService.ProfileFacade;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -99,8 +98,8 @@ public class RequestionServiceImpl implements RequestionService {
 	@Override
 	@Transactional(readOnly = true)
 	public Page<RequestionResponseDto.RequestionResponsePagingDto> getNearbyRequestions(HttpServletRequest request,
-		String sortBy,
-		Pageable pageable) throws IllegalAccessException {
+																						String sortBy,
+																						Pageable pageable) throws IllegalAccessException {
 		UserResponseDto.UserInfoDTO userInfo = userQueryService.getUserInfo(request);
 		Users findProUser = userQueryService.findByEmail(userInfo.getEmail()).orElseThrow(
 			() -> new UserHandler(ErrorStatus.MEMBER_NOT_FOUND));
@@ -204,7 +203,7 @@ public class RequestionServiceImpl implements RequestionService {
 	@Override
 	@Transactional(readOnly = true)
 	public Page<RequestionResponseDto.UserOwnRequestionDto> getRequestionsByUser(HttpServletRequest request,
-		Pageable pageable) throws IllegalAccessException, NullPointerException {
+																				 Pageable pageable) throws IllegalAccessException, NullPointerException {
 		UserResponseDto.UserInfoDTO userInfo = userQueryService.getUserInfo(request);
 		String email = userInfo.getEmail();
 
@@ -250,17 +249,8 @@ public class RequestionServiceImpl implements RequestionService {
 	}
 
 	@Override
-	public Page<Requestions> page(Long userId,Pageable pageable){
+	public Page<Requestions> page(Long userId,Pageable pageable) {
 		return requestionRepository.findAllByUserIdOrderByCreatedAtDesc(userId, pageable);
-    @Override
-	public Optional<Object> findByIdForUpdate(Long requestionId) {
-		return Optional.ofNullable(requestionRepository.findByIdForUpdate(requestionId)
-			.orElse(null));
-	}
-
-	@Override
-	public Requestions save(Requestions requestions) {
-		return requestionRepository.save(requestions);
 	}
 
 	@Override
@@ -302,7 +292,5 @@ public class RequestionServiceImpl implements RequestionService {
 			&& r.getUser().getEmail() != null
 			&& r.getUser().getEmail().equalsIgnoreCase(email);
 	}
-
-
 
 }

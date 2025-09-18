@@ -53,7 +53,7 @@ public class RequestionController {
 
 		return ApiResponse.onSuccess(
 			RequestionResponseDto.RequestionSaveResponseDto.builder()
-				.requestionId(saved.getId())
+				.requestRequestionId(saved.getId())
 				.build()
 		);
 	}

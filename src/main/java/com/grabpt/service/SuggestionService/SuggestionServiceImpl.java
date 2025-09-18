@@ -3,6 +3,7 @@ package com.grabpt.service.SuggestionService;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -122,20 +123,20 @@ public class SuggestionServiceImpl implements SuggestionService {
 		Long matchId = (matching != null) ? matching.getId() : null;
 
 		return SuggestionResponseDto.SuggestionDetailResponseDto.builder()
-			.nickname(user.getNickname())
-			.center(pro.getCenter())
+			.suggestUserNickName(user.getNickname())
+			.suggestCenter(pro.getCenter())
 			.profileImageUrl(user.getProfileImageUrl())
-			.suggestedPrice(suggestedPrice)
-			.originalPrice(originalPrice)
-			.discountAmount(discount > 0 ? discount : 0)
-			.isDiscounted(discount > 0)
-			.message(suggestion.getMessage())
-			.location(suggestion.getLocation())
-			.photoUrls(photoUrls) // 사진 포함
-			.expertId(pro.getUser().getId())  // 트레이너 ID
-			.userId(requestion.getUser().getId())  // 요청자 ID
-			.matchingId(matchId)  // 매칭 ID (없으면 null)
-			.requestionId(requestion.getId())
+			.suggestSuggestedPrice(suggestedPrice)
+			.suggestOriginalPrice(originalPrice)
+			.suggestDiscountAmount(discount > 0 ? discount : 0)
+			.suggestIsDiscounted(discount > 0)
+			.suggestMessage(suggestion.getMessage())
+			.suggestLocation(suggestion.getLocation())
+			.photos(photoUrls) // 사진 포함
+			.suggestExpertId(pro.getUser().getId())  // 트레이너 ID
+			.suggestUserId(requestion.getUser().getId())  // 요청자 ID
+			.suggestMatchingId(matchId)  // 매칭 ID (없으면 null)
+			.suggestRequestionId(requestion.getId())
 			.build();
 	}
 
@@ -164,13 +165,13 @@ public class SuggestionServiceImpl implements SuggestionService {
 			MatchingStatus status = (matching != null) ? matching.getStatus() : MatchingStatus.WAITING;
 
 			return SuggestionResponseDto.MySuggestionPagingDto.builder()
-				.requestionNickname(s.getRequestion().getUser().getNickname())
-				.price(s.getRequestion().getPrice())
-				.sessionCount(s.getRequestion().getSessionCount())
-				.status(status)
-				.requestionId(s.getRequestion().getId())
-				.suggestionId(s.getId())
-				.profileImageUrl(s.getRequestion().getUser().getProfileImageUrl())
+				.suggestUserNickName(s.getRequestion().getUser().getNickname())
+				.suggestPrice(s.getRequestion().getPrice())
+				.suggestSessionCount(s.getRequestion().getSessionCount())
+				.suggestStatus(status)
+				.suggestRequestionId(s.getRequestion().getId())
+				.suggestSuggestionId(s.getId())
+				.photos(s.getRequestion().getUser().getProfileImageUrl())
 				.build();
 		});
 	}
@@ -217,6 +218,11 @@ public class SuggestionServiceImpl implements SuggestionService {
 			.orElseThrow(() -> new SuggestionHandler(ErrorStatus.SUGGESTION_NOT_FOUND));
 
 		return isOwner(suggestion, email);
+	}
+
+	@Override
+	public Optional<Object> findById(Long suggestionId) {
+		return Optional.of(suggestionRepository.findById(suggestionId));
 	}
 
 	private void assertOwner(Suggestions s, String email) {

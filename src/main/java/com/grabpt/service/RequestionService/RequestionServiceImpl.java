@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.grabpt.service.ProProfileService.ProProfileService;
+import com.grabpt.service.ProfileService.ProfileFacade;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -41,7 +43,7 @@ public class RequestionServiceImpl implements RequestionService {
 	private final RequestionRepository requestionRepository;
 	private final CategoryQueryService categoryQueryService;
 	private final UserQueryService userQueryService;
-	private final ProfileService profileService;
+	private final ProProfileService proProfileService;
 	private final AlarmService alarmService;
 	private final MatchingService matchingService;
 
@@ -77,7 +79,7 @@ public class RequestionServiceImpl implements RequestionService {
 		requestion.setUser(user); // 연관관계 설정
 		Requestions save = requestionRepository.save(requestion);
 
-		List<ProProfile> proProfiles = profileService.findAllProByCategoryCodeAndRegion(category.getCode(),
+		List<ProProfile> proProfiles = proProfileService.findAllProByCategoryCodeAndRegion(category.getCode(),
 			requestion.getLocation());
 		for (ProProfile proProfile : proProfiles) {
 			alarmService.sendAlarm(proProfile.getUser().getId(), "REQUESTION", "요청서 도착",
@@ -226,7 +228,7 @@ public class RequestionServiceImpl implements RequestionService {
 		return page.map(req -> {
 			Long proProfileId = reqIdToProId.get(req.getId());
 
-			String proNickname = profileService.getProNicknameById(proProfileId);
+			String proNickname = proProfileService.getProNicknameById(proProfileId);
 
 			return RequestionResponseDto.UserOwnRequestionDto.from(req, proProfileId, proNickname);
 		});

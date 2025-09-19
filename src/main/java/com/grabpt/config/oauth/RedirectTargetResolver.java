@@ -32,7 +32,8 @@ public class RedirectTargetResolver {
 		EnvTarget.LOCAL_FE.base,
 		EnvTarget.LOCAL_BE.base,
 		"http://127.0.0.1:3000",
-		"http://localhost:3000"
+		"http://localhost:3000",
+		"http://127.0.0.1:5173"
 	);
 
 	/**
@@ -72,32 +73,17 @@ public class RedirectTargetResolver {
 		return EnvTarget.PROD_FE.base;
 	}
 
-	/**
-	 * 허용된 redirect base 인지 여부.
-	 * - 스킴+호스트(+포트)를 포함한 "오리진 베이스"와 정확히 매칭되는지 확인
-	 */
+	/** 허용된 redirect base 인지 여부 (ALLOWED_BASES만 참조) */
 	public static boolean isAllowedRedirectBase(String base) {
 		if (!StringUtils.hasText(base))
 			return false;
-		String b = base.trim();
-		if (b.endsWith("/"))
-			b = b.substring(0, b.length() - 1);
-		return Set.of(
-			EnvTarget.PROD_FE.base,
-			EnvTarget.DEV_FE.base,
-			EnvTarget.LOCAL_FE.base,
-			EnvTarget.LOCAL_BE.base,
-			"http://127.0.0.1:3000",
-			"http://127.0.0.1:5173",
-			"http://localhost:5173",
-			"http://localhost:8080"
-		).contains(b);
+		return ALLOWED_BASES.contains(normalize(base));
 	}
 
+	// ===== helpers =====
 	private static String normalize(String s) {
 		if (s == null)
 			return null;
-		// 끝의 슬래시는 제거하여 비교 일관성 확보
 		String t = s.trim();
 		if (t.endsWith("/"))
 			t = t.substring(0, t.length() - 1);

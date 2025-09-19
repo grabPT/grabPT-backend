@@ -122,7 +122,7 @@ public class RequestionServiceImpl implements RequestionService {
 		}
 
 		return requestionPage.map(req -> {
-			Users u = req.getUser(); // 한번만 접근해 지역 변수에 담아 사용 (4) 미세 최적화
+			Users u = req.getUser(); // 한번만 접근해 지역 변수에 담아 사용
 			return RequestionResponseDto.RequestionResponsePagingDto.builder()
 				.username(u.getNickname())
 				.userStreet(req.getLocation())

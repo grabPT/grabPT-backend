@@ -69,6 +69,29 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 		return o == null ? null : String.valueOf(o);
 	}
 
+	/** dev/localhost 등 파라미터 방식으로 토큰/정보 전달이 필요한 대상 판정 */
+	private static boolean needsParamTokens(String base) {
+		if (base == null)
+			return false;
+		String b = base.toLowerCase();
+		return b.contains("localhost")
+			|| b.contains("127.0.0.1")
+			|| "https://grabpt-dev.vercel.app".equalsIgnoreCase(b);
+	}
+
+	/** 과거/중복 쿠키 일괄 삭제 */
+	private void deleteCookie(HttpServletResponse res, HttpServletRequest req, String name) {
+		// httpOnly 버전 삭제
+		add(res, DynamicCookieSupport.newCookie(name, "", req)
+			.maxAge(Duration.ZERO) // Max-Age=0
+			.build());
+		// public(비-httpOnly) 버전 가능성도 삭제
+		add(res, DynamicCookieSupport.asPublic(
+				DynamicCookieSupport.newCookie(name, "", req))
+			.maxAge(Duration.ZERO)
+			.build());
+	}
+
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest request,
 		HttpServletResponse response,
@@ -79,18 +102,29 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 		HttpSession session = request.getSession(false);
 		String sessionHint = session == null ? null :
 			(String)session.getAttribute(RedirectTargetResolver.REDIRECT_URI_COOKIE);
+
 		String cookieHint = getCookieValue(request,
 			RedirectTargetResolver.REDIRECT_URI_COOKIE,
 			RedirectTargetResolver.ALT_REDIRECT_URI_COOKIE);
 
 		String frontendBase = RedirectTargetResolver.resolveFrontendBase(
 			request, sessionHint != null ? sessionHint : cookieHint);
+
 		if (!RedirectTargetResolver.isAllowedRedirectBase(frontendBase)) {
 			log.warn("Blocked unexpected redirect base: {}", frontendBase);
 			frontendBase = RedirectTargetResolver.EnvTarget.PROD_FE.base;
 		}
 		log.debug("[OAUTH][SUCCESS] frontendBase={} (sessionHint={}, cookieHint={})",
 			frontendBase, sessionHint, cookieHint);
+
+		// === (A) 중복/레거시 쿠키 선삭제 (이름/공개여부 조합 커버) ===
+		String[] legacyNames = {
+			"access_token", "refresh_token", // 소문자 레거시
+			"ACCESS_TOKEN", "REFRESH_TOKEN"  // 대문자 현행
+		};
+		for (String n : legacyNames) {
+			deleteCookie(response, request, n);
+		}
 
 		// 1) 공급자/속성 파싱
 		OAuth2User oAuth2User = (OAuth2User)authentication.getPrincipal();
@@ -129,15 +163,18 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 			oauthUser.setRefreshToken(newRefreshToken);
 			userRepository.save(oauthUser);
 
-			// 쿠키 발행: 동일 도메인에서만 유효합니다.
+			// (B) 새 쿠키 발급 (프로덕션/동일 도메인 사용 시)
 			add(response, DynamicCookieSupport.newCookie("ACCESS_TOKEN", accessToken, request)
 				.maxAge(Duration.ofHours(4)).build());
 			add(response, DynamicCookieSupport.newCookie("REFRESH_TOKEN", newRefreshToken, request)
 				.maxAge(Duration.ofDays(30)).build());
+
 			String roleStr = oauthUser.getRole() == Role.PRO ? "EXPERT" : oauthUser.getRole().name();
+
 			add(response, DynamicCookieSupport.asPublic(
 					DynamicCookieSupport.newCookie("ROLE", b64(roleStr), request))
 				.maxAge(Duration.ofDays(30)).build());
+
 			add(response, DynamicCookieSupport.asPublic(
 					DynamicCookieSupport.newCookie("USER_ID", b64(oauthUser.getId().toString()), request))
 				.maxAge(Duration.ofDays(30)).build());
@@ -147,9 +184,12 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 			if (session != null)
 				session.invalidate();
 
+			// === 리다이렉트 URL 작성 ===
+			final boolean paramMode = needsParamTokens(frontendBase);
 			String targetUrl;
-			// 로컬 환경인 경우에만 URL 파라미터로 토큰을 전달합니다.
-			if (frontendBase.contains("localhost") || frontendBase.contains("127.0.0.1")) {
+
+			if (paramMode) {
+				// dev/localhost: URL 파라미터로 전달
 				targetUrl = UriComponentsBuilder.fromUriString(frontendBase + "/authcallback")
 					.queryParam("access_token", accessToken)
 					.queryParam("refresh_token", newRefreshToken)
@@ -157,7 +197,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 					.queryParam("user_id", oauthUser.getId().toString())
 					.build().toUriString();
 			} else {
-				// 운영 환경인 경우, 쿠키만 사용하고 URL 파라미터는 추가하지 않습니다.
+				// 운영: 쿠키만 사용 (URL 파라미터 금지)
 				targetUrl = UriComponentsBuilder.fromUriString(frontendBase + "/authcallback")
 					.build().toUriString();
 			}
@@ -166,9 +206,9 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 			return;
 		}
 
-		// === 신규 회원: URL 파라미터로 임시 데이터 전달 ===
+		// === 신규 회원: dev/localhost는 URL 파라미터, 운영은 퍼블릭 쿠키(3분) ===
 		String targetUrl;
-		if (frontendBase.contains("localhost") || frontendBase.contains("127.0.0.1")) {
+		if (needsParamTokens(frontendBase)) {
 			targetUrl = UriComponentsBuilder.fromUriString(frontendBase + "/signup")
 				.queryParam("oauthEmail", email)
 				.queryParam("oauthName", name)
@@ -176,9 +216,6 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 				.queryParam("oauthProvider", oauthProvider)
 				.build().toUriString();
 		} else {
-			// 운영 환경에서는 쿠키를 사용하므로 URL 파라미터를 추가하지 않습니다.
-			// (참고: 이 로직은 DynamicCookieSupport.asPublic을 사용하므로 쿠키를 통해 정보 전달)
-
 			add(response, DynamicCookieSupport.asPublic(
 					DynamicCookieSupport.newCookie("oauthEmail", b64(email), request))
 				.maxAge(Duration.ofMinutes(3)).build());

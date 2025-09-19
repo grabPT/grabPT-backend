@@ -114,8 +114,24 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 			log.warn("Blocked unexpected redirect base: {}", frontendBase);
 			frontendBase = RedirectTargetResolver.EnvTarget.PROD_FE.base;
 		}
+
+		// (힌트 1회성 소거: 다음 플로우 오염 방지)
+		try {
+			if (session != null) {
+				session.removeAttribute(RedirectTargetResolver.REDIRECT_URI_COOKIE);
+			}
+		} catch (Exception ignore) {
+		}
+		add(response, DynamicCookieSupport.asPublic(
+				DynamicCookieSupport.newCookie(RedirectTargetResolver.REDIRECT_URI_COOKIE, "", request))
+			.maxAge(Duration.ZERO).build());
+		add(response, DynamicCookieSupport.asPublic(
+				DynamicCookieSupport.newCookie(RedirectTargetResolver.ALT_REDIRECT_URI_COOKIE, "", request))
+			.maxAge(Duration.ZERO).build());
+
 		log.debug("[OAUTH][SUCCESS] frontendBase={} (sessionHint={}, cookieHint={})",
 			frontendBase, sessionHint, cookieHint);
+		log.debug("[OAUTH][SUCCESS] paramMode={}", needsParamTokens(frontendBase));
 
 		// === (A) 중복/레거시 쿠키 선삭제 (이름/공개여부 조합 커버) ===
 		String[] legacyNames = {

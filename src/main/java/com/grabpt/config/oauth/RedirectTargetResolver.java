@@ -1,5 +1,7 @@
 package com.grabpt.config.oauth;
 
+import java.util.Set;
+
 import org.springframework.util.StringUtils;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,7 +15,9 @@ public class RedirectTargetResolver {
 	public enum EnvTarget {
 		LOCAL_FE("http://localhost:5173"),
 		LOCAL_BE("http://localhost:8080"),
-		PROD_FE("https://www.grabpt.com");
+		PROD_FE("https://www.grabpt.com"),
+		DEV_FE("https://grabpt-dev.vercel.app");
+
 		public final String base;
 
 		EnvTarget(String base) {
@@ -21,32 +25,88 @@ public class RedirectTargetResolver {
 		}
 	}
 
+	/** 명시적으로 허용한 프론트엔드 베이스 목록(정확 일치) */
+	private static final Set<String> ALLOWED_BASES = Set.of(
+		EnvTarget.PROD_FE.base,
+		EnvTarget.DEV_FE.base,
+		EnvTarget.LOCAL_FE.base,
+		EnvTarget.LOCAL_BE.base,
+		"http://127.0.0.1:3000",
+		"http://localhost:3000"
+	);
+
+	/**
+	 * 최종 프론트엔드 베이스 URL을 결정한다.
+	 * 우선순위: 명시 힌트(cookie/session) → Referer/Origin → 호스트 기반 추론 → 기본(PROD_FE)
+	 */
 	public static String resolveFrontendBase(HttpServletRequest request, String cookieOrSessionHint) {
+		// 1) 힌트가 있고 허용 목록이면 그대로 사용
 		if (StringUtils.hasText(cookieOrSessionHint) && isAllowedRedirectBase(cookieOrSessionHint.trim())) {
-			return cookieOrSessionHint.trim();
+			return normalize(cookieOrSessionHint.trim());
 		}
-		String referer = request.getHeader("Referer");
-		String origin = request.getHeader("Origin");
+
+		// 2) 헤더 기반 추론
+		String referer = header(request, "Referer");
+		String origin = header(request, "Origin");
 		String host = firstNonEmpty(request.getHeader("X-Forwarded-Host"), request.getServerName());
 
-		if (contains(referer, "localhost:5173") || contains(origin, "localhost:5173"))
-			return EnvTarget.LOCAL_FE.base;
-		if (contains(referer, "localhost:8080") || contains(origin, "localhost:8080"))
-			return EnvTarget.LOCAL_BE.base;
-		if (contains(referer, "www.grabpt.com") || contains(origin, "www.grabpt.com"))
+		if (contains(referer, "grabpt-dev.vercel.app") || contains(origin, "grabpt-dev.vercel.app")) {
+			return EnvTarget.DEV_FE.base;
+		}
+		if (contains(referer, "www.grabpt.com") || contains(origin, "www.grabpt.com")) {
 			return EnvTarget.PROD_FE.base;
-		if (contains(host, "localhost"))
+		}
+		if (contains(referer, "localhost:5173") || contains(origin, "localhost:5173")) {
+			return EnvTarget.LOCAL_FE.base;
+		}
+		if (contains(referer, "localhost:8080") || contains(origin, "localhost:8080")) {
 			return EnvTarget.LOCAL_BE.base;
+		}
+
+		// 3) 호스트 기반(개발 서버 등)
+		if (contains(host, "localhost")) {
+			return EnvTarget.LOCAL_BE.base;
+		}
+
+		// 4) 기본은 PROD
 		return EnvTarget.PROD_FE.base;
 	}
 
+	/**
+	 * 허용된 redirect base 인지 여부.
+	 * - 스킴+호스트(+포트)를 포함한 "오리진 베이스"와 정확히 매칭되는지 확인
+	 */
 	public static boolean isAllowedRedirectBase(String base) {
 		if (!StringUtils.hasText(base))
 			return false;
-		String b = base.toLowerCase();
-		return b.startsWith(EnvTarget.LOCAL_FE.base)
-			|| b.startsWith(EnvTarget.LOCAL_BE.base)
-			|| b.startsWith(EnvTarget.PROD_FE.base);
+		String b = base.trim();
+		if (b.endsWith("/"))
+			b = b.substring(0, b.length() - 1);
+		return Set.of(
+			EnvTarget.PROD_FE.base,
+			EnvTarget.DEV_FE.base,
+			EnvTarget.LOCAL_FE.base,
+			EnvTarget.LOCAL_BE.base,
+			"http://127.0.0.1:3000",
+			"http://127.0.0.1:5173",
+			"http://localhost:5173",
+			"http://localhost:8080"
+		).contains(b);
+	}
+
+	private static String normalize(String s) {
+		if (s == null)
+			return null;
+		// 끝의 슬래시는 제거하여 비교 일관성 확보
+		String t = s.trim();
+		if (t.endsWith("/"))
+			t = t.substring(0, t.length() - 1);
+		return t;
+	}
+
+	private static String header(HttpServletRequest req, String name) {
+		String v = req.getHeader(name);
+		return v == null ? null : v.trim();
 	}
 
 	private static boolean contains(String s, String needle) {

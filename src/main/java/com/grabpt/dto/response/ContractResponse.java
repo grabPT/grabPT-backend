@@ -21,8 +21,8 @@ public class ContractResponse {
 		@Builder.Default
 		@Schema(description = "Pro contract info", implementation = ContractInfo.class)
 		ContractInfo proInfo = new ContractInfo();
-		Integer totalSession;
-		Integer price;
+		Integer contractSessionCount;
+		Integer contractPrice;
 		@JsonFormat(pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
 		LocalDate startDate;
 		String ptAddress;

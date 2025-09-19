@@ -28,7 +28,7 @@ public interface RequestionService {
 	void delete(Long requestionId, String email);
 
 	Page<RequestionResponseDto.UserOwnRequestionDto> getRequestionsByUser(HttpServletRequest request,
-		Pageable pageable) throws IllegalAccessException;
+																		  Pageable pageable) throws IllegalAccessException;
 
 	boolean canEditRequestion(Long requestionId, String email);
 
@@ -37,4 +37,6 @@ public interface RequestionService {
 	Optional<Object> findByIdForUpdate(Long requestionId);
 
 	Requestions save(Requestions requestions);
+
+	Page<Requestions> page(Long userId,Pageable pageable);
 }

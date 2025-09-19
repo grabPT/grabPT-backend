@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.grabpt.service.ProProfileService.ProProfileService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -42,7 +43,7 @@ public class RequestionServiceImpl implements RequestionService {
 	private final RequestionRepository requestionRepository;
 	private final CategoryQueryService categoryQueryService;
 	private final UserQueryService userQueryService;
-	private final ProfileService profileService;
+	private final ProProfileService proProfileService;
 	private final AlarmService alarmService;
 	private final MatchingRepository matchingRepository; // 의존성 순환 문제로 인함
 
@@ -78,7 +79,7 @@ public class RequestionServiceImpl implements RequestionService {
 		requestion.setUser(user); // 연관관계 설정
 		Requestions save = requestionRepository.save(requestion);
 
-		List<ProProfile> proProfiles = profileService.findAllProByCategoryCodeAndRegion(category.getCode(),
+		List<ProProfile> proProfiles = proProfileService.findAllProByCategoryCodeAndRegion(category.getCode(),
 			requestion.getLocation());
 		for (ProProfile proProfile : proProfiles) {
 			alarmService.sendAlarm(proProfile.getUser().getId(), "REQUESTION", "요청서 도착",
@@ -97,8 +98,8 @@ public class RequestionServiceImpl implements RequestionService {
 	@Override
 	@Transactional(readOnly = true)
 	public Page<RequestionResponseDto.RequestionResponsePagingDto> getNearbyRequestions(HttpServletRequest request,
-		String sortBy,
-		Pageable pageable) throws IllegalAccessException {
+																						String sortBy,
+																						Pageable pageable) throws IllegalAccessException {
 		UserResponseDto.UserInfoDTO userInfo = userQueryService.getUserInfo(request);
 		Users findProUser = userQueryService.findByEmail(userInfo.getEmail()).orElseThrow(
 			() -> new UserHandler(ErrorStatus.MEMBER_NOT_FOUND));
@@ -202,7 +203,7 @@ public class RequestionServiceImpl implements RequestionService {
 	@Override
 	@Transactional(readOnly = true)
 	public Page<RequestionResponseDto.UserOwnRequestionDto> getRequestionsByUser(HttpServletRequest request,
-		Pageable pageable) throws IllegalAccessException, NullPointerException {
+																				 Pageable pageable) throws IllegalAccessException, NullPointerException {
 		UserResponseDto.UserInfoDTO userInfo = userQueryService.getUserInfo(request);
 		String email = userInfo.getEmail();
 
@@ -227,7 +228,7 @@ public class RequestionServiceImpl implements RequestionService {
 		return page.map(req -> {
 			Long proProfileId = reqIdToProId.get(req.getId());
 
-			String proNickname = profileService.getProNicknameById(proProfileId);
+			String proNickname = proProfileService.getProNicknameById(proProfileId);
 
 			return RequestionResponseDto.UserOwnRequestionDto.from(req, proProfileId, proNickname);
 		});
@@ -245,6 +246,11 @@ public class RequestionServiceImpl implements RequestionService {
 	public Requestions findById(Long requestionId) {
 		return requestionRepository.findById(requestionId)
 			.orElseThrow(() -> new RequestionHandler(ErrorStatus.REQUESTION_NOT_FOUND));
+	}
+
+	@Override
+	public Page<Requestions> page(Long userId,Pageable pageable) {
+		return requestionRepository.findAllByUserIdOrderByCreatedAtDesc(userId, pageable);
 	}
 
 	@Override

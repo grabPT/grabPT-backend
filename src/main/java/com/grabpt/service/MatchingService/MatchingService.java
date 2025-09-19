@@ -24,4 +24,6 @@ public interface MatchingService {
 
 	Optional<Object> findById(Long matchingId);
 
+	List<Matching> matchings(List<Long> requestionIds);
+
 }

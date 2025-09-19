@@ -1,5 +1,6 @@
 package com.grabpt.controller;
 
+import com.grabpt.service.ProfileService.ProfileFacade;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api")
 public class ProProfileController {
 
-	private final ProfileService profileService;
+	private final ProfileFacade  profileFacade;
 
 	@Operation(
 		description = "해당 카테고리에 해당하는 전문가 출력",
@@ -35,7 +36,7 @@ public class ProProfileController {
 		@RequestParam(defaultValue = "10") int size) {
 
 		Pageable pageable = PageRequest.of(Math.max(page - 1, 0), size);
-		Page<ProProfileResponseDTO> proProfiles = profileService.findProProfilesByCategory(categoryCode, pageable);
+		Page<ProProfileResponseDTO> proProfiles = profileFacade.findProProfilesByCategory(categoryCode, pageable);
 		return ApiResponse.onSuccess(proProfiles);
 	}
 
@@ -46,7 +47,7 @@ public class ProProfileController {
 	@GetMapping("category-proprofile/{userCode}")
 	public ApiResponse<ProProfileResponseDTO> getProProfile(
 		@PathVariable(name = "userCode") Long userId) {
-		ProProfileResponseDTO proProfile = profileService.findProProfileByUser(userId);
+		ProProfileResponseDTO proProfile = profileFacade.findProProfileByUser(userId);
 		return ApiResponse.onSuccess(proProfile);
 	}
 

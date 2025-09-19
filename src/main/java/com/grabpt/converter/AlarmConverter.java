@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 public class AlarmConverter {
 	public static AlarmResponseDto toAlarmResponseDto(Alarm alarm){
 		return AlarmResponseDto.builder()
-			.id(alarm.getId())
+			.alarmId(alarm.getId())
 			.userId(alarm.getUser().getId())
 			.type(alarm.getType())
 			.title(alarm.getTitle())

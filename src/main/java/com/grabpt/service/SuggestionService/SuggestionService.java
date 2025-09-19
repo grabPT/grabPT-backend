@@ -1,6 +1,7 @@
 package com.grabpt.service.SuggestionService;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,4 +30,7 @@ public interface SuggestionService {
 	void deleteSuggestion(Long suggestionId, String email);
 
 	boolean canEditSuggestion(Long suggestionId, String email);
+
+	Optional<Object> findById(Long suggestionId);
+
 }

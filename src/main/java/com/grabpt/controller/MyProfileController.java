@@ -1,5 +1,6 @@
 package com.grabpt.controller;
 
+import com.grabpt.service.ProfileService.ProfileFacade;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -28,7 +29,6 @@ import com.grabpt.dto.response.MyRequestListDTO;
 import com.grabpt.dto.response.MyReviewListDTO;
 import com.grabpt.dto.response.ProfileResponseDTO;
 import com.grabpt.service.ProfileService.ProfileService;
-import com.grabpt.service.UserService.UserQueryService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.Cookie;
@@ -43,43 +43,36 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class MyProfileController {
 
-	private final ProfileService profileService;
+	private final ProfileFacade profileFacade;
 	private final ObjectMapper objectMapper;
-	private final UserQueryService userQueryService;
 
 	@Operation(
 		description = "유저의 프로필을 조회합니다.",
 		summary = "유저의 프로필을 조회합니다."
 	)
 	@GetMapping
-	public ApiResponse<ProfileResponseDTO.MyProfileDTO> getMyUserProfile(HttpServletRequest request) throws
-		IllegalAccessException {
-		// Long userId = userQueryService.getUserId(request);
+	public ApiResponse<ProfileResponseDTO.MyProfileDTO> getMyUserProfile() {
 		Long userId = SecurityUtils.currentUserIdOrThrow();
-		return ApiResponse.onSuccess(profileService.findMyUserProfile(userId));
+		return ApiResponse.onSuccess(profileFacade.findMyUserProfile(userId));
 	}
 
 	@PatchMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@Operation(summary = "기본 프로필 수정", description = "{ \"nickname\": \"test\", \"address\": { \"city\": \"test\", \"district\": \"test\", \"street\": \"test\", \"zipcode\": \"test\", \"specAddress\" : \"test\"  } }")
 	public ApiResponse<String> updateMyUserProfile(
-		HttpServletRequest requests,
 		@RequestParam("request") String requestJson,
-		@RequestPart(value = "image", required = false) MultipartFile profileImage) throws
-		IllegalAccessException { // 이미지는 선택사항으로 처리
+		@RequestPart(value = "image", required = false) MultipartFile profileImage) { // 이미지는 선택사항으로 처리
 
-		Long userId = userQueryService.getUserId(requests);
-		// JSON 문자열을 DTO 객체로 변환
+		Long userId = SecurityUtils.currentUserIdOrThrow();
 		UserProfileUpdateRequestDTO request;
 
 		try {
-			// JSON 문자열을 DTO 객체로 변환
 			request = objectMapper.readValue(requestJson, UserProfileUpdateRequestDTO.class);
 		} catch (JsonProcessingException e) {
-			// JSON 파싱 실패 시, 400 Bad Request 에러를 발생시킵니다.
+
 			throw new GeneralException(ErrorStatus._BAD_REQUEST);
 		}
 
-		profileService.updateMyUserProfile(userId, request, profileImage);
+		profileFacade.updateMyUserProfile(userId, request, profileImage);
 
 		return ApiResponse.onSuccess("프로필이 성공적으로 수정되었습니다.");
 	}
@@ -87,14 +80,13 @@ public class MyProfileController {
 	@GetMapping("/reviews")
 	@Operation(summary = "리뷰(review) 확인 API")
 	public ApiResponse<Page<MyReviewListDTO>> getMyReviewList(
-		HttpServletRequest request,
 		@RequestParam(defaultValue = "1") int page,
-		@RequestParam(defaultValue = "10") int size) throws IllegalAccessException {
+		@RequestParam(defaultValue = "10") int size){
 
-		Long userId = userQueryService.getUserId(request);
+		Long userId = SecurityUtils.currentUserIdOrThrow();
 
 		Pageable pageable = PageRequest.of(Math.max(page - 1, 0), size);
-		return ApiResponse.onSuccess(profileService.findMyReviews(userId, pageable));
+		return ApiResponse.onSuccess(profileFacade.findMyReviews(userId, pageable));
 	}
 
 	@GetMapping("/requests")
@@ -102,21 +94,21 @@ public class MyProfileController {
 	public ApiResponse<Page<MyRequestListDTO>> getMyRequestList(
 		HttpServletRequest request,
 		@RequestParam(defaultValue = "1") int page,
-		@RequestParam(defaultValue = "10") int size) throws IllegalAccessException {
+		@RequestParam(defaultValue = "10") int size)  {
 
-		Long userId = userQueryService.getUserId(request);
+		Long userId = SecurityUtils.currentUserIdOrThrow();
 		Pageable pageable = PageRequest.of(Math.max(page - 1, 0), size);
-		return ApiResponse.onSuccess(profileService.findMyRequests(userId, pageable));
+		return ApiResponse.onSuccess(profileFacade.findMyRequests(userId, pageable));
 	}
 
 	@PatchMapping(value = "/image", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
 	@Operation(summary = "이미지(Image) 변경")
 	public ApiResponse<String> updateUserProfileImage(
 		HttpServletRequest request,
-		@RequestPart(value = "image") MultipartFile profileImage) throws IllegalAccessException {
+		@RequestPart(value = "image") MultipartFile profileImage)  {
 
-		Long userId = userQueryService.getUserId(request);
-		profileService.updateUserProfileImage(userId, profileImage);
+		Long userId = SecurityUtils.currentUserIdOrThrow();
+		profileFacade.updateUserProfileImage(userId, profileImage);
 
 		return ApiResponse.onSuccess("프로필 이미지가 성공적으로 수정되었습니다.");
 	}
@@ -133,42 +125,43 @@ public class MyProfileController {
 		PrincipalDetails principalDetails = (PrincipalDetails) authentication.getPrincipal();
 		Long userId = principalDetails.getUser().getId();
 
-		profileService.deleteUser(userId, requestDto);
+		profileFacade.deleteUser(userId, requestDto);
 
 
-		log.info("[WITHDRAW] User data deleted for userId: {}", userId);
+		log.info("사용자 데이터 삭제 완료. userId = {}", userId);
 
-		log.info("[WITHDRAW] Starting session & cookie cleanup process...");
+		log.info("세션 및 쿠키 작업을 진행합니다...");
 
 		Cookie accessTokenCookie = new Cookie("access_token", null);
 		accessTokenCookie.setMaxAge(0);
 		accessTokenCookie.setPath("/");
 		res.addCookie(accessTokenCookie);
-		log.info("[WITHDRAW] Clearing cookie -> access_token");
+		log.info("쿠키 삭제 -> access_token");
 
 		Cookie refreshTokenCookie = new Cookie("refresh_token", null);
 		refreshTokenCookie.setMaxAge(0);
 		refreshTokenCookie.setPath("/");
 		res.addCookie(refreshTokenCookie);
-		log.info("[WITHDRAW] Clearing cookie -> refresh_token");
+		log.info("쿠키 삭제 -> refresh_token");
 
 		var session = req.getSession(false);
 		if (session != null) {
 			session.invalidate();
-			log.info("[WITHDRAW] HTTP session invalidated.");
+			log.info("HTTP 세션을 무효화합니다,");
 		}
 		SecurityContextHolder.clearContext();
-		log.info("[WITHDRAW] SecurityContextHolder cleared.");
+		log.info("SecurityContextHolder를 정리했습니다.");
 
-		log.info("[WITHDRAW] Withdrawal process completed successfully.");
+		log.info("회원 탈퇴 완료.");
 
 		return ApiResponse.onSuccess("회원 탈퇴가 성공적으로 처리되었습니다.");
 	}
 
 	@PatchMapping(value = "/restore")
 	@Operation(summary = "회원 복구")
-	public ApiResponse<String> restoreUser(Long userId) {
-		profileService.restoreUser(userId);
+	public ApiResponse<String> restoreUser() {
+		Long userId = SecurityUtils.currentUserIdOrThrow();
+		profileFacade.restoreUser(userId);
 		return ApiResponse.onSuccess("회원 복구가 성공적으로 처리되었습니다.");
 	}
 

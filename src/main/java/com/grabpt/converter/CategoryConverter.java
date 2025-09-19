@@ -23,12 +23,12 @@ public class CategoryConverter {
 	public static List<CategoryResponse.RequestListDto> toRequestListDto(List<Requestions> requestions) {
 		return requestions.stream()
 			.map(requestion -> CategoryResponse.RequestListDto.builder()
-				.nickname(requestion.getUser().getNickname())
-				.region(requestion.getLocation())
+				.userNickName(requestion.getUser().getNickname())
+				.requestLocation(requestion.getLocation())
 				.matchStatus(requestion.getStatus())
 				.profileImageUrl(requestion.getUser().getProfileImageUrl())
-				.totalPrice(requestion.getPrice())
-				.sessionCount(requestion.getSessionCount())
+				.requestPrice(requestion.getPrice())
+				.requestSessionCount(requestion.getSessionCount())
 				.build())
 			.collect(Collectors.toList());
 	}
@@ -36,17 +36,17 @@ public class CategoryConverter {
 	public static List<CategoryResponse.ProListDto> toProListDto(List<ProProfile> proList) {
 		return proList.stream()
 			.map(pro -> CategoryResponse.ProListDto.builder()
-				.name(pro.getUser().getNickname())
+				.userName(pro.getUser().getNickname())
 				.profileImageUrl(pro.getUser().getProfileImageUrl())
 				.rating(pro.getAverageRating())
-				.centerName(pro.getCenter())
-				.pricePerSession(
+				.proCenterName(pro.getCenter())
+				.suggestPrice(
 					pro.getPricePerSession() != null ? pro.getPricePerSession() : 0 // pricePerSession null 방어
 				)
-				.totalSessions(
+				.suggestSessionCount(
 					pro.getTotalSessions() != null ? pro.getTotalSessions() : 0 // totalSessions도 null 가능하면 방어
 				)
-				.id(pro.getUser().getId())
+				.userId(pro.getUser().getId())
 				.build())
 			.sorted(Comparator.comparing(CategoryResponse.ProListDto::getRating).reversed())
 			.collect(Collectors.toList());

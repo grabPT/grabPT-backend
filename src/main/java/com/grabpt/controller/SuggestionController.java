@@ -57,7 +57,7 @@ public class SuggestionController {
 
 		return ApiResponse.onSuccess(
 			SuggestionResponseDto.SuggestionSaveResponseDto.builder()
-				.suggestionId(saved.getId())
+				.suggestSuggestionId(saved.getId())
 				.build()
 		);
 	}

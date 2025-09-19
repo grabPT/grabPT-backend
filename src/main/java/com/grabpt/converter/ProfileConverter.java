@@ -31,10 +31,10 @@ public class ProfileConverter {
 		return ProfileResponseDTO.MyProfileDTO.builder()
 			.userId(user.getId())
 			.profileImageUrl(user.getProfileImageUrl())
-			.name(user.getUsername())
-			.nickname(user.getNickname())
+			.userName(user.getUsername())
+			.userNickName(user.getNickname())
 			.email(user.getEmail())
-			.address(addressDTOS)
+			.userLocation(addressDTOS)
 			.categoryName(categoryName)  // 없으면 null 반환
 			.build();
 	}
@@ -50,10 +50,10 @@ public class ProfileConverter {
 
 		if (proProfile == null) {
 			return ProfileResponseDTO.MyProProfileDTO.builder()
-				.proId(user.getId())
+				.userId(user.getId())
 				.profileImageUrl(user.getProfileImageUrl())
-				.proName(user.getUsername())
-				.center(proProfile.getCenter())
+				.userName(user.getUsername())
+				.proCenterName(proProfile.getCenter())
 				.categoryName(user.getProProfile().getCategory().getName())
 				.averageRating(averageRating)
 				.description(null)
@@ -62,8 +62,8 @@ public class ProfileConverter {
 				.pricePerSession(proProfile.getPricePerSession())
 				.totalSessions(proProfile.getTotalSessions())
 				.ptPrices(proProfile.getPtPrices())
-				.address(Collections.emptyList())
-				.center(proProfile.getCenter())
+				.userLocations(Collections.emptyList())
+				.proCenterName(proProfile.getCenter())
 				.build();
 		}
 
@@ -79,11 +79,11 @@ public class ProfileConverter {
 			: Collections.emptyList();
 
 		return ProfileResponseDTO.MyProProfileDTO.builder()
-			.proId(user.getId())
+			.userId(user.getId())
 			.profileImageUrl(user.getProfileImageUrl())
-			.proName(user.getNickname())
+			.userNickName(user.getNickname())
 			.userName(user.getUsername())
-			.center(proProfile.getCenter())
+			.proCenterName(proProfile.getCenter())
 			.categoryName(user.getProProfile().getCategory().getCode().toLowerCase())
 			.averageRating(averageRating)
 			.description(proProfile.getDescription())
@@ -92,39 +92,8 @@ public class ProfileConverter {
 			.pricePerSession(proProfile.getPricePerSession())
 			.totalSessions(proProfile.getTotalSessions())
 			.ptPrices(proProfile.getPtPrices())
-			.address(addressDTOS)
-			.centerDescription(proProfile.getCenterDescription())
-			.build();
-	}
-
-	// ProProfileDetailDTO 변환
-	public static ProProfileResponseDTO toProProfileDetailDTO(Users user) {
-		ProProfile proProfile = user.getProProfile();
-
-		List<ProProfileResponseDTO.CertificationDTO> certificationDTOS = proProfile.getCertifications().stream()
-			.map(ProProfileResponseDTO.CertificationDTO::from)
-			.collect(Collectors.toList());
-
-		List<ProProfileResponseDTO.PhotoDTO> photoDTOS = proProfile.getPhotos().stream()
-			.map(ProProfileResponseDTO.PhotoDTO::from)
-			.collect(Collectors.toList());
-
-		List<ProfileResponseDTO.MyProProfileDTO.AddressDTO> addressDTOS = (user.getAddress() != null)
-			? Collections.singletonList(ProfileResponseDTO.MyProProfileDTO.AddressDTO.from(user.getAddress()))
-			: Collections.emptyList();
-
-		return ProProfileResponseDTO.builder()
-			.name(user.getNickname())
-			.photos(photoDTOS)
-			.introduction(proProfile.getDescription())
-			.certifications(certificationDTOS)
-			.programDescription(proProfile.getProgramDescription())
-			.pricePerSession(proProfile.getPricePerSession())
-			.totalSessions(proProfile.getTotalSessions())
-			.ptPrices(proProfile.getPtPrices())
-			.center(proProfile.getCenter())
-			.address(addressDTOS)
-			.categoryName(proProfile.getCategory().getName())
+			.userLocations(addressDTOS)
+			.proCenterDescription(proProfile.getCenterDescription())
 			.build();
 	}
 
@@ -144,10 +113,10 @@ public class ProfileConverter {
 			: Collections.emptyList();
 
 		return ProProfileResponseDTO.builder()
-			.name(user.getNickname()) // User 객체에서 닉네임 가져오기
+			.userNickName(user.getNickname()) // User 객체에서 닉네임 가져오기
 			.profileImageUrl(user.getProfileImageUrl())
 			.photos(photoDTOS)
-			.proId(user.getId())
+			.userId(user.getId())
 			.introduction(proProfile.getDescription())
 			.certifications(certificationDTOS)
 			.programDescription(proProfile.getProgramDescription())
@@ -155,9 +124,9 @@ public class ProfileConverter {
 			.totalSessions(proProfile.getTotalSessions())
 			.ptPrices(proProfile.getPtPrices())
 			.center(proProfile.getCenter())
-			.address(addressDTOS)
+			.userLocations(addressDTOS)
 			.categoryName(proProfile.getCategory().getCode())
-			.centerDescription(proProfile.getCenterDescription())
+			.proCenterDescription(proProfile.getCenterDescription())
 			.build();
 	}
 }

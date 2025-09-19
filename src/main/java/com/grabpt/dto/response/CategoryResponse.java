@@ -17,7 +17,6 @@ public class CategoryResponse {
 	public static class CategoryListDto {
 		Long categoryId;
 		String categoryName;
-		//String iconUrl;
 	}
 
 	//전문가 목록 조회를 위한 DTO
@@ -25,14 +24,14 @@ public class CategoryResponse {
 	@Getter
 	@AllArgsConstructor
 	public static class ProListDto {
-		Long id;  //ProProfile.id
-		String name; //ProProfile.User.name
+		Long userId;  //ProProfile.getUser().getId()
+		String userName; //ProProfile.User.name
 		Double rating;  //ProProfile.reviews.getAverageReview
-		String centerName;
+		String proCenterName;
 		@Builder.Default
-		int pricePerSession = 0; //Proprofile.Suggestions.price
+		int suggestPrice = 0; //Proprofile.Suggestions.price
 		@Builder.Default
-		int totalSessions = 0;
+		int suggestSessionCount = 0;
 		String profileImageUrl;
 	}
 
@@ -41,11 +40,11 @@ public class CategoryResponse {
 	@Getter
 	@AllArgsConstructor
 	public static class RequestListDto {
-		Long id;
-		String nickname; //request.user.nickname
-		String region; //requestion.location
-		int sessionCount; // requestion.sessionCount 없음
-		int totalPrice;
+		Long requestId;
+		String userNickName; //request.user.nickname
+		String requestLocation; //requestion.location
+		int requestSessionCount; // requestion.sessionCount 없음
+		int requestPrice;
 		RequestStatus matchStatus; //reqeustion.status
 		String profileImageUrl; // //UserProfile에 url없음
 	}

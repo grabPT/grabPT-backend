@@ -1,5 +1,6 @@
 package com.grabpt.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.grabpt.domain.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -32,6 +33,7 @@ public class ChatRooms extends BaseEntity {
 	private String lastMessage;
 
 	@Column
+	@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
 	private LocalDateTime lastMessageTime;
 
 	public void addUserChatRoom(UserChatRoom userChatRoom) {

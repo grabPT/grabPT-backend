@@ -32,7 +32,7 @@ public class SuggestionResponseDto {
 		private String suggestLocation;
 		private List<String> photos; // 트레이너 제안 사진들
 
-		private Long suggestExpertId;
+		private Long suggestProId;
 		private Long suggestUserId;
 		private Long suggestMatchingId;
 		private Long suggestRequestionId;

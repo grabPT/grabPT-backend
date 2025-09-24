@@ -133,7 +133,7 @@ public class SuggestionServiceImpl implements SuggestionService {
 			.suggestMessage(suggestion.getMessage())
 			.suggestLocation(suggestion.getLocation())
 			.photos(photoUrls) // 사진 포함
-			.suggestExpertId(pro.getUser().getId())  // 트레이너 ID
+			.suggestProId(pro.getUser().getId())  // 트레이너 ID
 			.suggestUserId(requestion.getUser().getId())  // 요청자 ID
 			.suggestMatchingId(matchId)  // 매칭 ID (없으면 null)
 			.suggestRequestionId(requestion.getId())

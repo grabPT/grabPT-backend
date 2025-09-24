@@ -172,7 +172,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 			add(response, DynamicCookieSupport.newCookie("REFRESH_TOKEN", newRefreshToken, request)
 				.maxAge(Duration.ofDays(30)).build());
 
-			String roleStr = oauthUser.getRole() == Role.PRO ? "EXPERT" : oauthUser.getRole().name();
+			String roleStr = oauthUser.getRole() == Role.PRO ? "PRO" : oauthUser.getRole().name();
 
 			add(response, DynamicCookieSupport.asPublic(
 					DynamicCookieSupport.newCookie("ROLE", b64(roleStr), request))

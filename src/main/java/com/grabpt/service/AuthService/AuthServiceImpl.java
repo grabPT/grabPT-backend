@@ -227,7 +227,7 @@ public class AuthServiceImpl implements AuthService {
 		addCookie(response, "refreshToken", refreshToken, Duration.ofDays(7), true);
 
 		// 3) role (Base64, 프론트에서 읽어야 하므로 HttpOnly=false)
-		String cookieRole = toCookieRole(user.getRole()); // PRO → EXPERT 매핑
+		String cookieRole = user.getRole().toString();
 		addCookie(response, "role", b64(cookieRole), Duration.ofMinutes(30), false);
 
 		// userId 쿠키 추가
@@ -399,10 +399,6 @@ public class AuthServiceImpl implements AuthService {
 			.sameSite("None")        // 서브도메인 간 쿠키 공유를 위해 필수
 			.build();
 		res.addHeader(HttpHeaders.SET_COOKIE, c.toString());
-	}
-
-	private static String toCookieRole(Role role) {
-		return (role == Role.PRO) ? "EXPERT" : role.name();
 	}
 
 	private static String b64(String s) {

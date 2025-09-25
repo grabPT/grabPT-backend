@@ -63,17 +63,6 @@ public class OrderController {
 		return "redirect:/order?message=" + encode + "&orderUid=" + order.getOrderUid();
 	}
 
-	// @GetMapping("/customOrder")
-	// public String customOrder(@RequestParam(name = "message", required = false) String message,
-	// 	@RequestParam(name = "orderUid", required = false) String id,
-	// 	Model model) {
-	//
-	// 	model.addAttribute("message", message);
-	// 	model.addAttribute("orderUid", id);
-	//
-	// 	return "order";
-	// }
-
 	// JWT AccessToken을 받아 사용자 정보를 저장하는 로직
 	// 계산 시 정보 추가한 버전
 	@ResponseBody
@@ -86,27 +75,12 @@ public class OrderController {
 		@RequestBody ImPortRequestDto.CustomOrderRequestDto req) throws
 		IllegalAccessException {
 
-		// String userEmail = userQueryService.getUserInfo(request).getEmail();
-		// Users user = userQueryService.findByEmail(userEmail).get();
-		// log.info("price = " + req.getPrice());
-		//
-		// //  matchingId 전달
-		// Order customOrder = orderService.customOrder(user, req.getPrice(), req.getItemName(), req.getMatchingId());
-		//
-		// String message = "주문 실패";
-		// if (customOrder != null) {
-		// 	message = "주문 성공";
-		// }
-		//
-		// String encode = URLEncoder.encode(message, StandardCharsets.UTF_8);
-		//
-		// return "redirect:/order?message=" + encode + "&orderUid=" + customOrder.getOrderUid();
 		String email = userQueryService.getUserInfo(request).getEmail();
 		Users user = userQueryService.findByEmail(email)
 			.orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
 		// 1) 주문 생성
-		Order order = orderService.customOrder(user, req.getPrice(), req.getItemName(), req.getMatchingId());
+		Order order = orderService.customOrder(user, req.getPrice(), req.getItem_name(), req.getMatching_id());
 
 		// 2) 결제 페이지 DTO 구성
 		ImPortRequestDto.CustomRequestPayDto requestDto = paymentService.buildCustomRequestPayDto(order);

@@ -36,10 +36,10 @@ public class PaymentServiceImpl implements PaymentService {
 		try {
 			// 결제 단건 조회(아임포트)
 			IamportResponse<com.siot.IamportRestClient.response.Payment> iamportResponse = iamportClient.paymentByImpUid(
-				request.getPaymentUid());
+				request.getPayment_uid());
 
 			// 주문내역 조회
-			Order order = (Order)orderService.findOrderAndPayment(request.getOrderUid())
+			Order order = (Order)orderService.findOrderAndPayment(request.getOrder_uid())
 				.orElseThrow(() -> new IllegalArgumentException("주문 내역이 없습니다."));
 
 			// 결제 완료가 아니면
@@ -107,14 +107,14 @@ public class PaymentServiceImpl implements PaymentService {
 			.orElseThrow(() -> new IllegalArgumentException("주문이 없습니다."));
 
 		return ImPortRequestDto.CustomRequestPayDto.builder()
-			.buyerName(order.getUser().getUsername())
-			.buyerEmail(order.getUser().getEmail())
-			.buyerAddress(order.getUser().getAddress().getStreet())
-			.paymentPrice(order.getPayment().getPrice())
-			.itemName(order.getItemName())
-			.buyerTel(order.getUser().getPhone_number())
-			.buyerPostcode(order.getUser().getAddress().getZipcode())
-			.orderUid(order.getOrderUid())
+			.buyer_name(order.getUser().getUsername())
+			.buyer_email(order.getUser().getEmail())
+			.buyer_address(order.getUser().getAddress().getStreet())
+			.payment_price(order.getPayment().getPrice())
+			.item_name(order.getItemName())
+			.buyer_tel(order.getUser().getPhone_number())
+			.buyer_postcode(order.getUser().getAddress().getZipcode())
+			.order_uid(order.getOrderUid())
 			.build();
 	}
 
@@ -129,14 +129,14 @@ public class PaymentServiceImpl implements PaymentService {
 		String buyerPostcode = (buyer.getAddress() != null) ? buyer.getAddress().getZipcode() : null;
 
 		return ImPortRequestDto.CustomRequestPayDto.builder()
-			.orderUid(order.getOrderUid())
-			.itemName(order.getItemName())
-			.paymentPrice(order.getPrice())
-			.buyerName(buyerName)
-			.buyerEmail(buyerEmail)
-			.buyerAddress(buyerAddress)
-			.buyerTel(buyerTel)
-			.buyerPostcode(buyerPostcode)
+			.order_uid(order.getOrderUid())
+			.item_name(order.getItemName())
+			.payment_price(order.getPrice())
+			.buyer_name(buyerName)
+			.buyer_email(buyerEmail)
+			.buyer_address(buyerAddress)
+			.buyer_tel(buyerTel)
+			.buyer_postcode(buyerPostcode)
 			.build();
 	}
 
@@ -145,10 +145,10 @@ public class PaymentServiceImpl implements PaymentService {
 		try {
 			// 결제 단건 조회(아임포트)
 			IamportResponse<com.siot.IamportRestClient.response.Payment> iamportResponse = iamportClient.paymentByImpUid(
-				request.getPaymentUid());
+				request.getPayment_uid());
 
 			// 주문내역 조회
-			Order order = (Order)orderService.findOrderAndPayment(request.getOrderUid())
+			Order order = (Order)orderService.findOrderAndPayment(request.getOrder_uid())
 				.orElseThrow(() -> new IllegalArgumentException("주문 내역이 없습니다."));
 
 			// 결제 완료가 아니면

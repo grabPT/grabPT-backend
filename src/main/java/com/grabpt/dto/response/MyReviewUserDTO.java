@@ -10,7 +10,7 @@ import lombok.Getter;
 @Getter
 @Builder
 @Schema(description = "전문가가 받은 리뷰 정보 DTO")
-public class ReviewListDto {
+public class MyReviewUserDTO {
 
 	@Schema(description = "리뷰 ID", example = "1001")
 	private Long reviewId;
@@ -34,12 +34,12 @@ public class ReviewListDto {
 
 	private String reviewee;
 
-	private String revieweeImageURL;
+	private String profileImageURL;
 
-	public static ReviewListDto from(Review review) {
+	public static MyReviewUserDTO from(Review review) {
 		Users user = review.getUser();
 
-		return ReviewListDto.builder()
+		return MyReviewUserDTO.builder()
 			.reviewId(review.getId())
 			.reviewer(user.getNickname())
 			.location(user.getUserProfile().getResidence())
@@ -48,7 +48,8 @@ public class ReviewListDto {
 			.centerName(review.getProProfile().getCenter())
 			.revieweeId(review.getProProfile().getUser().getId())
 			.reviewee(review.getProProfile().getUser().getNickname())
-			.revieweeImageURL(user.getProfileImageUrl())
+			.profileImageURL(user.getProfileImageUrl())
 			.build();
 	}
 }
+

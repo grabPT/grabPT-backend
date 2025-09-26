@@ -41,7 +41,7 @@ public class ProfileFacade implements ProfileService {
 	}
 
 	@Override
-	public Page<MyReviewListDTO> findMyReviews(Long userId, Pageable pageable) {
+	public Page<MyReviewUserDTO> findMyReviews(Long userId, Pageable pageable) {
 		return userActivityService.findMyReviews(userId, pageable);
 	}
 
@@ -64,11 +64,6 @@ public class ProfileFacade implements ProfileService {
 	@Override
 	public Page<ReviewListDto> findProProReviews(Long userId, Pageable pageable) {
 		return userActivityService.findProProReviews(userId, pageable);
-	}
-
-	@Override
-	public Page<MyReviewListDTO> findReviewsByUserId(Long userId, Pageable pageable) {
-		return userActivityService.findReviewsByUserId(userId, pageable);
 	}
 
 	@Override

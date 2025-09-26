@@ -34,7 +34,7 @@ public class ProfileConverter {
 			.userName(user.getUsername())
 			.userNickName(user.getNickname())
 			.email(user.getEmail())
-			.userLocation(addressDTOS)
+			.address(addressDTOS)
 			.categoryName(categoryName)  // 없으면 null 반환
 			.build();
 	}
@@ -53,24 +53,21 @@ public class ProfileConverter {
 				.userId(user.getId())
 				.profileImageUrl(user.getProfileImageUrl())
 				.userName(user.getUsername())
-				.proCenterName(proProfile.getCenter())
+				.centerName(proProfile.getCenter())
 				.categoryName(user.getProProfile().getCategory().getName())
 				.averageRating(averageRating)
-				.description(null)
+				.profileDescription(null)
 				.photos(Collections.emptyList())
-				.programDescription(proProfile.getProgramDescription())
 				.pricePerSession(proProfile.getPricePerSession())
-				.totalSessions(proProfile.getTotalSessions())
 				.ptPrices(proProfile.getPtPrices())
 				.userLocations(Collections.emptyList())
-				.proCenterName(proProfile.getCenter())
+				.centerName(proProfile.getCenter())
 				.build();
 		}
 
 		List<ProfileResponseDTO.MyProProfileDTO.PhotoDTO> photoDTOS = proProfile.getPhotos().stream()
 			.map(photo -> ProfileResponseDTO.MyProProfileDTO.PhotoDTO.builder()
 				.imageUrl(photo.getImageUrl())
-				.description(photo.getDescription())
 				.build())
 			.collect(Collectors.toList());
 
@@ -83,17 +80,15 @@ public class ProfileConverter {
 			.profileImageUrl(user.getProfileImageUrl())
 			.userNickName(user.getNickname())
 			.userName(user.getUsername())
-			.proCenterName(proProfile.getCenter())
+			.centerName(proProfile.getCenter())
 			.categoryName(user.getProProfile().getCategory().getCode().toLowerCase())
 			.averageRating(averageRating)
-			.description(proProfile.getDescription())
+			.profileDescription(proProfile.getDescription())
 			.photos(photoDTOS)
-			.programDescription(proProfile.getProgramDescription())
 			.pricePerSession(proProfile.getPricePerSession())
-			.totalSessions(proProfile.getTotalSessions())
 			.ptPrices(proProfile.getPtPrices())
 			.userLocations(addressDTOS)
-			.proCenterDescription(proProfile.getCenterDescription())
+			.centerDescription(proProfile.getCenterDescription())
 			.build();
 	}
 

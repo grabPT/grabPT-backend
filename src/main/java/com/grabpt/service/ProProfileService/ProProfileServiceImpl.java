@@ -71,7 +71,7 @@ public class ProProfileServiceImpl implements ProProfileService {
 	@Transactional
 	public void updateProCenter(Long userId, CenterUpdateRequestDTO request) {
 		ProProfile proProfile = findProProfileByUserId(userId);
-		proProfile.setCenter(request.getCenter());
+		proProfile.setCenter(request.getCenterName());
 		proProfile.setCenterDescription(request.getCenterDescription());
 	}
 
@@ -79,7 +79,7 @@ public class ProProfileServiceImpl implements ProProfileService {
 	@Transactional
 	public void updateProDescription(Long userId, DescriptionUpdateRequestDTO request) {
 		ProProfile proProfile = findProProfileByUserId(userId);
-		proProfile.setDescription(request.getDescription());
+		proProfile.setDescription(request.getProfileDescription());
 	}
 
 	@Override

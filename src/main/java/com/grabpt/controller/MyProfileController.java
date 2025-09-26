@@ -1,5 +1,6 @@
 package com.grabpt.controller;
 
+import com.grabpt.dto.response.MyReviewUserDTO;
 import com.grabpt.service.ProfileService.ProfileFacade;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -28,7 +29,6 @@ import com.grabpt.dto.request.UserProfileUpdateRequestDTO;
 import com.grabpt.dto.response.MyRequestListDTO;
 import com.grabpt.dto.response.MyReviewListDTO;
 import com.grabpt.dto.response.ProfileResponseDTO;
-import com.grabpt.service.ProfileService.ProfileService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.Cookie;
@@ -79,7 +79,7 @@ public class MyProfileController {
 
 	@GetMapping("/reviews")
 	@Operation(summary = "리뷰(review) 확인 API")
-	public ApiResponse<Page<MyReviewListDTO>> getMyReviewList(
+	public ApiResponse<Page<MyReviewUserDTO>> getMyReviewList(
 		@RequestParam(defaultValue = "1") int page,
 		@RequestParam(defaultValue = "10") int size){
 

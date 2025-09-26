@@ -1,6 +1,7 @@
 package com.grabpt.controller;
 
 import com.grabpt.service.ContractService.ContractPhotoServiceImpl;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,6 +27,10 @@ public class ContractController {
 		description = "계약서 Id를 통해 계약서에 대한 정보를 조회합니다",
 		summary = "계약서 정보 조회 API"
 	)
+	@ApiResponses({
+		@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "토큰을 넣어주세요"),
+		@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "CONTRACT_NOT_FOUND"),
+	})
 	@GetMapping("/contract/{contractId}")
 	public ApiResponse<ContractResponse.ContractResponseDto> getContract(@PathVariable(name = "contractId") Long id) {
 		Contract contract = contractService.findById(id);
@@ -50,6 +55,10 @@ public class ContractController {
 		description = "수강생이 계약서 정보를 입력한 뒤 제출하며 Matching status가 USERWROTE로 업데이트 됩니다",
 		summary = "수강생 계약서 작성 API"
 	)
+	@ApiResponses({
+		@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "CONTRACT_NOT_FOUND"),
+		@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 내부 오류")
+	})
 	@PostMapping("/contract/{contractId}/user")
 	public ApiResponse<Long> writeUserInfo(@RequestBody ContractRequest.ContractInfoDto request,
 		@PathVariable(name = "contractId") Long id) {
@@ -83,12 +92,26 @@ public class ContractController {
 		}
 	}
 
+	@Operation(
+		summary = "수강생 전자서명 업로드 API",
+		description = "수강생이 contractId와 MultipartFile을 통해 전자서명을 업로드 합니다"
+	)@ApiResponses({
+		@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "CONTRACT_NOT_FOUND"),
+		@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 내부 오류")
+	})
 	@PostMapping(value = "/contract/{contractId}/uploadUserSign", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
 	public ApiResponse<String> uploadUserSign(@PathVariable(name = "contractId") Long contractId, @RequestPart MultipartFile file) {
 		contractPhotoService.uploadUserSign(contractId,file);
 		return ApiResponse.onSuccess("수강생 전자서명 upload");
 	}
 
+	@Operation(
+		summary = "트레이너 전자서명 업로드 API",
+		description = "트레이너가 contractId와 MultipartFile을 통해 전자서명을 업로드 합니다"
+	)@ApiResponses({
+		@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "CONTRACT_NOT_FOUND"),
+		@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 내부 오류")
+	})
 	@PostMapping(value = "/contract/{contractId}/uploadProSign",consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
 	public ApiResponse<String> uploadProSign(@PathVariable(name = "contractId") Long contractId, @RequestPart MultipartFile file) {
 		contractPhotoService.uploadProSign(contractId,file);

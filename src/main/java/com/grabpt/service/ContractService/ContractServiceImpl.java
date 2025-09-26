@@ -67,7 +67,7 @@ public class ContractServiceImpl implements ContractService {
 		ContractInfo contractInfo = toContractInfo(request);
 		contract.setProInfo(contractInfo);
 		contract.setStartDate(request.getStartDate());
-		contract.setContractDate(request.getContractDate());
+		contract.setContractDate(request.getExpireDate());
 
 		Long userId = contract.getMatching().getRequestion().getUser().getId(); //너무 길긴 함
 		alarmService.sendAlarm(userId, "PAYMENT", "전문가 계약서 작성 완료",
@@ -77,7 +77,7 @@ public class ContractServiceImpl implements ContractService {
 
 	private ContractInfo toContractInfo(ContractRequest.ContractInfoDto request) {
 		ContractInfo contractInfo = new ContractInfo();
-		contractInfo.setAddress(request.getAddress());
+		contractInfo.setLocation(request.getLocation());
 		contractInfo.setName(request.getName());
 		contractInfo.setBirth(request.getBirth());
 		contractInfo.setGender(request.getGender());
@@ -122,8 +122,8 @@ public class ContractServiceImpl implements ContractService {
 			"birth", userInfo != null && userInfo.getBirth() != null ? userInfo.getBirth().format(dateFormatter) : "-",
 			"phoneNumber", userInfo != null ? userInfo.getPhoneNumber() : "-",
 			"gender", (userInfo != null && userInfo.getGender() != null) ? userInfo.getGender().getKorean() : Gender.MALE.getKorean(),
-			"address", userInfo != null ? userInfo.getAddress() : "-",
-			"signImageUrl", userInfo != null ? userInfo.getSignUrl() : null // 서명 이미지 URL
+			"address", userInfo != null ? userInfo.getLocation() : "-",
+			"signImageUrl", userInfo != null ? userInfo.getSignImageUrl() : null // 서명 이미지 URL
 		);
 		context.setVariable("member", member);
 
@@ -134,8 +134,8 @@ public class ContractServiceImpl implements ContractService {
 			"birth", proInfo != null && proInfo.getBirth() != null ? proInfo.getBirth().format(dateFormatter) : "-",
 			"phoneNumber", proInfo != null ? proInfo.getPhoneNumber() : "-",
 			"gender", (proInfo != null && proInfo.getGender() != null) ? proInfo.getGender().getKorean() : Gender.MALE.getKorean(),
-			"address", proInfo != null ? proInfo.getAddress() : "-",
-			"signImageUrl", proInfo != null ? proInfo.getSignUrl() : null // 서명 이미지 URL
+			"address", proInfo != null ? proInfo.getLocation() : "-",
+			"signImageUrl", proInfo != null ? proInfo.getSignImageUrl() : null // 서명 이미지 URL
 		);
 		context.setVariable("trainer", trainer);
 

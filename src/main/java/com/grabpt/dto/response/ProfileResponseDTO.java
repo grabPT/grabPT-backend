@@ -26,7 +26,7 @@ public class ProfileResponseDTO {
 		private String userNickName;
 		private String email;
 		private String categoryName;
-		private List<MyProProfileDTO.AddressDTO> userLocation;
+		private List<MyProProfileDTO.AddressDTO> address;
 
 		@Getter
 		@Builder
@@ -58,22 +58,19 @@ public class ProfileResponseDTO {
 		private String profileImageUrl;
 		private String userName;
 		private String userNickName;
-		private String proCenterName;
+		private String centerName;
 		private String categoryName; // 카테고리 이름 추가
 		private Double averageRating; // 리뷰 평점 추가
 
-		private String description;
-		private String proCenterDescription;
+		private String profileDescription;
+		private String centerDescription;
 
 		// 소개 이미지
 		private List<MyProProfileDTO.PhotoDTO> photos;
 
-		private List<MyProProfileDTO.ReviewDTO> reviews;
 
 		// PT 프로그램 과정
-		private String programDescription;
 		private Integer pricePerSession;
-		private Integer totalSessions;
 		private List<PtPrice> ptPrices;
 
 		// location
@@ -120,12 +117,10 @@ public class ProfileResponseDTO {
 		@Builder
 		public static class PhotoDTO {
 			private String imageUrl;
-			private String description;
 
 			public static PhotoDTO from(ProPhoto photo) {
 				return PhotoDTO.builder()
 					.imageUrl(photo.getImageUrl())
-					.description(photo.getDescription())
 					.build();
 			}
 		}

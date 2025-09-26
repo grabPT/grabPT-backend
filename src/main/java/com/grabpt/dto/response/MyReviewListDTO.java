@@ -19,7 +19,7 @@ public class MyReviewListDTO {
 	private String reviewer;
 
 	@Schema(description = "리뷰 작성자의 거주지", example = "서울특별시 강남구")
-	private String residence;
+	private String location;
 
 	@Schema(description = "리뷰 평점 (0.0 ~ 5.0)", example = "4.5")
 	private Double rating;
@@ -28,7 +28,7 @@ public class MyReviewListDTO {
 	private String content;
 
 	@Schema(description = "센터명", example = "단단짐")
-	private String center;
+	private String centerName;
 
 	private Long revieweeId;
 
@@ -42,10 +42,10 @@ public class MyReviewListDTO {
 		return MyReviewListDTO.builder()
 			.reviewId(review.getId())
 			.reviewer(user.getNickname())
-			.residence(user.getUserProfile().getResidence())
+			.location(user.getUserProfile().getResidence())
 			.rating(review.getRating())
 			.content(review.getContent())
-			.center(review.getProProfile().getCenter())
+			.centerName(review.getProProfile().getCenter())
 			.revieweeId(review.getProProfile().getUser().getId())
 			.reviewee(review.getProProfile().getUser().getNickname())
 			.imageURL(user.getProfileImageUrl())

@@ -2,6 +2,7 @@ package com.grabpt.service.ProfileService;
 
 import java.util.List;
 
+import com.grabpt.dto.response.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,12 +18,6 @@ import com.grabpt.dto.request.ProLocationUpdateRequestDTO;
 import com.grabpt.dto.request.PtPriceRequest;
 import com.grabpt.dto.request.PtProgramUpdateRequestDTO;
 import com.grabpt.dto.request.UserProfileUpdateRequestDTO;
-import com.grabpt.dto.response.CertificationResponseDTO;
-import com.grabpt.dto.response.MyRequestListDTO;
-import com.grabpt.dto.response.MyReviewListDTO;
-import com.grabpt.dto.response.ProProfileResponseDTO;
-import com.grabpt.dto.response.ProfileResponseDTO;
-import com.grabpt.dto.response.ReviewListDto;
 
 public interface ProfileService {
 	ProfileResponseDTO.MyProfileDTO findMyUserProfile(Long userId);
@@ -31,7 +26,7 @@ public interface ProfileService {
 
 	Page<MyRequestListDTO> findMyRequests(Long userId, Pageable pageable);
 
-	Page<MyReviewListDTO> findMyReviews(Long userId, Pageable pageable);
+	Page<MyReviewUserDTO> findMyReviews(Long userId, Pageable pageable);
 
 	void updateMyUserProfile(Long userId, UserProfileUpdateRequestDTO request, MultipartFile profileImage);
 
@@ -40,8 +35,6 @@ public interface ProfileService {
 	ProProfileResponseDTO findProProfileByUser(Long userId);
 
 	Page<ReviewListDto> findProProReviews(Long userId, Pageable pageable);
-
-	Page<MyReviewListDTO> findReviewsByUserId(Long userId, Pageable pageable);
 
 	Page<ProProfileResponseDTO> findProProfilesByCategory(String categoryCode, Pageable pageable);
 

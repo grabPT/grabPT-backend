@@ -36,7 +36,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ReviewController {
 	private final ReviewService reviewService;
-	private final UserQueryService userQueryService;
 	private final ProfileService profileService;
 
 

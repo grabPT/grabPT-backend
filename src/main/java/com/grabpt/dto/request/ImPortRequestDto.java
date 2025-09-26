@@ -70,7 +70,8 @@ public class ImPortRequestDto {
 	@Getter
 	@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 	@NoArgsConstructor
-	public static class CustomOrderRequestDto {
+	public static class
+	CustomOrderRequestDto {
 		private Long price; // 결제 고유 번호
 		private String item_name; // 주문 고유 번호
 		private Long matching_id;

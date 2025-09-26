@@ -7,7 +7,7 @@ import lombok.Getter;
 public class ReviewRequestDTO {
 
 	@Schema(description = "리뷰를 받는 전문가 프로필 ID", example = "1")
-	private Long proProfileId;
+	private Long proId;
 
 	@Schema(description = "별점 (0.0 ~ 5.0)", example = "4.5")
 	private Double rating;

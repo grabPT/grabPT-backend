@@ -9,6 +9,7 @@ import com.grabpt.domain.entity.Users;
 import com.grabpt.domain.enums.MatchingStatus;
 import com.grabpt.dto.response.MyRequestListDTO;
 import com.grabpt.dto.response.MyReviewListDTO;
+import com.grabpt.dto.response.MyReviewUserDTO;
 import com.grabpt.dto.response.ReviewListDto;
 import com.grabpt.repository.UserRepository.UserRepository;
 import com.grabpt.service.MatchingService.MatchingService;
@@ -61,9 +62,9 @@ public class UserActivityServiceImpl implements UserActivityService {
 	}
 
 	@Override
-	public Page<MyReviewListDTO> findMyReviews(Long userId, Pageable pageable) {
+	public Page<MyReviewUserDTO> findMyReviews(Long userId, Pageable pageable) {
 		Page<Review> reviews = reviewService.reviews(userId, pageable);
-		return reviews.map(MyReviewListDTO::from);
+		return reviews.map(MyReviewUserDTO::from);
 	}
 
 	@Override

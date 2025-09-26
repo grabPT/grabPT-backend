@@ -99,16 +99,16 @@ public class AuthServiceImpl implements AuthService {
 
 		// Users 생성 및 연관관계 설정
 		Users user = Users.builder()
-			.username(req.getUsername())
+			.username(req.getUserName())
 			.email(req.getEmail())
-			.phone_number(req.getPhoneNum())
+			.phone_number(req.getPhoneNumber())
 			.address(address)
-			.nickname(req.getNickname())
+			.nickname(req.getUserNickname())
 			.role(mapToRole(req.getRole()))
 			.authRole(AuthRole.ROLE_USER)
 			.profileImageUrl(imageUrl)  // S3 URL 저장
-			.agreeMarketing(req.getAgreeMarketing())
-			.agreeMarketingAt(req.getAgreeMarketing() ? LocalDateTime.now() : null)
+			.agreeMarketing(req.getIsAgreeMarketing())
+			.agreeMarketingAt(req.getIsAgreeMarketing() ? LocalDateTime.now() : null)
 			.oauthId(URLDecoder.decode(req.getOauthId(), StandardCharsets.UTF_8))
 			.oauthProvider(URLDecoder.decode(req.getOauthProvider(), StandardCharsets.UTF_8))
 			.userProfile(userProfile)
@@ -144,7 +144,7 @@ public class AuthServiceImpl implements AuthService {
 
 		// ProProfile 생성
 		ProProfile proProfile = ProProfile.builder()
-			.center(req.getCenter())
+			.center(req.getCenterName())
 			.career(req.getCareer())
 			.category(proCategory)
 			.age(req.getAge())
@@ -163,17 +163,17 @@ public class AuthServiceImpl implements AuthService {
 
 		// Users 생성 및 연관관계 설정
 		Users user = Users.builder()
-			.username(req.getUsername())
+			.username(req.getUserName())
 			.email(req.getEmail())
-			.phone_number(req.getPhoneNum())
+			.phone_number(req.getPhoneNumber())
 			.address(address)
-			.nickname(req.getNickname())
+			.nickname(req.getUserNickname())
 			.role(mapToRole(req.getRole()))
 			.gender(mapToGender(req.getGender()))
 			.authRole(AuthRole.ROLE_USER)
 			.profileImageUrl(imageUrl)  // S3 URL 저장
-			.agreeMarketing(req.getAgreeMarketing())
-			.agreeMarketingAt(req.getAgreeMarketing() ? LocalDateTime.now() : null)
+			.agreeMarketing(req.getIsAgreeMarketing())
+			.agreeMarketingAt(req.getIsAgreeMarketing() ? LocalDateTime.now() : null)
 			.oauthId(URLDecoder.decode(req.getOauthId(), StandardCharsets.UTF_8))
 			.oauthProvider(URLDecoder.decode(req.getOauthProvider(), StandardCharsets.UTF_8))
 			.proProfile(proProfile)

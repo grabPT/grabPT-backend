@@ -142,7 +142,7 @@ public class AuthController {
 		log.info("Email duplication check for {}: {}", email, isDuplicate);
 
 		UserResponseDto.DuplicateEmailDto dto = UserResponseDto.DuplicateEmailDto.builder()
-			.duplicate(isDuplicate)
+			.isDuplicate(isDuplicate)
 			.oauthProvider(oauthProvider)
 			.build();
 

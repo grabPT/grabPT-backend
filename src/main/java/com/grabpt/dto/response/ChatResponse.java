@@ -19,7 +19,7 @@ public class ChatResponse {
 		String content;
 		String messageType;
 		@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
-		LocalDateTime sendAt;
+		LocalDateTime sentAt;
 		Integer readCount;
 	}
 
@@ -39,7 +39,7 @@ public class ChatResponse {
 	@Getter
 	@Builder
 	public static class CreateChatRoomResponseDto{
-		Long chatRoomId;
+		Long roomId;
 	}
 
 	@AllArgsConstructor
@@ -48,7 +48,7 @@ public class ChatResponse {
 	@Getter
 	@Builder
 	public static class ChatRoomPreviewDto{
-		Long chatRoomId;
+		Long roomId;
 		Long userId;
 		Long otherUserId;
 		Long unreadCount; //추가
@@ -56,7 +56,7 @@ public class ChatResponse {
 		String lastMessage;
 		@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
 		LocalDateTime lastMessageTime;
-		String otherUserProfile;
+		String otherUserProfileImageUrl;
 	}
 
 	@AllArgsConstructor

@@ -27,7 +27,7 @@ public class SmsServiceImpl implements SmsService {
 
 	@Override // SmsService 인터페이스 메서드 구현
 	public void SendSms(SmsRequestDto smsRequestDto) {
-		String phoneNum = smsRequestDto.getPhoneNum(); // SmsrequestDto에서 전화번호를 가져온다.
+		String phoneNum = smsRequestDto.getPhoneNumber(); // SmsrequestDto에서 전화번호를 가져온다.
 
 		String certificationCode = Integer.toString(
 			(int)(Math.random() * (999999 - 100000 + 1)) + 100000); // 6자리 인증 코드를 랜덤으로 생성

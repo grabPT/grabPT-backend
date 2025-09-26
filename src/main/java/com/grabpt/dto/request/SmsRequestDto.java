@@ -17,5 +17,5 @@ public class SmsRequestDto {
 		description = "수신 번호 입력",
 		example = "01012345678"
 	)
-	private String phoneNum;
+	private String phoneNumber;
 }

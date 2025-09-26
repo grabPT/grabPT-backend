@@ -27,11 +27,11 @@ public class CategoryResponse {
 		Long userId;  //ProProfile.getUser().getId()
 		String userName; //ProProfile.User.name
 		Double rating;  //ProProfile.reviews.getAverageReview
-		String proCenterName;
+		String centerName;
 		@Builder.Default
-		int suggestPrice = 0; //Proprofile.Suggestions.price
+		int suggestedPrice = 0; //Proprofile.Suggestions.price
 		@Builder.Default
-		int suggestSessionCount = 0;
+		int sessionCount = 0;
 		String profileImageUrl;
 	}
 
@@ -40,12 +40,12 @@ public class CategoryResponse {
 	@Getter
 	@AllArgsConstructor
 	public static class RequestListDto {
-		Long requestId;
+		Long requestionId;
 		String userNickName; //request.user.nickname
-		String requestLocation; //requestion.location
-		int requestSessionCount; // requestion.sessionCount 없음
-		int requestPrice;
-		RequestStatus matchStatus; //reqeustion.status
+		String location; //requestion.location
+		int sessionCount; // requestion.sessionCount 없음
+		int requestedPrice;
+		RequestStatus matchingStatus; //reqeustion.status
 		String profileImageUrl; // //UserProfile에 url없음
 	}
 

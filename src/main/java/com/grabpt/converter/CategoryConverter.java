@@ -24,11 +24,11 @@ public class CategoryConverter {
 		return requestions.stream()
 			.map(requestion -> CategoryResponse.RequestListDto.builder()
 				.userNickName(requestion.getUser().getNickname())
-				.requestLocation(requestion.getLocation())
-				.matchStatus(requestion.getStatus())
+				.location(requestion.getLocation())
+				.matchingStatus(requestion.getStatus())
 				.profileImageUrl(requestion.getUser().getProfileImageUrl())
-				.requestPrice(requestion.getPrice())
-				.requestSessionCount(requestion.getSessionCount())
+				.requestedPrice(requestion.getPrice())
+				.sessionCount(requestion.getSessionCount())
 				.build())
 			.collect(Collectors.toList());
 	}
@@ -39,11 +39,11 @@ public class CategoryConverter {
 				.userName(pro.getUser().getNickname())
 				.profileImageUrl(pro.getUser().getProfileImageUrl())
 				.rating(pro.getAverageRating())
-				.proCenterName(pro.getCenter())
-				.suggestPrice(
+				.centerName(pro.getCenter())
+				.suggestedPrice(
 					pro.getPricePerSession() != null ? pro.getPricePerSession() : 0 // pricePerSession null 방어
 				)
-				.suggestSessionCount(
+				.sessionCount(
 					pro.getTotalSessions() != null ? pro.getTotalSessions() : 0 // totalSessions도 null 가능하면 방어
 				)
 				.userId(pro.getUser().getId())

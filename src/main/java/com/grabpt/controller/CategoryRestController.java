@@ -60,8 +60,8 @@ public class CategoryRestController {
 		description = "카테고리 상세 페이지 중 전문가 목록을 조회하는 API, 로그아웃 상태일 때 region을 쿼리파라미터로 전달"
 	)
 	@Parameters({
-		@Parameter(name = "code", description = "카테고리 코드 (예: box)", required = true, in = ParameterIn.PATH, example = "box"),
-		@Parameter(name = "region", description = "지역명 (예: 화곡3동)", required = false, example = "화곡3동")
+		@Parameter(name = "categoryCode", description = "카테고리 코드 (예: boxing)", required = true, in = ParameterIn.PATH, example = "boxing"),
+		@Parameter(name = "region", description = "지역명 (예: 상도동)", required = false, example = "상도동")
 	})
 	@ApiResponses({
 		@io.swagger.v3.oas.annotations.responses.ApiResponse(
@@ -73,9 +73,9 @@ public class CategoryRestController {
 		@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 요청 파라미터"),
 		@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 내부 오류")
 	})
-	@GetMapping("/category/{code}/trainers")
+	@GetMapping("/category/{categoryCode}/trainers")
 	public ApiResponse<List<CategoryResponse.ProListDto>> getTrainerList(
-		@PathVariable(name = "code") String code,
+		@PathVariable(name = "categoryCode") String code,
 		@RequestParam(name = "region", required = false) String region) {
 		List<ProProfile> proProfiles = profileService.findAllProByCategoryCodeAndRegion(code, region);
 		return ApiResponse.onSuccess(CategoryConverter.toProListDto(proProfiles));
@@ -86,7 +86,7 @@ public class CategoryRestController {
 		description = "카테고리 코드에 해당하는 요청서 목록을 최신순으로 6개를 보여줍니다, 지역은 전국 단위입니다"
 	)
 	@Parameters({
-		@Parameter(name = "code", description = "카테고리 코드 (예: box)", required = true, in = ParameterIn.PATH, example = "box"),
+		@Parameter(name = "categoryCode", description = "카테고리 코드", required = true, in = ParameterIn.PATH, example = "boxing"),
 	})
 	@ApiResponses({
 		@io.swagger.v3.oas.annotations.responses.ApiResponse(
@@ -98,11 +98,11 @@ public class CategoryRestController {
 		@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 요청 파라미터"),
 		@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 내부 오류")
 	})
-	@GetMapping("/requests/{code}")
-	public ApiResponse<List<CategoryResponse.RequestListDto>> getRequestList(@PathVariable(name = "code") String code) {
+	@GetMapping("/requests/{categoryCode}")
+	public ApiResponse<List<CategoryResponse.RequestListDto>> getRequestList(@PathVariable(name = "categoryCode") String categoryCode) {
 
 		Pageable pageable = PageRequest.of(0,8);
-		List<Requestions> reqeustions = requestionService.getReqeustions(code, pageable);
+		List<Requestions> reqeustions = requestionService.getReqeustions(categoryCode, pageable);
 		return ApiResponse.onSuccess(CategoryConverter.toRequestListDto(reqeustions));
 	}
 

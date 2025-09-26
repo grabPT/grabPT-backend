@@ -34,7 +34,7 @@ public class UserResponseDto {
 	@Getter
 	@Builder
 	public static class DuplicateEmailDto {
-		private boolean duplicate;
+		private boolean isDuplicate;
 		private String oauthProvider;
 	}
 }

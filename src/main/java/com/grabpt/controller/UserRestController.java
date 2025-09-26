@@ -17,7 +17,10 @@ import com.grabpt.service.UserService.UserQueryService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -31,18 +34,66 @@ public class UserRestController {
 	private final JwtTokenProvider jwtTokenProvider;
 	private final UserRepository userRepository;
 
-	@GetMapping("/info")
-	@Operation(summary = "유저 내 정보 조회 API - 인증 필요",
+	@Operation(
+		summary = "유저 내 정보 조회 API - 인증 필요",
 		description = "유저가 내 정보를 조회하는 API입니다.",
 		security = {@SecurityRequirement(name = "JWT TOKEN")}
 	)
+	@ApiResponses({
+		@io.swagger.v3.oas.annotations.responses.ApiResponse(
+			responseCode = "200", description = "조회 성공",
+			content = @Content(
+				mediaType = "application/json",
+				schema = @Schema(implementation = UserResponseDto.UserInfoDTO.class),
+				examples = @ExampleObject(name = "성공 예시", value = """
+					{
+					  "isSuccess": true,
+					  "code": "OK",
+					  "message": "요청에 성공했습니다.",
+					  "result": {
+					    "userId": 10,
+					    "userNickName": "동이",
+					    "userName": "홍길동",
+					    "address": {
+					      "city": "서울시",
+					      "district": "관악구",
+					      "street": "봉천동",
+					      "zipcode": "12345",
+					      "streetCode": "상암로 123",
+					      "specAddress": "123동 456호"
+					    },
+					    "email": "email@gmail.com",
+					    "role": "USER"
+					  }
+					}
+					""")
+			)
+		)
+	})
+	@GetMapping("/info")
 	public ApiResponse<UserResponseDto.UserInfoDTO> getMyInfo(HttpServletRequest request) throws
 		IllegalAccessException {
 		return ApiResponse.onSuccess(userQueryService.getUserInfo(request));
 	}
 
-	@GetMapping("/{userId}")
 	@Operation(summary = "테스트용 AccessToken 발급", description = "특정 유저 ID를 기반으로 AccessToken을 발급합니다.")
+	@ApiResponses({
+		@io.swagger.v3.oas.annotations.responses.ApiResponse(
+			responseCode = "200", description = "발급 성공",
+			content = @Content(
+				mediaType = "application/json",
+				examples = @ExampleObject(name = "성공 예시", value = """
+					{
+					  "isSuccess": true,
+					  "code": "OK",
+					  "message": "요청에 성공했습니다.",
+					  "result": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+					}
+					""")
+			)
+		)
+	})
+	@GetMapping("/{userId}")
 	public ApiResponse<String> getTestAccessToken(@PathVariable Long userId) {
 		Users user = userRepository.findById(userId)
 			.orElseThrow(() -> new UserHandler(ErrorStatus.MEMBER_NOT_FOUND));
@@ -51,16 +102,31 @@ public class UserRestController {
 		return ApiResponse.onSuccess(token);
 	}
 
-	@GetMapping("/check-phone")
 	@Operation(
 		summary = "휴대폰 번호 사용 가능 여부 확인",
-		description = "phoneNumber 파라미터를 받아 해당 번호로 가입된 계정이 없으면 true(사용 가능), "
-			+ "있으면 false(이미 존재하여 사용 불가)를 반환합니다."
+		description = "phoneNumber 파라미터를 받아 해당 번호로 가입된 계정이 없으면 true(사용 가능), 있으면 false(이미 존재)를 반환합니다."
 	)
-	@Parameters({
-		@Parameter(name = "phoneNumber", description = "확인할 휴대폰 번호", required = true, example = "01012345678")
+	@ApiResponses({
+		@io.swagger.v3.oas.annotations.responses.ApiResponse(
+			responseCode = "200", description = "검증 성공",
+			content = @Content(
+				mediaType = "application/json",
+				examples = @ExampleObject(name = "성공 예시", value = """
+					{
+					  "isSuccess": true,
+					  "code": "OK",
+					  "message": "요청에 성공했습니다.",
+					  "result": true
+					}
+					""")
+			)
+		)
 	})
-	public ApiResponse<Boolean> checkPhone(@RequestParam String phoneNumber) {
+	@GetMapping("/check-phone")
+	public ApiResponse<Boolean> checkPhone(
+		@Parameter(description = "확인할 휴대폰 번호", schema = @Schema(type = "string", example = "01012345678"))
+		@RequestParam String phoneNumber
+	) {
 		// 숫자만 남기도록 정규화
 		String normalized = phoneNumber.replaceAll("[^0-9]", "");
 

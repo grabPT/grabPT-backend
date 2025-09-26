@@ -7,7 +7,7 @@ public class SmsVerifyResponseDto {
 		description = "수신 번호 입력",
 		example = "01012345678"
 	)
-	private String phoneNum;
+	private String phoneNumber;
 	@Schema(
 		description = "인증 번호 입력",
 		example = "001241"
@@ -20,17 +20,17 @@ public class SmsVerifyResponseDto {
 
 	// 생성자
 	public SmsVerifyResponseDto(String phoneNum, String inputCode) {
-		this.phoneNum = phoneNum;
+		this.phoneNumber = phoneNum;
 		this.inputCode = inputCode;
 	}
 
 	// Getter/Setter
 	public String getPhoneNum() {
-		return phoneNum;
+		return phoneNumber;
 	}
 
 	public void setPhoneNum(String phoneNum) {
-		this.phoneNum = phoneNum;
+		this.phoneNumber = phoneNum;
 	}
 
 	public String getInputCode() {

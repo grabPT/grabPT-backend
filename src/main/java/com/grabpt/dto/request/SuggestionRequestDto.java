@@ -44,5 +44,5 @@ public class SuggestionRequestDto {
 	private LocalDate sentAt;
 
 	@Schema(description = "수락됬는지, 대기중인지 판별하는 boolean", example = "false")
-	private Boolean isAgreed;
+	private Boolean isMatched;
 }

@@ -16,20 +16,23 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.grabpt.apiPayload.ApiResponse;
-import com.grabpt.config.jwt.JwtTokenProvider;
 import com.grabpt.domain.entity.Users;
+import com.grabpt.dto.request.ProSignupMultipart;
 import com.grabpt.dto.request.RefreshTokenRequestDto;
 import com.grabpt.dto.request.SignupRequest;
+import com.grabpt.dto.request.UserSignupMultipart;
 import com.grabpt.dto.response.UserResponseDto;
 import com.grabpt.service.AuthService.AuthService;
 import com.grabpt.service.UserService.UserQueryService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -42,39 +45,66 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AuthController {
 
-	private final JwtTokenProvider jwtTokenProvider;
+	private final ObjectMapper objectMapper;
 	private final UserQueryService userQueryService;
 	private final AuthService authService;
 
-	@Operation(summary = "User 회원가입 요청 (Multipart)",
-		description = "JSON 데이터와 프로필 이미지를 동시에 전송하는 회원가입")
 	@PostMapping(value = "/user-signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	@Operation(summary = "User 회원가입 요청 (Multipart)", description = "JSON 데이터와 프로필 이미지를 동시에 전송하는 회원가입")
+	@io.swagger.v3.oas.annotations.parameters.RequestBody(
+		required = true,
+		content = @Content(
+			mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+			schema = @Schema(implementation = UserSignupMultipart.class)
+			// encoding(name="data", contentType="application/json")는 남겨도 되고 빼도 됩니다.
+		)
+	)
 	public ApiResponse<String> userSignup(
-		@RequestPart("data") SignupRequest.UserSignupRequestDto signupRequest,
+		@RequestPart("data") String data, // ← 핵심: String으로 받기
 		@RequestPart(value = "profileImage", required = false) MultipartFile profileImage,
-		HttpServletResponse response) {
+		HttpServletResponse response
+	) throws Exception {
+
+		// String → DTO 수동 파싱
+		SignupRequest.UserSignupRequestDto signupRequest =
+			objectMapper.readValue(data, SignupRequest.UserSignupRequestDto.class);
 
 		authService.registerUser_photo(signupRequest, profileImage, response);
-
 		return ApiResponse.onSuccess("user 회원가입 성공");
 	}
 
-	@Operation(summary = "Pro 회원가입 요청 (Multipart)",
-		description = "JSON 데이터와 프로필 이미지를 동시에 전송하는 회원가입")
 	@PostMapping(value = "/pro-signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	@Operation(summary = "Pro 회원가입 요청 (Multipart)", description = "JSON 데이터와 프로필 이미지를 동시에 전송하는 회원가입")
+	@io.swagger.v3.oas.annotations.parameters.RequestBody(
+		required = true,
+		content = @Content(
+			mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+			schema = @Schema(implementation = ProSignupMultipart.class)
+		)
+	)
 	public ApiResponse<String> proSignup(
-		@RequestPart("data") SignupRequest.ProSignupRequestDto signupRequest,
+		@RequestPart("data") String data, // ← String
 		@RequestPart(value = "profileImage", required = false) MultipartFile profileImage,
-		HttpServletResponse response) {
+		HttpServletResponse response
+	) throws Exception {
+
+		SignupRequest.ProSignupRequestDto signupRequest =
+			objectMapper.readValue(data, SignupRequest.ProSignupRequestDto.class);
 
 		authService.registerPro_photo(signupRequest, profileImage, response);
-
 		return ApiResponse.onSuccess("pro 회원가입 성공");
 	}
 
 	// JWT 토큰 재발행
-	@Operation(summary = "JWT Refresh Token으로 인증 토큰 재발행",
-		description = "유효한 Refresh Token 전달 시 인증 토큰 재발행, access, refresh 토큰은 쿠키로 전달")
+	@Operation(
+		summary = "JWT Refresh Token으로 인증 토큰 재발행",
+		description = "유효한 Refresh Token 전달 시 인증 토큰 재발행, access, refresh 토큰은 쿠키로 전달"
+	)
+	@ApiResponses({
+		@io.swagger.v3.oas.annotations.responses.ApiResponse(
+			responseCode = "204", description = "재발행 성공(본문 없음)"
+		)
+	})
 	@PostMapping("/reissue")
 	public ResponseEntity<Void> reissueToken(HttpServletRequest request, HttpServletResponse response) {
 
@@ -83,20 +113,37 @@ public class AuthController {
 		return ResponseEntity.noContent().build();
 	}
 
-	@Operation(
-		summary = "로그아웃",
-		description = "accessToken 및 refreshToken 쿠키 삭제, DB refreshToken 초기화"
-	)
+	@Operation(summary = "로그아웃", description = "accessToken 및 refreshToken 쿠키 삭제, DB refreshToken 초기화")
+	@ApiResponses({
+		@io.swagger.v3.oas.annotations.responses.ApiResponse(
+			responseCode = "200", description = "로그아웃 성공",
+			content = @Content(
+				mediaType = "application/json",
+				examples = @ExampleObject(name = "성공 예시", value = """
+					{
+					  "isSuccess": true,
+					  "code": "OK",
+					  "message": "요청에 성공했습니다.",
+					  "result": "로그아웃 완료"
+					}
+					""")
+			)
+		)
+	})
 	@io.swagger.v3.oas.annotations.parameters.RequestBody(
 		description = "리프레시 토큰을 담은 요청 body",
 		required = true,
 		content = @Content(
 			mediaType = "application/json",
-			schema = @Schema(implementation = RefreshTokenRequestDto.class)
+			schema = @Schema(implementation = RefreshTokenRequestDto.class),
+			examples = @ExampleObject(name = "요청 예시", value = """
+				{ "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." }
+				""")
 		)
 	)
 	@PostMapping("/logout")
-	public ApiResponse<String> logout(@RequestBody(required = false) RefreshTokenRequestDto request,
+	public ApiResponse<String> logout(
+		@RequestBody(required = false) RefreshTokenRequestDto request,
 		HttpServletRequest req,
 		HttpServletResponse res,
 		Authentication authentication) {
@@ -106,30 +153,65 @@ public class AuthController {
 		return ApiResponse.onSuccess("로그아웃 완료");
 	}
 
-	@GetMapping("/check-nickname")
 	@Operation(
 		summary = "nickname 중복 검증",
 		description = "nickname 파라미터 전송 시 중복 여부 판단, 중복이면 true / 미중복이면 false"
 	)
-	@Parameters({
-		@Parameter(name = "nickname", description = "중복 닉네임", required = true, example = "닉네임")
+	@ApiResponses({
+		@io.swagger.v3.oas.annotations.responses.ApiResponse(
+			responseCode = "200", description = "검증 성공",
+			content = @Content(
+				mediaType = "application/json",
+				examples = @ExampleObject(name = "성공 예시", value = """
+					{
+					  "isSuccess": true,
+					  "code": "OK",
+					  "message": "요청에 성공했습니다.",
+					  "result": true
+					}
+					""")
+			)
+		)
 	})
-	public ApiResponse<Boolean> checkNickname(@RequestParam String nickname) {
+	@GetMapping("/check-nickname")
+	public ApiResponse<Boolean> checkNickname(
+		@Parameter(description = "중복 닉네임", schema = @Schema(type = "string", example = "닉네임"))
+		@RequestParam String nickname
+	) {
 		boolean isDuplicate = userQueryService.existsByNickname(nickname);
 		return ApiResponse.onSuccess(isDuplicate);
 	}
 
-	@GetMapping("/check-email")
 	@Operation(
 		summary = "이메일 중복 검증",
-		description = "이메일 파라미터 전송 시 중복 여부와 가입된 OAuth 제공자 정보를 반환합니다."
-			+ "이메일 중복이면 isDuplicate=true, oauthProvider는 해당하는 유저의 oauthProvider는(google, kakao, naver 중 하나 / "
-			+ "이메일 중복이 아니면 isDuplicate=false, oauthProvider는 null로 반환합니다."
+		description = """
+			이메일 파라미터 전송 시 중복 여부와 가입된 OAuth 제공자 정보를 반환합니다.
+			- 중복이면 isDuplicate=true, oauthProvider는 (google/kakao/naver 중 하나)
+			- 중복이 아니면 isDuplicate=false, oauthProvider=null
+			"""
 	)
-	@Parameters({
-		@Parameter(name = "email", description = "중복 이메일", required = true, example = "test@gmail.com")
+	@ApiResponses({
+		@io.swagger.v3.oas.annotations.responses.ApiResponse(
+			responseCode = "200", description = "검증 성공",
+			content = @Content(
+				mediaType = "application/json",
+				schema = @Schema(implementation = UserResponseDto.DuplicateEmailDto.class),
+				examples = @ExampleObject(name = "성공 예시", value = """
+					{
+					  "isSuccess": true,
+					  "code": "OK",
+					  "message": "요청에 성공했습니다.",
+					  "result": { "duplicate": true, "oauthProvider": "google" }
+					}
+					""")
+			)
+		)
 	})
-	public ApiResponse<UserResponseDto.DuplicateEmailDto> checkEmail(@RequestParam String email) {
+	@GetMapping("/check-email")
+	public ApiResponse<UserResponseDto.DuplicateEmailDto> checkEmail(
+		@Parameter(description = "중복 이메일", schema = @Schema(type = "string", example = "test@gmail.com"))
+		@RequestParam String email
+	) {
 		Optional<Users> userOptional = userQueryService.findByEmail(email);
 
 		boolean isDuplicate = userOptional.isPresent();
@@ -142,18 +224,36 @@ public class AuthController {
 		log.info("Email duplication check for {}: {}", email, isDuplicate);
 
 		UserResponseDto.DuplicateEmailDto dto = UserResponseDto.DuplicateEmailDto.builder()
-			.duplicate(isDuplicate)
+			.isDuplicate(isDuplicate)
 			.oauthProvider(oauthProvider)
 			.build();
 
 		return ApiResponse.onSuccess(dto);
 	}
 
+	@Operation(summary = "소셜 로그인 시 임시 정보 조회", description = "소셜 로그인 시 기존 쿠키 방식이 아닌 세션 방식으로 반환")
+	@ApiResponses({
+		@io.swagger.v3.oas.annotations.responses.ApiResponse(
+			responseCode = "200", description = "조회 성공",
+			content = @Content(
+				mediaType = "application/json",
+				examples = @ExampleObject(name = "성공 예시", value = """
+					{
+					  "isSuccess": true,
+					  "code": "OK",
+					  "message": "요청에 성공했습니다.",
+					  "result": {
+					    "email": "temp@example.com",
+					    "username": "홍길동",
+					    "oauthProvider": "google",
+					    "oauthId": "google-12523512352351"
+					  }
+					}
+					""")
+			)
+		)
+	})
 	@GetMapping("/api/temp-info")
-	@Operation(
-		summary = "소셜 로그인 시 임시 정보 조회",
-		description = "소셜 로그인 시 기존 쿠키 방식이 아닌 세션 방식으로 반환"
-	)
 	public ApiResponse<Map<String, String>> getTempInfo(HttpSession session) {
 		Map<String, String> data = new HashMap<>();
 		data.put("email", (String)session.getAttribute("tempEmail"));

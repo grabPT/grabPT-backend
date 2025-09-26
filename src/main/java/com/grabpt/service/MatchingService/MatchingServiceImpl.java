@@ -84,6 +84,9 @@ public class MatchingServiceImpl implements MatchingService {
 			.status(MatchingStatus.WAITING)
 			.build();
 
+		// 연관관계 설정
+		requestion.setMatching(matching);
+
 		try {
 			matchingRepository.save(matching);
 		} catch (DataIntegrityViolationException e) {
@@ -159,7 +162,7 @@ public class MatchingServiceImpl implements MatchingService {
 	}
 
 	@Override
-	public List<Matching> matchings(List<Long> requestionIds){
+	public List<Matching> matchings(List<Long> requestionIds) {
 		return matchingRepository.findAllWithProByRequestionIds(requestionIds);
 	}
 

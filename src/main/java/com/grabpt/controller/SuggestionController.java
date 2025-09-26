@@ -1,8 +1,6 @@
 package com.grabpt.controller;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
@@ -57,7 +55,7 @@ public class SuggestionController {
 
 		return ApiResponse.onSuccess(
 			SuggestionResponseDto.SuggestionSaveResponseDto.builder()
-				.suggestSuggestionId(saved.getId())
+				.suggestionId(saved.getId())
 				.build()
 		);
 	}
@@ -73,7 +71,7 @@ public class SuggestionController {
 		return ApiResponse.onSuccess(response);
 	}
 
-	@GetMapping("/requestionList/{requestionId}")
+	@GetMapping("/suggestion/suggestionList")
 	@Operation(
 		summary = "요청서에 대한 제안서 목록 조회 API",
 		description = "요청서 ID에 해당하는 제안서들을 6개씩 페이징하여 조회합니다."
@@ -134,22 +132,6 @@ public class SuggestionController {
 
 		suggestionService.deleteSuggestion(suggestionId, email);
 		return ApiResponse.onSuccess("제안서가 성공적으로 삭제되었습니다.");
-	}
-
-	@GetMapping("/{suggestionId}/suggestion-can-edit")
-	@Operation(summary = "제안서 수정 가능 여부 확인", description = "현재 로그인한 사용자가 제안서를 작성했는지 확인")
-	public ApiResponse<Map<String, Boolean>> canEditSuggestion(
-		@PathVariable Long suggestionId,
-		HttpServletRequest request
-	) throws IllegalAccessException {
-		UserResponseDto.UserInfoDTO userInfo = userQueryService.getUserInfo(request);
-		String email = userInfo.getEmail();
-
-		boolean canEdit = suggestionService.canEditSuggestion(suggestionId, email);
-
-		Map<String, Boolean> response = new HashMap<>();
-		response.put("canEdit", canEdit);
-		return ApiResponse.onSuccess(response);
 	}
 
 }

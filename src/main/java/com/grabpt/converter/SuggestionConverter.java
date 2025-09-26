@@ -17,14 +17,14 @@ public class SuggestionConverter {
 			var requestion = s.getRequestion();
 
 			return SuggestionResponseDto.SuggestionResponsePagingDto.builder()
-				.suggestUserNickName(user.getNickname())
-				.suggestCenter(pro.getCenter())
-				.suggestAddress(address != null ? address.getFullAddress() : "")
-				.suggestPrice(s.getPrice())
-				.suggestAverageRate(pro.getAverageRating())
-				.suggestSessionCount(requestion != null ? requestion.getSessionCount() : null)
-				.photos(user.getProfileImageUrl())
-				.suggestSuggestionId(s.getId())
+				.userNickname(user.getNickname())
+				.centerName(pro.getCenter())
+				.location(address != null ? address.getFullAddress() : "")
+				.suggestedPrice(s.getPrice())
+				.averageRating(pro.getAverageRating())
+				.sessionCount(requestion != null ? requestion.getSessionCount() : null)
+				.profileImageUrl(user.getProfileImageUrl())
+				.suggestionId(s.getId())
 				.build();
 		});
 	}

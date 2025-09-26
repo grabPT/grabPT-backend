@@ -68,7 +68,7 @@ public class SuggestionServiceImpl implements SuggestionService {
 			.message(dto.getMessage())
 			.location(dto.getLocation())
 			.sentAt(dto.getSentAt() != null ? dto.getSentAt() : LocalDate.now())
-			.isAgreed(dto.getIsAgreed() != null ? dto.getIsAgreed() : false)
+			.isAgreed(dto.getIsMatched() != null ? dto.getIsMatched() : false)
 			.photos(new ArrayList<>())
 			.status(SuggestStatus.MATCHING)
 			.build();
@@ -123,20 +123,21 @@ public class SuggestionServiceImpl implements SuggestionService {
 		Long matchId = (matching != null) ? matching.getId() : null;
 
 		return SuggestionResponseDto.SuggestionDetailResponseDto.builder()
-			.suggestUserNickName(user.getNickname())
-			.suggestCenter(pro.getCenter())
+			.userNickName(user.getNickname())
+			.centerName(pro.getCenter())
 			.profileImageUrl(user.getProfileImageUrl())
-			.suggestSuggestedPrice(suggestedPrice)
-			.suggestOriginalPrice(originalPrice)
-			.suggestDiscountAmount(discount > 0 ? discount : 0)
-			.suggestIsDiscounted(discount > 0)
-			.suggestMessage(suggestion.getMessage())
-			.suggestLocation(suggestion.getLocation())
+			.suggestedPrice(suggestedPrice)
+			.requestedPrice(originalPrice)
+			.discountAmount(discount > 0 ? discount : 0)
+			.isDiscounted(discount > 0)
+			.message(suggestion.getMessage())
+			.location(suggestion.getLocation())
 			.photos(photoUrls) // 사진 포함
-			.suggestProId(pro.getUser().getId())  // 트레이너 ID
-			.suggestUserId(requestion.getUser().getId())  // 요청자 ID
-			.suggestMatchingId(matchId)  // 매칭 ID (없으면 null)
-			.suggestRequestionId(requestion.getId())
+			.proId(pro.getUser().getId())  // 트레이너 ID
+			.userId(requestion.getUser().getId())  // 요청자 ID
+			.matchingId(matchId)  // 매칭 ID (없으면 null)
+			.requestionId(requestion.getId())
+			.suggestionId(suggestionId)
 			.build();
 	}
 
@@ -165,13 +166,13 @@ public class SuggestionServiceImpl implements SuggestionService {
 			MatchingStatus status = (matching != null) ? matching.getStatus() : MatchingStatus.WAITING;
 
 			return SuggestionResponseDto.MySuggestionPagingDto.builder()
-				.suggestUserNickName(s.getRequestion().getUser().getNickname())
-				.suggestPrice(s.getRequestion().getPrice())
-				.suggestSessionCount(s.getRequestion().getSessionCount())
-				.suggestStatus(status)
-				.suggestRequestionId(s.getRequestion().getId())
-				.suggestSuggestionId(s.getId())
-				.photos(s.getRequestion().getUser().getProfileImageUrl())
+				.userNickname(s.getRequestion().getUser().getNickname())
+				.suggestedPrice(s.getRequestion().getPrice())
+				.sessionCount(s.getRequestion().getSessionCount())
+				.matchingStatus(status)
+				.requestionId(s.getRequestion().getId())
+				.suggestionId(s.getId())
+				.profileImageUrl(s.getRequestion().getUser().getProfileImageUrl())
 				.build();
 		});
 	}
@@ -190,7 +191,7 @@ public class SuggestionServiceImpl implements SuggestionService {
 		suggestion.setMessage(dto.getMessage());
 		suggestion.setLocation(dto.getLocation());
 		suggestion.setSentAt(dto.getSentAt() != null ? dto.getSentAt() : LocalDate.now());
-		suggestion.setIsAgreed(dto.getIsAgreed() != null ? dto.getIsAgreed() : false);
+		suggestion.setIsAgreed(dto.getIsMatched() != null ? dto.getIsMatched() : false);
 	}
 
 	@Override

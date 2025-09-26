@@ -143,10 +143,10 @@ public class RequestionController {
 		UserResponseDto.UserInfoDTO userInfo = userQueryService.getUserInfo(request);
 		String email = userInfo.getEmail();
 
-		boolean canEdit = requestionService.canEditRequestion(requestionId, email);
+		boolean isEdit = requestionService.canEditRequestion(requestionId, email);
 
 		Map<String, Boolean> response = new HashMap<>();
-		response.put("canEdit", canEdit);
+		response.put("isEdit", isEdit);
 		return ApiResponse.onSuccess(response);
 	}
 

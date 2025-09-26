@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import com.grabpt.service.ProProfileService.ProProfileService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -28,7 +27,7 @@ import com.grabpt.repository.MatchingRepository.MatchingRepository;
 import com.grabpt.repository.RequestionRepository.RequestionRepository;
 import com.grabpt.service.AlarmService.AlarmService;
 import com.grabpt.service.CategoryService.CategoryQueryService;
-import com.grabpt.service.ProfileService.ProfileService;
+import com.grabpt.service.ProProfileService.ProProfileService;
 import com.grabpt.service.UserService.UserQueryService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -69,8 +68,8 @@ public class RequestionServiceImpl implements RequestionService {
 			.userGender(Gender.fromKorean(dto.getUserGender()))
 			.availableDays(dto.getAvailableDays())
 			.availableTimes(dto.getAvailableTimes())
-			.trainerGender(Gender.fromKorean(dto.getTrainerGender()))
-			.startPreference(dto.getStartPreference())
+			.trainerGender(Gender.fromKorean(dto.getProGender()))
+			.startPreference(dto.getStartDate())
 			.etcPurposeContent(dto.getEtcPurposeContent())
 			.content(dto.getContent())
 			.location(dto.getLocation())
@@ -98,8 +97,8 @@ public class RequestionServiceImpl implements RequestionService {
 	@Override
 	@Transactional(readOnly = true)
 	public Page<RequestionResponseDto.RequestionResponsePagingDto> getNearbyRequestions(HttpServletRequest request,
-																						String sortBy,
-																						Pageable pageable) throws IllegalAccessException {
+		String sortBy,
+		Pageable pageable) throws IllegalAccessException {
 		UserResponseDto.UserInfoDTO userInfo = userQueryService.getUserInfo(request);
 		Users findProUser = userQueryService.findByEmail(userInfo.getEmail()).orElseThrow(
 			() -> new UserHandler(ErrorStatus.MEMBER_NOT_FOUND));
@@ -126,20 +125,19 @@ public class RequestionServiceImpl implements RequestionService {
 		return requestionPage.map(req -> {
 			Users u = req.getUser(); // 한번만 접근해 지역 변수에 담아 사용
 			return RequestionResponseDto.RequestionResponsePagingDto.builder()
-				.requestUserName(u.getNickname())
-				.requestUserStreet(req.getLocation())
-				.requestSessionCount(req.getSessionCount())
-				.requestPrice(req.getPrice())
-				.requestCategoryName(req.getCategory().getName())
-				.requestAvailableDays(req.getAvailableDays())
-				.requestAvailableTimes(req.getAvailableTimes())
-				.requestStatus(req.getStatus())
-				.photos(u.getProfileImageUrl())
-				.requestRequestId(req.getId())
-				.requestLocation(req.getLocation())
-				.requestContent(req.getContent())
-				.requestUserNickName(u.getNickname())
-				.requestEtcPurposeContent(req.getEtcPurposeContent())
+				.userName(u.getNickname())
+				.userNickName(u.getNickname())
+				.location(req.getLocation())
+				.sessionCount(req.getSessionCount())
+				.requestedPrice(req.getPrice())
+				.categoryName(req.getCategory().getName())
+				.availableDays(req.getAvailableDays())
+				.availableTimes(req.getAvailableTimes())
+				.matchingStatus(req.getStatus())
+				.profileImageUrl(u.getProfileImageUrl())
+				.requestionId(req.getId())
+				.content(req.getContent())
+				.etcPurposeContent(req.getEtcPurposeContent())
 				.build();
 		});
 	}
@@ -166,8 +164,8 @@ public class RequestionServiceImpl implements RequestionService {
 			.userGender(Gender.fromKorean(dto.getUserGender()))
 			.availableDays(dto.getAvailableDays())
 			.availableTimes(dto.getAvailableTimes())
-			.trainerGender(Gender.fromKorean(dto.getTrainerGender()))
-			.startPreference(dto.getStartPreference())
+			.trainerGender(Gender.fromKorean(dto.getProGender()))
+			.startPreference(dto.getStartDate())
 			.location(dto.getLocation())
 			.build();
 
@@ -203,7 +201,7 @@ public class RequestionServiceImpl implements RequestionService {
 	@Override
 	@Transactional(readOnly = true)
 	public Page<RequestionResponseDto.UserOwnRequestionDto> getRequestionsByUser(HttpServletRequest request,
-																				 Pageable pageable) throws IllegalAccessException, NullPointerException {
+		Pageable pageable) throws IllegalAccessException, NullPointerException {
 		UserResponseDto.UserInfoDTO userInfo = userQueryService.getUserInfo(request);
 		String email = userInfo.getEmail();
 
@@ -249,7 +247,7 @@ public class RequestionServiceImpl implements RequestionService {
 	}
 
 	@Override
-	public Page<Requestions> page(Long userId,Pageable pageable) {
+	public Page<Requestions> page(Long userId, Pageable pageable) {
 		return requestionRepository.findAllByUserIdOrderByCreatedAtDesc(userId, pageable);
 	}
 

@@ -9,9 +9,9 @@ import com.grabpt.domain.entity.Order;
 import com.grabpt.domain.entity.Users;
 import com.grabpt.domain.enums.PaymentStatus;
 import com.grabpt.dto.request.ImPortRequestDto;
-import com.grabpt.repository.OrderRepository.OrderRepository;
 import com.grabpt.repository.PaymentRepository.PaymentRepository;
 import com.grabpt.service.AlarmService.AlarmService;
+import com.grabpt.service.OrderService.OrderService;
 import com.siot.IamportRestClient.IamportClient;
 import com.siot.IamportRestClient.exception.IamportResponseException;
 import com.siot.IamportRestClient.request.CancelData;
@@ -26,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
 
-	private final OrderRepository orderRepository;
+	private final OrderService orderService;
 	private final PaymentRepository paymentRepository;
 	private final IamportClient iamportClient;
 	private final AlarmService alarmService;
@@ -36,16 +36,16 @@ public class PaymentServiceImpl implements PaymentService {
 		try {
 			// 결제 단건 조회(아임포트)
 			IamportResponse<com.siot.IamportRestClient.response.Payment> iamportResponse = iamportClient.paymentByImpUid(
-				request.getPaymentUid());
+				request.getPayment_uid());
 
 			// 주문내역 조회
-			Order order = orderRepository.findOrderAndPayment(request.getOrderUid())
+			Order order = (Order)orderService.findOrderAndPayment(request.getOrder_uid())
 				.orElseThrow(() -> new IllegalArgumentException("주문 내역이 없습니다."));
 
 			// 결제 완료가 아니면
 			if (!iamportResponse.getResponse().getStatus().equals("paid")) {
 				// 주문, 결제 삭제
-				orderRepository.delete(order);
+				orderService.delete(order);
 				paymentRepository.delete(order.getPayment());
 
 				throw new RuntimeException("결제 미완료");
@@ -59,7 +59,7 @@ public class PaymentServiceImpl implements PaymentService {
 			// 결제 금액 검증
 			if (iamportPrice != price) {
 				// 주문, 결제 삭제
-				orderRepository.delete(order);
+				orderService.delete(order);
 				paymentRepository.delete(order.getPayment());
 
 				// 결제금액 위변조로 의심되는 결제금액을 취소(아임포트)
@@ -88,7 +88,7 @@ public class PaymentServiceImpl implements PaymentService {
 
 	@Override
 	public ImPortRequestDto.RequestPayDto findRequestDto(String orderUid) {
-		Order order = orderRepository.findOrderAndPaymentAndMember(orderUid)
+		Order order = (Order)orderService.findOrderAndPaymentAndMember(orderUid)
 			.orElseThrow(() -> new IllegalArgumentException("주문이 없습니다."));
 
 		return ImPortRequestDto.RequestPayDto.builder()
@@ -103,18 +103,18 @@ public class PaymentServiceImpl implements PaymentService {
 
 	@Override
 	public ImPortRequestDto.CustomRequestPayDto findCustomRequestDto(String orderUid) {
-		Order order = orderRepository.findOrderAndPaymentAndMember(orderUid)
+		Order order = (Order)orderService.findOrderAndPaymentAndMember(orderUid)
 			.orElseThrow(() -> new IllegalArgumentException("주문이 없습니다."));
 
 		return ImPortRequestDto.CustomRequestPayDto.builder()
-			.buyerName(order.getUser().getUsername())
-			.buyerEmail(order.getUser().getEmail())
-			.buyerAddress(order.getUser().getAddress().getStreet())
-			.paymentPrice(order.getPayment().getPrice())
-			.itemName(order.getItemName())
-			.buyerTel(order.getUser().getPhone_number())
-			.buyerPostcode(order.getUser().getAddress().getZipcode())
-			.orderUid(order.getOrderUid())
+			.buyer_name(order.getUser().getUsername())
+			.buyer_email(order.getUser().getEmail())
+			.buyer_address(order.getUser().getAddress().getStreet())
+			.payment_price(order.getPayment().getPrice())
+			.item_name(order.getItemName())
+			.buyer_tel(order.getUser().getPhone_number())
+			.buyer_postcode(order.getUser().getAddress().getZipcode())
+			.order_uid(order.getOrderUid())
 			.build();
 	}
 
@@ -129,14 +129,14 @@ public class PaymentServiceImpl implements PaymentService {
 		String buyerPostcode = (buyer.getAddress() != null) ? buyer.getAddress().getZipcode() : null;
 
 		return ImPortRequestDto.CustomRequestPayDto.builder()
-			.orderUid(order.getOrderUid())
-			.itemName(order.getItemName())
-			.paymentPrice(order.getPrice())
-			.buyerName(buyerName)
-			.buyerEmail(buyerEmail)
-			.buyerAddress(buyerAddress)
-			.buyerTel(buyerTel)
-			.buyerPostcode(buyerPostcode)
+			.order_uid(order.getOrderUid())
+			.item_name(order.getItemName())
+			.payment_price(order.getPrice())
+			.buyer_name(buyerName)
+			.buyer_email(buyerEmail)
+			.buyer_address(buyerAddress)
+			.buyer_tel(buyerTel)
+			.buyer_postcode(buyerPostcode)
 			.build();
 	}
 
@@ -145,16 +145,16 @@ public class PaymentServiceImpl implements PaymentService {
 		try {
 			// 결제 단건 조회(아임포트)
 			IamportResponse<com.siot.IamportRestClient.response.Payment> iamportResponse = iamportClient.paymentByImpUid(
-				request.getPaymentUid());
+				request.getPayment_uid());
 
 			// 주문내역 조회
-			Order order = orderRepository.findOrderAndPayment(request.getOrderUid())
+			Order order = (Order)orderService.findOrderAndPayment(request.getOrder_uid())
 				.orElseThrow(() -> new IllegalArgumentException("주문 내역이 없습니다."));
 
 			// 결제 완료가 아니면
 			if (!iamportResponse.getResponse().getStatus().equals("paid")) {
 				// 주문, 결제 삭제
-				orderRepository.delete(order);
+				orderService.delete(order);
 				paymentRepository.delete(order.getPayment());
 
 				throw new RuntimeException("결제 미완료");
@@ -168,7 +168,7 @@ public class PaymentServiceImpl implements PaymentService {
 			// 결제 금액 검증
 			if (iamportPrice != price) {
 				// 주문, 결제 삭제
-				orderRepository.delete(order);
+				orderService.delete(order);
 				paymentRepository.delete(order.getPayment());
 
 				// 결제금액 위변조로 의심되는 결제금액을 취소(아임포트)
@@ -193,5 +193,10 @@ public class PaymentServiceImpl implements PaymentService {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	@Override
+	public void save(com.grabpt.domain.entity.Payment testPayment) {
+		paymentRepository.save(testPayment);
 	}
 }

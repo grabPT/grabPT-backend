@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.grabpt.config.SecurityUtils;
 import com.grabpt.dto.request.*;
+import com.grabpt.service.ProfileService.ProfileFacade;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -37,16 +38,15 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MyProPageController {
 
-	private final ProfileService profileService;
+	private final ProfileFacade profileFacade;
 	private final ObjectMapper objectMapper;
-	private final UserQueryService userQueryService;
 
 	@GetMapping
 	@Operation(summary = "내 전문가 프로필을 조회합니다")
 	public ApiResponse<ProfileResponseDTO.MyProProfileDTO> getMyProUserProfile()  {
 
 		Long userId = SecurityUtils.currentUserIdOrThrow();
-		return ApiResponse.onSuccess(profileService.findMyProUserProfile(userId));
+		return ApiResponse.onSuccess(profileFacade.findMyProUserProfile(userId));
 	}
 
 	@GetMapping("/reviews")
@@ -57,7 +57,7 @@ public class MyProPageController {
 
 		Long userId = SecurityUtils.currentUserIdOrThrow();
 		Pageable pageable = PageRequest.of(Math.max(page - 1, 0), size);
-		Page<MyReviewListDTO> reviews = profileService.findProReviews(userId, pageable);
+		Page<MyReviewListDTO> reviews = profileFacade.findProReviews(userId, pageable);
 		return ApiResponse.onSuccess(reviews);
 	}
 
@@ -66,7 +66,7 @@ public class MyProPageController {
 	public ApiResponse<CertificationResponseDTO> getProCertifications(
 		) {
 		Long userId = SecurityUtils.currentUserIdOrThrow();
-		CertificationResponseDTO certifications = profileService.findMyCertifications(userId);
+		CertificationResponseDTO certifications = profileFacade.findMyCertifications(userId);
 		return ApiResponse.onSuccess(certifications);
 	}
 
@@ -94,7 +94,7 @@ public class MyProPageController {
 		// JSON 문자열을 DTO 객체로 변환
 		CertificationUpdateRequestDTO request = objectMapper.readValue(requestJson, CertificationUpdateRequestDTO.class);
 
-		profileService.updateProCertifications(userId, request, newImages);
+		profileFacade.updateProCertifications(userId, request, newImages);
 		return ApiResponse.onSuccess("자격증 정보가 성공적으로 등록되었습니다.");
 	}
 
@@ -104,7 +104,7 @@ public class MyProPageController {
 		@Valid @RequestBody CenterUpdateRequestDTO request){
 
 		Long userId = SecurityUtils.currentUserIdOrThrow();
-		profileService.updateProCenter(userId, request);
+		profileFacade.updateProCenter(userId, request);
 		return ApiResponse.onSuccess("센터 정보 수정이 완료되었습니다.");
 	}
 
@@ -113,7 +113,7 @@ public class MyProPageController {
 	public ApiResponse<String> updateProDescription(
 		@Valid @RequestBody DescriptionUpdateRequestDTO request) {
 		Long userId = SecurityUtils.currentUserIdOrThrow();
-		profileService.updateProDescription(userId, request);
+		profileFacade.updateProDescription(userId, request);
 		return ApiResponse.onSuccess("전문가 소개가 수정되었습니다.");
 	}
 
@@ -129,7 +129,7 @@ public class MyProPageController {
 
 		Long userId = SecurityUtils.currentUserIdOrThrow();
 		PhotoUpdateRequestDTO updateRequest = objectMapper.readValue(requestJson, PhotoUpdateRequestDTO.class);
-		profileService.updateProPhotos(userId, updateRequest, newPhotoFiles);
+		profileFacade.updateProPhotos(userId, updateRequest, newPhotoFiles);
 
 		return ApiResponse.onSuccess("사진이 성공적으로 수정되었습니다.");
 	}
@@ -139,7 +139,7 @@ public class MyProPageController {
 	public ApiResponse<String> updateProPtPrice(
 		@Valid @RequestBody PtPriceRequest.PtPriceUpdateRequestList request) {
 		Long userId = SecurityUtils.currentUserIdOrThrow();
-		profileService.updateProPtPrice(userId, request);
+		profileFacade.updateProPtPrice(userId, request);
 		return ApiResponse.onSuccess("PT 가격 정보가 수정되었습니다.");
 	}
 
@@ -148,18 +148,18 @@ public class MyProPageController {
 	public ApiResponse<String> updateProProgram(
 		@Valid @RequestBody PtProgramUpdateRequestDTO request) {
 		Long userId = SecurityUtils.currentUserIdOrThrow();
-		profileService.updateProProgram(userId, request);
+		profileFacade.updateProProgram(userId, request);
 		return ApiResponse.onSuccess("PT 프로그램 정보가 수정되었습니다.");
 	}
 
-	@PatchMapping("/location")
+	/*@PatchMapping("/location")
 	@Operation(summary = "전문가 위치 정보 수정 API", description = "전문가의 센터 및 대표 주소 정보를 수정합니다.")
 	public ApiResponse<String> updateProLocation(
 		@RequestBody @Valid ProLocationUpdateRequestDTO request) {
 
 		Long userId = SecurityUtils.currentUserIdOrThrow();
-		profileService.updateProLocation(userId, request);
+		profileFacade.updateProLocation(userId, request);
 		return ApiResponse.onSuccess("위치 정보가 성공적으로 수정되었습니다.");
-	}
+	}*/
 }
 

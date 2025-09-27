@@ -1,5 +1,7 @@
 package com.grabpt.controller;
 
+import com.grabpt.dto.response.MyReviewUserDTO;
+import com.grabpt.service.ProfileService.ProfileFacade;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -27,7 +29,6 @@ import com.grabpt.dto.request.UserProfileUpdateRequestDTO;
 import com.grabpt.dto.response.MyRequestListDTO;
 import com.grabpt.dto.response.MyReviewListDTO;
 import com.grabpt.dto.response.ProfileResponseDTO;
-import com.grabpt.service.ProfileService.ProfileService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.Cookie;
@@ -42,7 +43,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class MyProfileController {
 
-	private final ProfileService profileService;
+	private final ProfileFacade profileFacade;
 	private final ObjectMapper objectMapper;
 
 	@Operation(
@@ -52,7 +53,7 @@ public class MyProfileController {
 	@GetMapping
 	public ApiResponse<ProfileResponseDTO.MyProfileDTO> getMyUserProfile() {
 		Long userId = SecurityUtils.currentUserIdOrThrow();
-		return ApiResponse.onSuccess(profileService.findMyUserProfile(userId));
+		return ApiResponse.onSuccess(profileFacade.findMyUserProfile(userId));
 	}
 
 	@PatchMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -71,21 +72,21 @@ public class MyProfileController {
 			throw new GeneralException(ErrorStatus._BAD_REQUEST);
 		}
 
-		profileService.updateMyUserProfile(userId, request, profileImage);
+		profileFacade.updateMyUserProfile(userId, request, profileImage);
 
 		return ApiResponse.onSuccess("프로필이 성공적으로 수정되었습니다.");
 	}
 
 	@GetMapping("/reviews")
 	@Operation(summary = "리뷰(review) 확인 API")
-	public ApiResponse<Page<MyReviewListDTO>> getMyReviewList(
+	public ApiResponse<Page<MyReviewUserDTO>> getMyReviewList(
 		@RequestParam(defaultValue = "1") int page,
 		@RequestParam(defaultValue = "10") int size){
 
 		Long userId = SecurityUtils.currentUserIdOrThrow();
 
 		Pageable pageable = PageRequest.of(Math.max(page - 1, 0), size);
-		return ApiResponse.onSuccess(profileService.findMyReviews(userId, pageable));
+		return ApiResponse.onSuccess(profileFacade.findMyReviews(userId, pageable));
 	}
 
 	@GetMapping("/requests")
@@ -97,7 +98,7 @@ public class MyProfileController {
 
 		Long userId = SecurityUtils.currentUserIdOrThrow();
 		Pageable pageable = PageRequest.of(Math.max(page - 1, 0), size);
-		return ApiResponse.onSuccess(profileService.findMyRequests(userId, pageable));
+		return ApiResponse.onSuccess(profileFacade.findMyRequests(userId, pageable));
 	}
 
 	@PatchMapping(value = "/image", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
@@ -107,7 +108,7 @@ public class MyProfileController {
 		@RequestPart(value = "image") MultipartFile profileImage)  {
 
 		Long userId = SecurityUtils.currentUserIdOrThrow();
-		profileService.updateUserProfileImage(userId, profileImage);
+		profileFacade.updateUserProfileImage(userId, profileImage);
 
 		return ApiResponse.onSuccess("프로필 이미지가 성공적으로 수정되었습니다.");
 	}
@@ -124,7 +125,7 @@ public class MyProfileController {
 		PrincipalDetails principalDetails = (PrincipalDetails) authentication.getPrincipal();
 		Long userId = principalDetails.getUser().getId();
 
-		profileService.deleteUser(userId, requestDto);
+		profileFacade.deleteUser(userId, requestDto);
 
 
 		log.info("사용자 데이터 삭제 완료. userId = {}", userId);
@@ -160,7 +161,7 @@ public class MyProfileController {
 	@Operation(summary = "회원 복구")
 	public ApiResponse<String> restoreUser() {
 		Long userId = SecurityUtils.currentUserIdOrThrow();
-		profileService.restoreUser(userId);
+		profileFacade.restoreUser(userId);
 		return ApiResponse.onSuccess("회원 복구가 성공적으로 처리되었습니다.");
 	}
 

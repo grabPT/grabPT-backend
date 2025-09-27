@@ -99,16 +99,16 @@ public class AuthServiceImpl implements AuthService {
 
 		// Users 생성 및 연관관계 설정
 		Users user = Users.builder()
-			.username(req.getUsername())
+			.username(req.getUserName())
 			.email(req.getEmail())
-			.phone_number(req.getPhoneNum())
+			.phone_number(req.getPhoneNumber())
 			.address(address)
-			.nickname(req.getNickname())
+			.nickname(req.getUserNickname())
 			.role(mapToRole(req.getRole()))
 			.authRole(AuthRole.ROLE_USER)
 			.profileImageUrl(imageUrl)  // S3 URL 저장
-			.agreeMarketing(req.getAgreeMarketing())
-			.agreeMarketingAt(req.getAgreeMarketing() ? LocalDateTime.now() : null)
+			.agreeMarketing(req.getIsAgreeMarketing())
+			.agreeMarketingAt(req.getIsAgreeMarketing() ? LocalDateTime.now() : null)
 			.oauthId(URLDecoder.decode(req.getOauthId(), StandardCharsets.UTF_8))
 			.oauthProvider(URLDecoder.decode(req.getOauthProvider(), StandardCharsets.UTF_8))
 			.userProfile(userProfile)
@@ -144,7 +144,7 @@ public class AuthServiceImpl implements AuthService {
 
 		// ProProfile 생성
 		ProProfile proProfile = ProProfile.builder()
-			.center(req.getCenter())
+			.center(req.getCenterName())
 			.career(req.getCareer())
 			.category(proCategory)
 			.age(req.getAge())
@@ -163,17 +163,17 @@ public class AuthServiceImpl implements AuthService {
 
 		// Users 생성 및 연관관계 설정
 		Users user = Users.builder()
-			.username(req.getUsername())
+			.username(req.getUserName())
 			.email(req.getEmail())
-			.phone_number(req.getPhoneNum())
+			.phone_number(req.getPhoneNumber())
 			.address(address)
-			.nickname(req.getNickname())
+			.nickname(req.getUserNickname())
 			.role(mapToRole(req.getRole()))
 			.gender(mapToGender(req.getGender()))
 			.authRole(AuthRole.ROLE_USER)
 			.profileImageUrl(imageUrl)  // S3 URL 저장
-			.agreeMarketing(req.getAgreeMarketing())
-			.agreeMarketingAt(req.getAgreeMarketing() ? LocalDateTime.now() : null)
+			.agreeMarketing(req.getIsAgreeMarketing())
+			.agreeMarketingAt(req.getIsAgreeMarketing() ? LocalDateTime.now() : null)
 			.oauthId(URLDecoder.decode(req.getOauthId(), StandardCharsets.UTF_8))
 			.oauthProvider(URLDecoder.decode(req.getOauthProvider(), StandardCharsets.UTF_8))
 			.proProfile(proProfile)
@@ -227,7 +227,7 @@ public class AuthServiceImpl implements AuthService {
 		addCookie(response, "refreshToken", refreshToken, Duration.ofDays(7), true);
 
 		// 3) role (Base64, 프론트에서 읽어야 하므로 HttpOnly=false)
-		String cookieRole = toCookieRole(user.getRole()); // PRO → EXPERT 매핑
+		String cookieRole = user.getRole().toString();
 		addCookie(response, "role", b64(cookieRole), Duration.ofMinutes(30), false);
 
 		// userId 쿠키 추가
@@ -399,10 +399,6 @@ public class AuthServiceImpl implements AuthService {
 			.sameSite("None")        // 서브도메인 간 쿠키 공유를 위해 필수
 			.build();
 		res.addHeader(HttpHeaders.SET_COOKIE, c.toString());
-	}
-
-	private static String toCookieRole(Role role) {
-		return (role == Role.PRO) ? "EXPERT" : role.name();
 	}
 
 	private static String b64(String s) {

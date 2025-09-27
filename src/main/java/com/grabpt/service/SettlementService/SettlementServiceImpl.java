@@ -11,8 +11,8 @@ import com.grabpt.dto.response.MemberPaymentDto;
 import com.grabpt.dto.response.TrainerDashboardDto;
 import com.grabpt.dto.response.UserDashboardDto;
 import com.grabpt.dto.response.UserDashboardResponseDto;
-import com.grabpt.repository.MatchingRepository.MatchingRepository;
-import com.grabpt.repository.OrderRepository.OrderRepository;
+import com.grabpt.service.MatchingService.MatchingService;
+import com.grabpt.service.OrderService.OrderService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,18 +22,18 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SettlementServiceImpl implements SettlementService {
 
-	private final OrderRepository orderRepository;
-	private final MatchingRepository matchingRepository;
+	private final OrderService orderService;
+	private final MatchingService matchingService;
 
 	@Override
 	public TrainerDashboardDto getTrainerDashboard(Long proProfileId, int page, int size) {
-		Long totalEarnings = orderRepository.getTrainerTotalEarnings(proProfileId, PaymentStatus.OK);
-		Long totalOrders = orderRepository.getTrainerTotalOrders(proProfileId, PaymentStatus.OK);
-		Long activeClients = matchingRepository.getActiveClients(proProfileId, MatchingStatus.COMPLETED);
+		Long totalEarnings = orderService.getTrainerTotalEarnings(proProfileId, PaymentStatus.OK);
+		Long totalOrders = orderService.getTrainerTotalOrders(proProfileId, PaymentStatus.OK);
+		Long activeClients = matchingService.getActiveClients(proProfileId, MatchingStatus.COMPLETED);
 
 		Pageable pageable = PageRequest.of(page, size);
 		Page<MemberPaymentDto> memberPayments
-			= orderRepository.getMemberPayments(proProfileId, PaymentStatus.OK, pageable);
+			= orderService.getMemberPayments(proProfileId, PaymentStatus.OK, pageable);
 
 		return TrainerDashboardDto.builder()
 			.totalEarnings(totalEarnings)
@@ -45,13 +45,13 @@ public class SettlementServiceImpl implements SettlementService {
 
 	@Override
 	public UserDashboardResponseDto getUserDashboard(Long userId, int page, int size) {
-		Long totalSpent = orderRepository.getUserTotalSpent(userId, PaymentStatus.OK);
-		Long totalOrders = orderRepository.getUserTotalOrders(userId, PaymentStatus.OK);
-		Long activeContracts = matchingRepository.getActiveContractsByUser(userId, MatchingStatus.COMPLETED);
+		Long totalSpent = orderService.getUserTotalSpent(userId, PaymentStatus.OK);
+		Long totalOrders = orderService.getUserTotalOrders(userId, PaymentStatus.OK);
+		Long activeContracts = matchingService.getActiveContractsByUser(userId, MatchingStatus.COMPLETED);
 
 		Pageable pageable = PageRequest.of(page, size);
 		Page<UserDashboardDto> payments
-			= orderRepository.getUserPayments(userId, PaymentStatus.OK, pageable);
+			= orderService.getUserPayments(userId, PaymentStatus.OK, pageable);
 
 		return UserDashboardResponseDto.builder()
 			.totalSpent(nvl(totalSpent))

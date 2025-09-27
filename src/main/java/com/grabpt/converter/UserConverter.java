@@ -8,8 +8,8 @@ public class UserConverter {
 	public static UserResponseDto.UserInfoDTO toUserInfoDTO(Users user) {
 		return UserResponseDto.UserInfoDTO.builder()
 			.userId(user.getId())
-			.username(user.getUsername())
-			.nickname(user.getNickname())
+			.userName(user.getUsername())
+			.userNickName(user.getNickname())
 			.email(user.getEmail())
 			.role(user.getRole().toString())
 			.address(UserResponseDto.AddressDto.builder()

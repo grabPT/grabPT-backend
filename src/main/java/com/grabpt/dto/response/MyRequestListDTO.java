@@ -12,31 +12,31 @@ import lombok.Getter;
 @Getter
 public class MyRequestListDTO {
 	private Long requestId;
-	private String imageURL;
+	private String profileImageURL;
 	private Long userId;
 	private List<String> availableDays;
 	private List<String> availableTimes;
 	private String categoryName;
 	private Integer sessionCount;
-	private String requestContent;
-	private AddressDTO userLocations;
-	private RequestStatus requestStatus;
+	private String content;
+	private AddressDTO address;
+	private RequestStatus MatchingStatus;
 
 	// 추가
 	private String proNickname;
-	private Long proProfileId;
-	private boolean canWriteReview;
+	private Long proId;
+	private boolean isWriteReview;
 
 	public void setProNickname(String proNickname) {
 		this.proNickname = proNickname;
 	}
 
 	public void setProProfileId(Long proId) {
-		this.proProfileId = proId;
+		this.proId = proId;
 	}
 
 	public void setCanWriteReview(boolean canWriteReview) {
-		this.canWriteReview = canWriteReview;
+		this.isWriteReview = canWriteReview;
 	}
 
 	@Getter
@@ -59,15 +59,15 @@ public class MyRequestListDTO {
 
 	public MyRequestListDTO(Requestions requestion) {
 		this.requestId = requestion.getId();
-		this.imageURL = requestion.getUser().getProfileImageUrl();
+		this.profileImageURL = requestion.getUser().getProfileImageUrl();
 		this.userId = requestion.getUser().getId();
 		Address addresses = requestion.getUser().getAddress();
-		this.userLocations = AddressDTO.from(addresses);
+		this.address = AddressDTO.from(addresses);
 		this.availableDays = requestion.getAvailableDays();
 		this.availableTimes = requestion.getAvailableTimes();
 		this.categoryName = requestion.getCategory().getName();
 		this.sessionCount = requestion.getSessionCount();
-		this.requestContent = requestion.getContent();
-		this.requestStatus = requestion.getStatus();
+		this.content= requestion.getContent();
+		this.MatchingStatus = requestion.getStatus();
 	}
 }

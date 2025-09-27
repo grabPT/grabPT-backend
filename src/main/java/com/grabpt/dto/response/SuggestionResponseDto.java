@@ -19,23 +19,24 @@ public class SuggestionResponseDto {
 	@NoArgsConstructor
 	@AllArgsConstructor
 	public static class SuggestionDetailResponseDto {
-		private String nickname;
-		private String center;
+		private String userNickName;
+		private String centerName;
 		private String profileImageUrl;
 
 		private Integer suggestedPrice;
-		private Integer originalPrice;
+		private Integer requestedPrice;
 		private Integer discountAmount; // = original - suggested
 		private Boolean isDiscounted;   // true if discount exists
 
 		private String message;
 		private String location;
-		private List<String> photoUrls; // 트레이너 제안 사진들
+		private List<String> photos; // 트레이너 제안 사진들
 
-		private Long expertId;
+		private Long proId;
 		private Long userId;
 		private Long matchingId;
 		private Long requestionId;
+		private Long suggestionId;
 	}
 
 	@Getter
@@ -44,11 +45,11 @@ public class SuggestionResponseDto {
 	@AllArgsConstructor
 	@NoArgsConstructor
 	public static class SuggestionResponsePagingDto {
-		private String nickname;
-		private String center;
-		private String address;
-		private Integer price;
-		private Double averageRate; // 평점 추가
+		private String userNickname;
+		private String centerName;
+		private String location;
+		private Integer suggestedPrice;
+		private Double averageRating; // 평점 추가
 		private Integer sessionCount;
 		private String profileImageUrl;
 		private Long suggestionId;
@@ -61,10 +62,10 @@ public class SuggestionResponseDto {
 	@NoArgsConstructor
 	@AllArgsConstructor
 	public static class MySuggestionPagingDto {
-		private String requestionNickname;
-		private Integer price;
+		private String userNickname; // 해당 suggestion의 requestion 유저의 nickname
+		private Integer suggestedPrice;
 		private Integer sessionCount;
-		private MatchingStatus status;
+		private MatchingStatus matchingStatus;
 		private String profileImageUrl;
 		private Long requestionId;
 		private Long suggestionId;

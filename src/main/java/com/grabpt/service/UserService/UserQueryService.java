@@ -20,4 +20,6 @@ public interface UserQueryService {
 
 	boolean existsByEmail(String email);
 
+	Optional<Users> findById(Long id);
+
 }

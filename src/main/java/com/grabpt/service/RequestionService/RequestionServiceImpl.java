@@ -2,6 +2,7 @@ package com.grabpt.service.RequestionService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -22,11 +23,11 @@ import com.grabpt.domain.enums.RequestStatus;
 import com.grabpt.dto.request.RequestionRequestDto;
 import com.grabpt.dto.response.RequestionResponseDto;
 import com.grabpt.dto.response.UserResponseDto;
+import com.grabpt.repository.MatchingRepository.MatchingRepository;
 import com.grabpt.repository.RequestionRepository.RequestionRepository;
 import com.grabpt.service.AlarmService.AlarmService;
 import com.grabpt.service.CategoryService.CategoryQueryService;
-import com.grabpt.service.MatchingService.MatchingService;
-import com.grabpt.service.ProfileService.ProfileService;
+import com.grabpt.service.ProProfileService.ProProfileService;
 import com.grabpt.service.UserService.UserQueryService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -41,9 +42,9 @@ public class RequestionServiceImpl implements RequestionService {
 	private final RequestionRepository requestionRepository;
 	private final CategoryQueryService categoryQueryService;
 	private final UserQueryService userQueryService;
-	private final ProfileService profileService;
+	private final ProProfileService proProfileService;
 	private final AlarmService alarmService;
-	private final MatchingService matchingService;
+	private final MatchingRepository matchingRepository; // 의존성 순환 문제로 인함
 
 	@Override
 	public List<Requestions> getReqeustions(String categoryCode, Pageable pageable) {
@@ -67,8 +68,8 @@ public class RequestionServiceImpl implements RequestionService {
 			.userGender(Gender.fromKorean(dto.getUserGender()))
 			.availableDays(dto.getAvailableDays())
 			.availableTimes(dto.getAvailableTimes())
-			.trainerGender(Gender.fromKorean(dto.getTrainerGender()))
-			.startPreference(dto.getStartPreference())
+			.trainerGender(Gender.fromKorean(dto.getProGender()))
+			.startPreference(dto.getStartDate())
 			.etcPurposeContent(dto.getEtcPurposeContent())
 			.content(dto.getContent())
 			.location(dto.getLocation())
@@ -77,7 +78,7 @@ public class RequestionServiceImpl implements RequestionService {
 		requestion.setUser(user); // 연관관계 설정
 		Requestions save = requestionRepository.save(requestion);
 
-		List<ProProfile> proProfiles = profileService.findAllProByCategoryCodeAndRegion(category.getCode(),
+		List<ProProfile> proProfiles = proProfileService.findAllProByCategoryCodeAndRegion(category.getCode(),
 			requestion.getLocation());
 		for (ProProfile proProfile : proProfiles) {
 			alarmService.sendAlarm(proProfile.getUser().getId(), "REQUESTION", "요청서 도착",
@@ -122,21 +123,20 @@ public class RequestionServiceImpl implements RequestionService {
 		}
 
 		return requestionPage.map(req -> {
-			Users u = req.getUser(); // 한번만 접근해 지역 변수에 담아 사용 (4) 미세 최적화
+			Users u = req.getUser(); // 한번만 접근해 지역 변수에 담아 사용
 			return RequestionResponseDto.RequestionResponsePagingDto.builder()
-				.username(u.getNickname())
-				.userStreet(req.getLocation())
+				.userName(u.getNickname())
+				.userNickName(u.getNickname())
+				.location(req.getLocation())
 				.sessionCount(req.getSessionCount())
-				.price(req.getPrice())
+				.requestedPrice(req.getPrice())
 				.categoryName(req.getCategory().getName())
 				.availableDays(req.getAvailableDays())
 				.availableTimes(req.getAvailableTimes())
-				.status(req.getStatus())
-				.userProfileImageUrl(u.getProfileImageUrl())
-				.requestId(req.getId())
-				.location(req.getLocation())
+				.matchingStatus(req.getStatus())
+				.profileImageUrl(u.getProfileImageUrl())
+				.requestionId(req.getId())
 				.content(req.getContent())
-				.nickname(u.getNickname())
 				.etcPurposeContent(req.getEtcPurposeContent())
 				.build();
 		});
@@ -164,8 +164,8 @@ public class RequestionServiceImpl implements RequestionService {
 			.userGender(Gender.fromKorean(dto.getUserGender()))
 			.availableDays(dto.getAvailableDays())
 			.availableTimes(dto.getAvailableTimes())
-			.trainerGender(Gender.fromKorean(dto.getTrainerGender()))
-			.startPreference(dto.getStartPreference())
+			.trainerGender(Gender.fromKorean(dto.getProGender()))
+			.startPreference(dto.getStartDate())
 			.location(dto.getLocation())
 			.build();
 
@@ -190,7 +190,7 @@ public class RequestionServiceImpl implements RequestionService {
 		}
 
 		// 안전장치: 매칭 레코드가 이미 존재하면 삭제 불가
-		if (matchingService.existsByRequestionId(requestionId)) {
+		if (matchingRepository.existsByRequestionId(requestionId)) {
 			throw new RequestionHandler(ErrorStatus.REQUESTION_DELETE_NOT_ALLOWED);
 		}
 
@@ -213,7 +213,7 @@ public class RequestionServiceImpl implements RequestionService {
 			.toList();
 
 		// 2) 요청서 ID들에 대한 매칭을 한 번에 로드
-		var matchings = matchingService.findAllWithProByRequestionIds(reqIds);
+		var matchings = matchingRepository.findAllWithProByRequestionIds(reqIds);
 
 		// 3) reqId -> proProfileId 맵 구성
 		var reqIdToProId = matchings.stream()
@@ -226,7 +226,7 @@ public class RequestionServiceImpl implements RequestionService {
 		return page.map(req -> {
 			Long proProfileId = reqIdToProId.get(req.getId());
 
-			String proNickname = profileService.getProNicknameById(proProfileId);
+			String proNickname = proProfileService.getProNicknameById(proProfileId);
 
 			return RequestionResponseDto.UserOwnRequestionDto.from(req, proProfileId, proNickname);
 		});
@@ -244,6 +244,22 @@ public class RequestionServiceImpl implements RequestionService {
 	public Requestions findById(Long requestionId) {
 		return requestionRepository.findById(requestionId)
 			.orElseThrow(() -> new RequestionHandler(ErrorStatus.REQUESTION_NOT_FOUND));
+	}
+
+	@Override
+	public Page<Requestions> page(Long userId, Pageable pageable) {
+		return requestionRepository.findAllByUserIdOrderByCreatedAtDesc(userId, pageable);
+	}
+
+	@Override
+	public Optional<Object> findByIdForUpdate(Long requestionId) {
+		return Optional.ofNullable(requestionRepository.findByIdForUpdate(requestionId)
+			.orElse(null));
+	}
+
+	@Override
+	public Requestions save(Requestions requestions) {
+		return requestionRepository.save(requestions);
 	}
 
 	private String buildAddressPrefix(Address addr) {

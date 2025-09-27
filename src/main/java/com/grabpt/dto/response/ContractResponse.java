@@ -40,6 +40,7 @@ public class ContractResponse {
 		@Schema(description = "계약일", example = "2025-09-26")
 		LocalDate expireDate;
 
+
 		@Schema(description = "매칭 상태", example = "MATCHED")
 		MatchingStatus status;
 

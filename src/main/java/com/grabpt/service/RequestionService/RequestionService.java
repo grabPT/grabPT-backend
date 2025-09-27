@@ -1,6 +1,7 @@
 package com.grabpt.service.RequestionService;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,9 +28,15 @@ public interface RequestionService {
 	void delete(Long requestionId, String email);
 
 	Page<RequestionResponseDto.UserOwnRequestionDto> getRequestionsByUser(HttpServletRequest request,
-		Pageable pageable) throws IllegalAccessException;
+																		  Pageable pageable) throws IllegalAccessException;
 
 	boolean canEditRequestion(Long requestionId, String email);
 
 	Requestions findById(Long requestionId);
+
+	Optional<Object> findByIdForUpdate(Long requestionId);
+
+	Requestions save(Requestions requestions);
+
+	Page<Requestions> page(Long userId,Pageable pageable);
 }

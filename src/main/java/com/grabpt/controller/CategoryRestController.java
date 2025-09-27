@@ -3,6 +3,7 @@ package com.grabpt.controller;
 import java.util.List;
 
 import com.grabpt.domain.entity.ProProfile;
+import com.grabpt.service.ProfileService.ProfileFacade;
 import com.grabpt.service.ProfileService.ProfileService;
 import com.grabpt.service.RequestionService.RequestionService;
 import org.springframework.data.domain.PageRequest;
@@ -38,7 +39,7 @@ public class CategoryRestController {
 
 	private final CategoryQueryService categoryQueryService;
 	private final RequestionService requestionService;
-	private final ProfileService profileService;
+	private final ProfileFacade profileFacade;
 
 	@Operation(
 		summary = "카테고리 목록 조회 API",
@@ -77,7 +78,7 @@ public class CategoryRestController {
 	public ApiResponse<List<CategoryResponse.ProListDto>> getTrainerList(
 		@PathVariable(name = "categoryCode") String code,
 		@RequestParam(name = "region", required = false) String region) {
-		List<ProProfile> proProfiles = profileService.findAllProByCategoryCodeAndRegion(code, region);
+		List<ProProfile> proProfiles = profileFacade.findAllProByCategoryCodeAndRegion(code, region);
 		return ApiResponse.onSuccess(CategoryConverter.toProListDto(proProfiles));
 	}
 

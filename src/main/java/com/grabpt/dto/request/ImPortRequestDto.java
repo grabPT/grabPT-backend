@@ -43,44 +43,46 @@ public class ImPortRequestDto {
 	@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 	@NoArgsConstructor
 	public static class CustomRequestPayDto {
-		private String orderUid;
-		private String itemName;
-		private String buyerName;
-		private Long paymentPrice;
-		private String buyerEmail;
-		private String buyerAddress;
-		private String buyerTel;
-		private String buyerPostcode;
+		private String order_uid;
+		private String item_name;
+		private String buyer_name;
+		private Long payment_price;
+		private String buyer_email;
+		private String buyer_address;
+		private String buyer_tel;
+		private String buyer_postcode;
 
 		@Builder
 		public CustomRequestPayDto(String orderUid, String itemName, String buyerName,
 			Long paymentPrice, String buyerEmail, String buyerAddress, String buyerTel,
 			String buyerPostCode) {
-			this.orderUid = orderUid;
-			this.itemName = itemName;
-			this.buyerName = buyerName;
-			this.paymentPrice = paymentPrice;
-			this.buyerEmail = buyerEmail;
-			this.buyerAddress = buyerAddress;
-			this.buyerTel = buyerTel;
-			this.buyerPostcode = buyerPostCode;
+			this.order_uid = orderUid;
+			this.item_name = itemName;
+			this.buyer_name = buyerName;
+			this.payment_price = paymentPrice;
+			this.buyer_email = buyerEmail;
+			this.buyer_address = buyerAddress;
+			this.buyer_tel = buyerTel;
+			this.buyer_postcode = buyerPostCode;
 		}
 	}
 
 	@Getter
 	@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 	@NoArgsConstructor
-	public static class CustomOrderRequestDto {
+	public static class
+	CustomOrderRequestDto {
 		private Long price; // 결제 고유 번호
-		private String itemName; // 주문 고유 번호
-		private Long matchingId;
+		private String item_name; // 주문 고유 번호
+		private Long matching_id;
 	}
 
 	@Getter
 	@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 	@NoArgsConstructor
 	public static class PaymentCallbackRequest {
-		private String paymentUid; // 결제 고유 번호
-		private String orderUid; // 주문 고유 번호
+		private String payment_uid; // 결제 고유 번호
+		private String order_uid; // 주문 고유 번호
+
 	}
 }

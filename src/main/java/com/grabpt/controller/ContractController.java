@@ -1,6 +1,8 @@
 package com.grabpt.controller;
 
 import com.grabpt.service.ContractService.ContractPhotoServiceImpl;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +30,15 @@ public class ContractController {
 		summary = "계약서 정보 조회 API"
 	)
 	@ApiResponses({
-		@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "토큰을 넣어주세요"),
+		@io.swagger.v3.oas.annotations.responses.ApiResponse(
+			responseCode = "200",
+			description = "조회 성공",
+			content = @Content(
+				mediaType = "application/json",
+				schema = @Schema(implementation = ContractResponse.ContractResponseDto.class)
+			)
+		),
+		@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증 필요"),
 		@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "CONTRACT_NOT_FOUND"),
 	})
 	@GetMapping("/contract/{contractId}")
@@ -57,6 +67,7 @@ public class ContractController {
 	)
 	@ApiResponses({
 		@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "CONTRACT_NOT_FOUND"),
+		@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증 필요"),
 		@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 내부 오류")
 	})
 	@PostMapping("/contract/{contractId}/user")
@@ -70,6 +81,11 @@ public class ContractController {
 		description = "트레이너가 계약서 정보를 입력한 뒤 제출하며 Matching status가 COMPLETE로 업데이트 됩니다",
 		summary = "트레이너 계약서 작성 API"
 	)
+	@ApiResponses({
+		@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "CONTRACT_NOT_FOUND"),
+		@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증 필요"),
+		@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 내부 오류")
+	})
 	@PostMapping("/contract/{contractId}/pro")
 	public ApiResponse<Long> writeProInfo(@RequestBody ContractRequest.ContractInfoForProDto request,
 		@PathVariable(name = "contractId") Long id) {
@@ -96,6 +112,7 @@ public class ContractController {
 		summary = "수강생 전자서명 업로드 API",
 		description = "수강생이 contractId와 MultipartFile을 통해 전자서명을 업로드 합니다"
 	)@ApiResponses({
+		@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증 필요"),
 		@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "CONTRACT_NOT_FOUND"),
 		@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 내부 오류")
 	})
@@ -109,6 +126,7 @@ public class ContractController {
 		summary = "트레이너 전자서명 업로드 API",
 		description = "트레이너가 contractId와 MultipartFile을 통해 전자서명을 업로드 합니다"
 	)@ApiResponses({
+		@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증 필요"),
 		@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "CONTRACT_NOT_FOUND"),
 		@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 내부 오류")
 	})

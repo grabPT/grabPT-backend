@@ -34,7 +34,7 @@ public class ReviewServiceImpl implements ReviewService {
 		Users user = userRepository.findById(userId)
 			.orElseThrow(()-> new UserHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
-		ProProfile proProfile = proProfileRepository.findById(reviewRequestDTO.getProProfileId())
+		ProProfile proProfile = proProfileRepository.findById(reviewRequestDTO.getProId())
 			.orElseThrow(()-> new UserHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
 		Review review = Review.builder()
@@ -54,4 +54,14 @@ public class ReviewServiceImpl implements ReviewService {
 		reviewRepository.delete(review);
 	}
 
+	@Override
+	public Page<Review> reviews(Long userId, Pageable pageable){
+		return reviewRepository.findAllByUserIdOrderByCreatedAtDesc(userId, pageable);
+	}
+
+	@Override
+	public Page<Review> proReviews(Users user, Pageable pageable){
+		return reviewRepository.findAllByProProfile_IdOrderByCreatedAtDesc(user.getProProfile().getId(),
+			pageable);
+	}
 }

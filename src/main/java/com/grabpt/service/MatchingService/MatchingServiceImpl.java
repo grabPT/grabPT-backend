@@ -2,6 +2,7 @@ package com.grabpt.service.MatchingService;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -31,9 +32,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MatchingServiceImpl implements MatchingService {
 
+	private final MatchingRepository matchingRepository;
+
 	private final RequestionRepository requestionRepository;
 	private final SuggestionRepository suggestionRepository;
-	private final MatchingRepository matchingRepository;
 	private final ContractService contractService;
 
 	@Override
@@ -73,7 +75,7 @@ public class MatchingServiceImpl implements MatchingService {
 			throw new SuggestionHandler(ErrorStatus.SUGGESTION_ALREADY_MATCHED);
 		}
 
-		// 5) 매칭 생성/저장 (최후 방어 포함)
+		// 5) 매칭 생성/저장
 		Matching matching = Matching.builder()
 			.requestion(requestion)
 			.suggestion(suggestion)
@@ -81,6 +83,9 @@ public class MatchingServiceImpl implements MatchingService {
 			.matchedAt(LocalDateTime.now())
 			.status(MatchingStatus.WAITING)
 			.build();
+
+		// 연관관계 설정
+		requestion.setMatching(matching);
 
 		try {
 			matchingRepository.save(matching);
@@ -140,4 +145,25 @@ public class MatchingServiceImpl implements MatchingService {
 	public List<Matching> findAllWithProByRequestionIds(List<Long> requestionIds) {
 		return matchingRepository.findAllWithProByRequestionIds(requestionIds);
 	}
+
+	@Override
+	public Long getActiveClients(Long proProfileId, MatchingStatus matchingStatus) {
+		return matchingRepository.getActiveClients(proProfileId, matchingStatus);
+	}
+
+	@Override
+	public Long getActiveContractsByUser(Long userId, MatchingStatus matchingStatus) {
+		return matchingRepository.getActiveContractsByUser(userId, matchingStatus);
+	}
+
+	@Override
+	public Optional<Object> findById(Long matchingId) {
+		return Optional.of(matchingRepository.findById(matchingId));
+	}
+
+	@Override
+	public List<Matching> matchings(List<Long> requestionIds) {
+		return matchingRepository.findAllWithProByRequestionIds(requestionIds);
+	}
+
 }

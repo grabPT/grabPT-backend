@@ -7,6 +7,7 @@ import com.grabpt.domain.entity.Address;
 import com.grabpt.domain.entity.Requestions;
 import com.grabpt.domain.entity.Users;
 import com.grabpt.domain.enums.Gender;
+import com.grabpt.domain.enums.MatchingStatus;
 import com.grabpt.domain.enums.RequestStatus;
 
 import lombok.AllArgsConstructor;
@@ -25,21 +26,21 @@ public class RequestionResponseDto {
 	public static class RequestionDetailResponseDto {
 		private Long requestionId;
 		private Long categoryId;
-		private List<String> purpose;
+		private List<String> purposes;
 		private String ageGroup;
 		private String userGender;
-		private Integer price;
+		private Integer requestedPrice;
 		private Integer sessionCount;
 		private String location;
-		private LocalDate startPreference;
+		private LocalDate startDate;
 		private List<String> availableDays;
 		private List<String> availableTimes;
-		private String trainerGender;
+		private String proGender;
 		private String content; // 상세 설명
 		private String etcPurposeContent; // 기타 목적
 
 		// 유저 정보
-		private String nickname;
+		private String userNickname;
 		private String profileImageUrl;
 
 		public static RequestionDetailResponseDto from(Requestions r) {
@@ -48,19 +49,19 @@ public class RequestionResponseDto {
 			return RequestionDetailResponseDto.builder()
 				.requestionId(r.getId())
 				.categoryId(r.getCategory().getId())
-				.purpose(r.getPurpose())
+				.purposes(r.getPurpose())
 				.ageGroup(r.getAgeGroup())
 				.userGender(convertGenderToKorean(r.getUserGender()))
-				.price(r.getPrice())
+				.requestedPrice(r.getPrice())
 				.sessionCount(r.getSessionCount())
 				.location(r.getLocation())
-				.startPreference(r.getStartPreference())
+				.startDate(r.getStartPreference())
 				.availableDays(r.getAvailableDays())
 				.availableTimes(r.getAvailableTimes())
-				.trainerGender(convertGenderToKorean(r.getTrainerGender()))
+				.proGender(convertGenderToKorean(r.getTrainerGender()))
 				.content(r.getContent())
 				.etcPurposeContent(r.getEtcPurposeContent())
-				.nickname(u.getNickname())
+				.userNickname(u.getNickname())
 				.profileImageUrl(u.getProfileImageUrl())
 				.build();
 		}
@@ -71,13 +72,13 @@ public class RequestionResponseDto {
 	@NoArgsConstructor
 	@AllArgsConstructor
 	public static class RequestionResponsePagingDto {
-		private String username;        // 일반 유저
-		private String userStreet;      // 주소 - 동
+		private String userName;        // 일반 유저
+		private String location;      // 주소 - 동
 		private Integer sessionCount;   // 세션 횟수
-		private Integer price;          // 1회당 가격
-		private RequestStatus status;   // 상태 (대기중 등)
-		private String userProfileImageUrl; // 유저 프로필 이미지 링크
-		private Long requestId; // 리다이렉트를 위한 requestId
+		private Integer requestedPrice;          // 1회당 가격
+		private RequestStatus matchingStatus;   // 상태 (대기중 등)
+		private String profileImageUrl; // 유저 프로필 이미지 링크
+		private Long requestionId; // 리다이렉트를 위한 requestId
 		private String content; // 상세 설명
 		private String etcPurposeContent; // 기타 목적
 
@@ -87,19 +88,18 @@ public class RequestionResponseDto {
 		private String categoryName;
 
 		// 추가 정보
-		private String nickname;
-		private String location;
+		private String userNickName;
 
 		public static RequestionResponsePagingDto from(Requestions r) {
 			Users u = r.getUser();
 			return RequestionResponsePagingDto.builder()
-				.username(u.getNickname())
-				.userStreet(u.getAddress().getStreet())
+				.userName(u.getNickname())
+				.location(u.getAddress().getStreet())
 				.sessionCount(r.getSessionCount())
-				.price(r.getPrice())
-				.status(r.getStatus())
-				.userProfileImageUrl(u.getProfileImageUrl())
-				.requestId(r.getId())
+				.requestedPrice(r.getPrice())
+				.matchingStatus(r.getStatus())
+				.profileImageUrl(u.getProfileImageUrl())
+				.requestionId(r.getId())
 				.content(r.getContent())
 				.etcPurposeContent(r.getEtcPurposeContent())
 				.build();
@@ -111,50 +111,29 @@ public class RequestionResponseDto {
 	@AllArgsConstructor
 	@Builder
 	public static class UserOwnRequestionDto {
-		private Long requestionId;
-		private String nickname;
-		private String profileImageUrl;
-
-		private String city;
-		private String district;
-		private String street;
-		private String zipcode;
-		private String streetCode;
-		private String specAddress;
-		private String etcPurposeContent; // 기타 목적
-
-		private String categoryName;
+		private Long requestId;
+		private String profileImageURL;
 		private List<String> availableDays;
 		private List<String> availableTimes;
+		private String categoryName;
+		private Integer sessionCount;
 		private String content;
-
-		// 추가
-		private RequestStatus status;
-		private Long proProfileId;
-		private String proNickname;
+		private AddressDto address;
+		private Boolean isWriteReview;
 
 		public static UserOwnRequestionDto from(Requestions requestion, Long proProfileId, String proNickname) {
 			Users user = requestion.getUser();
 			Address address = user.getAddress();
 
 			return UserOwnRequestionDto.builder()
-				.requestionId(requestion.getId())
-				.nickname(user.getNickname())
-				.profileImageUrl(user.getProfileImageUrl())
-				.city(address.getCity())
-				.district(address.getDistrict())
-				.street(address.getStreet())
-				.zipcode(address.getZipcode())
-				.streetCode(address.getStreetCode())
-				.specAddress(address.getSpecAddress())
+				.requestId(requestion.getId())
+				.profileImageURL(user.getProfileImageUrl())
+				.address(AddressDto.from(address))
 				.categoryName(requestion.getCategory().getName())
 				.availableDays(requestion.getAvailableDays())
 				.availableTimes(requestion.getAvailableTimes())
 				.content(requestion.getContent())
-				.etcPurposeContent(requestion.getEtcPurposeContent())
-				.status(requestion.getStatus())
-				.proProfileId(proProfileId)
-				.proNickname(proNickname)
+				.isWriteReview(canWriteReview(requestion))
 				.build();
 		}
 	}
@@ -163,7 +142,31 @@ public class RequestionResponseDto {
 	@Builder
 	@AllArgsConstructor
 	public static class RequestionSaveResponseDto {
-		private Long requestionId;
+		private Long requestRequestionId;
+	}
+
+	@Getter
+	@Builder
+	public static class AddressDto {
+		private String city;
+		private String district;
+		private String street;
+		private String zipcode;
+		private String streetCode;
+		private String specAddress;
+
+		public static AddressDto from(Address address) {
+			if (address == null)
+				return null;
+			return AddressDto.builder()
+				.city(address.getCity())
+				.district(address.getDistrict())
+				.street(address.getStreet())
+				.zipcode(address.getZipcode())
+				.streetCode(address.getStreetCode())
+				.specAddress(address.getSpecAddress())
+				.build();
+		}
 	}
 
 	private static String convertGenderToKorean(Gender gender) {
@@ -173,5 +176,12 @@ public class RequestionResponseDto {
 			case MALE -> "남자";
 			case FEMALE -> "여자";
 		};
+	}
+
+	private static boolean canWriteReview(Requestions r) {
+		if (r.getMatching() == null || r.getMatching().getStatus() == null) {
+			return false;
+		}
+		return r.getMatching().getStatus() == MatchingStatus.COMPLETED;
 	}
 }

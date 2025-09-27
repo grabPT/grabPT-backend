@@ -76,4 +76,7 @@ public class UserQueryServiceImpl implements UserQueryService {
 	public boolean existsByEmail(String email) {
 		return userRepository.existsByEmail(email);
 	}
+
+	@Override
+	public Optional<Users> findById(Long id){ return userRepository.findById(id);}
 }

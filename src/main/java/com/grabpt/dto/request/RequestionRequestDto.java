@@ -54,10 +54,10 @@ public class RequestionRequestDto {
 	private List<String> availableTimes;
 
 	@Schema(description = "트레이너 성별", example = "남자")
-	private String trainerGender;
+	private String proGender;
 
 	@Schema(description = "선호 시작")
-	private LocalDate startPreference;
+	private LocalDate startDate;
 
 	@NotNull
 	@Schema(description = "지역", example = "서울 강남구 성북동")

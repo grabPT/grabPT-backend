@@ -3,6 +3,7 @@ package com.grabpt.service.SuggestionService;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -67,7 +68,7 @@ public class SuggestionServiceImpl implements SuggestionService {
 			.message(dto.getMessage())
 			.location(dto.getLocation())
 			.sentAt(dto.getSentAt() != null ? dto.getSentAt() : LocalDate.now())
-			.isAgreed(dto.getIsAgreed() != null ? dto.getIsAgreed() : false)
+			.isAgreed(dto.getIsMatched() != null ? dto.getIsMatched() : false)
 			.photos(new ArrayList<>())
 			.status(SuggestStatus.MATCHING)
 			.build();
@@ -122,20 +123,21 @@ public class SuggestionServiceImpl implements SuggestionService {
 		Long matchId = (matching != null) ? matching.getId() : null;
 
 		return SuggestionResponseDto.SuggestionDetailResponseDto.builder()
-			.nickname(user.getNickname())
-			.center(pro.getCenter())
+			.userNickName(user.getNickname())
+			.centerName(pro.getCenter())
 			.profileImageUrl(user.getProfileImageUrl())
 			.suggestedPrice(suggestedPrice)
-			.originalPrice(originalPrice)
+			.requestedPrice(originalPrice)
 			.discountAmount(discount > 0 ? discount : 0)
 			.isDiscounted(discount > 0)
 			.message(suggestion.getMessage())
 			.location(suggestion.getLocation())
-			.photoUrls(photoUrls) // 사진 포함
-			.expertId(pro.getUser().getId())  // 트레이너 ID
+			.photos(photoUrls) // 사진 포함
+			.proId(pro.getUser().getId())  // 트레이너 ID
 			.userId(requestion.getUser().getId())  // 요청자 ID
 			.matchingId(matchId)  // 매칭 ID (없으면 null)
 			.requestionId(requestion.getId())
+			.suggestionId(suggestionId)
 			.build();
 	}
 
@@ -164,10 +166,10 @@ public class SuggestionServiceImpl implements SuggestionService {
 			MatchingStatus status = (matching != null) ? matching.getStatus() : MatchingStatus.WAITING;
 
 			return SuggestionResponseDto.MySuggestionPagingDto.builder()
-				.requestionNickname(s.getRequestion().getUser().getNickname())
-				.price(s.getRequestion().getPrice())
+				.userNickname(s.getRequestion().getUser().getNickname())
+				.suggestedPrice(s.getRequestion().getPrice())
 				.sessionCount(s.getRequestion().getSessionCount())
-				.status(status)
+				.matchingStatus(status)
 				.requestionId(s.getRequestion().getId())
 				.suggestionId(s.getId())
 				.profileImageUrl(s.getRequestion().getUser().getProfileImageUrl())
@@ -189,7 +191,7 @@ public class SuggestionServiceImpl implements SuggestionService {
 		suggestion.setMessage(dto.getMessage());
 		suggestion.setLocation(dto.getLocation());
 		suggestion.setSentAt(dto.getSentAt() != null ? dto.getSentAt() : LocalDate.now());
-		suggestion.setIsAgreed(dto.getIsAgreed() != null ? dto.getIsAgreed() : false);
+		suggestion.setIsAgreed(dto.getIsMatched() != null ? dto.getIsMatched() : false);
 	}
 
 	@Override
@@ -217,6 +219,11 @@ public class SuggestionServiceImpl implements SuggestionService {
 			.orElseThrow(() -> new SuggestionHandler(ErrorStatus.SUGGESTION_NOT_FOUND));
 
 		return isOwner(suggestion, email);
+	}
+
+	@Override
+	public Optional<Object> findById(Long suggestionId) {
+		return Optional.of(suggestionRepository.findById(suggestionId));
 	}
 
 	private void assertOwner(Suggestions s, String email) {

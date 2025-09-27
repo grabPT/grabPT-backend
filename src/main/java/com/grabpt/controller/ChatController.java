@@ -138,7 +138,7 @@ public class ChatController {
 		@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증 실패"),
 		@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 내부 오류")
 	})
-	@GetMapping("/chatRoom/list") //로그인 유저 정보
+	@GetMapping("/chatRoom/list")
 	@ResponseBody
 	public ApiResponse<List<ChatResponse.ChatRoomPreviewDto>> getChatRoomList(@RequestParam(name = "keyword", required = false) String keyword){
 		Long userId = SecurityUtils.currentUserIdOrThrow();

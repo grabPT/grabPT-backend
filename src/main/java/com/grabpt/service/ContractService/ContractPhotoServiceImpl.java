@@ -47,9 +47,9 @@ public class ContractPhotoServiceImpl implements ContractPhotoService {
 			.orElseThrow(() -> new ContractHandler(ErrorStatus.CONTRACT_NOT_FOUND));
 
 		if (isUser) {
-			contract.getUserInfo().setSignUrl(fileUrl);
+			contract.getUserInfo().setSignImageUrl(fileUrl);
 		} else {
-			contract.getProInfo().setSignUrl(fileUrl);
+			contract.getProInfo().setSignImageUrl(fileUrl);
 		}
 
 		return contract;

@@ -24,9 +24,9 @@ public class ContractInfo {
 	@Enumerated(EnumType.STRING)
 	private Gender gender;
 
-	private String address="";
+	private String location="";
 
 	// 추가
-	private String signUrl="";
+	private String signImageUrl="";
 
 }

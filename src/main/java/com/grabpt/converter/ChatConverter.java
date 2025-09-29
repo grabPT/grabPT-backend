@@ -14,7 +14,7 @@ import java.time.ZoneId;
 public class ChatConverter {
 	public static ChatResponse.CreateChatRoomResponseDto toCreateChatRoomResponseDto(UserChatRoom room) {
 		return ChatResponse.CreateChatRoomResponseDto.builder()
-			.chatRoomId(room.getChatRoom().getId())
+			.roomId(room.getChatRoom().getId())
 			.build();
 	}
 
@@ -36,18 +36,18 @@ public class ChatConverter {
 			.senderId(messages.getSender().getId())
 			.messageType(messages.getType().toString())
 			.content(messages.getContent())
-			.sendAt(messages.getSentAt())
+			.sentAt(messages.getSentAt())
 			.readCount(messages.getReadCount())
 			.build();
 	}
 
 	public static ChatResponse.ChatRoomPreviewDto toChatRoomPreviewDto(UserChatRoom userChatRoom, Long unreadCount){
 		return ChatResponse.ChatRoomPreviewDto.builder()
-			.chatRoomId(userChatRoom.getChatRoom().getId())
+			.roomId(userChatRoom.getChatRoom().getId())
 			.userId(userChatRoom.getUser().getId())
 			.otherUserId(userChatRoom.getOtherUser().getId())
 			.unreadCount(unreadCount)
-			.otherUserProfile(userChatRoom.getOtherUser().getProfileImageUrl())
+			.otherUserProfileImageUrl(userChatRoom.getOtherUser().getProfileImageUrl())
 			.roomName(userChatRoom.getOtherUser().getNickname())
 			.lastMessage(userChatRoom.getChatRoom().getLastMessage())
 			.lastMessageTime(userChatRoom.getChatRoom().getLastMessageTime())

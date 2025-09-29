@@ -10,10 +10,10 @@ public class ContractConverter {
 			.userInfo(contract.getUserInfo() != null ? contract.getUserInfo() : new ContractInfo())
 			.proInfo(contract.getProInfo() != null ? contract.getProInfo() : new ContractInfo())
 			.contractPrice(contract.getPrice())
-			.ptAddress(contract.getPtAddress())
+			.ptLocation(contract.getPtAddress())
 			.startDate(contract.getStartDate())
 			.contractSessionCount(contract.getTotalSession())
-			.contractDate(contract.getContractDate())
+			.expireDate(contract.getContractDate())
 			.status(contract.getMatching().getStatus())
 			.matchingId(contract.getMatching().getId())
 			.build();

@@ -34,11 +34,12 @@ public class ContractResponse {
 		LocalDate startDate;
 
 		@Schema(description = "PT 장소 주소", example = "서울시 강남구 ...")
-		String ptAddress;
+		String ptLocation;
 
 		@JsonFormat(pattern = "yyyy-MM-dd", timezone = "Asia/Seoul")
 		@Schema(description = "계약일", example = "2025-09-26")
-		LocalDate contractDate;
+		LocalDate expireDate;
+
 
 		@Schema(description = "매칭 상태", example = "MATCHED")
 		MatchingStatus status;

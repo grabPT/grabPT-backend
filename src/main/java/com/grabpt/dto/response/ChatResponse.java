@@ -1,6 +1,7 @@
 package com.grabpt.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -17,9 +18,10 @@ public class ChatResponse {
 		Long roomId;
 		Long senderId;
 		String content;
+		@Schema(description = "메시지의 타입(TEXT,IMAGE,FILE)", example = "TEXT")
 		String messageType;
 		@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
-		LocalDateTime sendAt;
+		LocalDateTime sentAt;
 		Integer readCount;
 	}
 
@@ -39,7 +41,7 @@ public class ChatResponse {
 	@Getter
 	@Builder
 	public static class CreateChatRoomResponseDto{
-		Long chatRoomId;
+		Long roomId;
 	}
 
 	@AllArgsConstructor
@@ -48,15 +50,17 @@ public class ChatResponse {
 	@Getter
 	@Builder
 	public static class ChatRoomPreviewDto{
-		Long chatRoomId;
+		Long roomId;
 		Long userId;
 		Long otherUserId;
 		Long unreadCount; //추가
+		@Schema(example = "뎀프시롤")
 		String roomName;
+		@Schema(example = "ㅎㅇㅎㅇ")
 		String lastMessage;
 		@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
 		LocalDateTime lastMessageTime;
-		String otherUserProfile;
+		String otherUserProfileImageUrl;
 	}
 
 	@AllArgsConstructor

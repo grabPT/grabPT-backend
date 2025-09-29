@@ -28,13 +28,13 @@ public class ContractRequest {
 		private Gender gender;
 
 		@Schema(description = "주소", example = "서울시 강남구")
-		private String address;
+		private String location;
 	}
 
 	@Getter
 	@Setter
 	public static class ContractInfoForProDto extends ContractInfoDto{
 		private LocalDate startDate;
-		private LocalDate contractDate;
+		private LocalDate expireDate;
 	}
 }

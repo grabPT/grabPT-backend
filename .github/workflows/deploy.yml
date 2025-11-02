@@ -1,103 +1,101 @@
-name: Deploy to Amazon EC2
+name: Deploy to EC2 via CodeDeploy + Docker
 
 on:
   push:
-    branches:
-      - develop
+    branches: [ develop ]
 
 env:
   AWS_REGION: ap-northeast-2
-  S3_BUCKET_NAME: grabpt-github-actions-s3-bucket-2
-  CODE_DEPLOY_APPLICATION_NAME: my-codedeploy-app
-  CODE_DEPLOY_DEPLOYMENT_GROUP_NAME: my-codedeploy-deployment-group
+  ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-2.amazonaws.com
+  ECR_REPO: grabpt-server
 
 permissions:
   contents: read
 
 jobs:
-  build:
-    name: Build
+  build_and_push:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
+      # 1) ECR 로그인
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
 
-        # secrets의 env 파일 빌드
-      - name: Create .env file from secret
-        run: echo "${{ secrets.ENV_PROPERTIES }}" > .env
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Check .env file content (safe debug)
+      # 2) Docker build & push (tags: SHA, latest)
+      - name: Build Docker image
         run: |
-          echo "First 5 lines of .env file:"
-          head -n 5 .env
+          IMAGE=${{ env.ECR_REGISTRY }}/${{ env.ECR_REPO }}:${{ github.sha }}
+          docker build -t $IMAGE .
+          docker tag $IMAGE ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPO }}:latest
+      - name: Push Docker image
+        run: |
+          docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPO }}:${{ github.sha }}
+          docker push ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPO }}:latest
 
-      - name: Build with Gradle (skip tests)
-        uses: gradle/gradle-build-action@0d13054264b0bb894ded474f08ebb30921341cee
-        with:
-          arguments: clean build -x test
+      # 3) 배포 아티팩트 구성(.env 포함)
+      - name: Prepare deploy bundle
+        run: |
+          mkdir -p deploy/scripts
+          cp docker-compose.yml appspec.yml deploy/
+          cp -r scripts/*.sh deploy/scripts/
+
+          cat > deploy/.env <<EOF
+          AWS_REGION=${{ env.AWS_REGION }}
+          ECR_REGISTRY=${{ env.ECR_REGISTRY }}
+          ECR_REPO=${{ env.ECR_REPO }}
+          IMAGE_TAG=${{ github.sha }}
+
+          DB_ROOT_PASSWORD=${{ secrets.DB_ROOT_PASSWORD }}
+          DB_NAME=${{ secrets.DB_NAME }}
+          DB_USER=${{ secrets.DB_USER }}
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          EOF
 
       - name: Upload artifact for transfer
         uses: actions/upload-artifact@v4
         with:
-          name: build-artifact
-          path: |
-            build/libs/*.jar
-            scripts/**
-            appspec.yml
-            .env.properties
+          name: codedeploy-bundle
+          path: deploy/
 
-  transfer:
-    name: Transfer
+  codedeploy_push:
     runs-on: ubuntu-latest
-    needs: build
-
+    needs: build_and_push
     steps:
-      - name: Download build artifact
+      - name: Download deploy bundle
         uses: actions/download-artifact@v4
         with:
-          name: build-artifact
-          path: deploy
+          name: codedeploy-bundle
+          path: bundle
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Upload to AWS S3
+      - name: Push bundle to S3 via CodeDeploy
         run: |
+          APP_NAME=${{ secrets.CODEDEPLOY_APP_NAME }}
+          GROUP_NAME=${{ secrets.CODEDEPLOY_GROUP_NAME }}
+          BKT=${{ secrets.CODEDEPLOY_S3_BUCKET }}
+          KEY=${{ github.sha }}.zip
+
           aws deploy push \
-            --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
-            --ignore-hidden-files \
-            --s3-location s3://$S3_BUCKET_NAME/$GITHUB_SHA.zip \
-            --source ./deploy
+            --application-name "$APP_NAME" \
+            --s3-location s3://$BKT/$KEY \
+            --source ./bundle
 
-  deploy:
-    name: Deploy
-    runs-on: ubuntu-latest
-    needs: transfer
-    environment: production
-
-    steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Deploy to AWS EC2 from S3
-        run: |
           aws deploy create-deployment \
-            --application-name ${{ env.CODE_DEPLOY_APPLICATION_NAME }} \
+            --application-name "$APP_NAME" \
             --deployment-config-name CodeDeployDefault.AllAtOnce \
-            --deployment-group-name ${{ env.CODE_DEPLOY_DEPLOYMENT_GROUP_NAME }} \
-            --s3-location bucket=$S3_BUCKET_NAME,key=$GITHUB_SHA.zip,bundleType=zip
+            --deployment-group-name "$GROUP_NAME" \
+            --s3-location bucket=$BKT,key=$KEY,bundleType=zip

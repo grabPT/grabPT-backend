@@ -83,20 +83,14 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Push bundle to S3 via CodeDeploy
+        env:
+          APP_NAME: ${{ secrets.CODEDEPLOY_APP_NAME }}
+          GROUP_NAME: ${{ secrets.CODEDEPLOY_GROUP_NAME }}
+          BKT: ${{ secrets.CODEDEPLOY_S3_BUCKET }}
+          KEY: ${{ github.sha }}.zip
+        shell: bash
         run: |
-          APP_NAME=${{ secrets.CODEDEPLOY_APP_NAME }}
-          GROUP_NAME=${{ secrets.CODEDEPLOY_GROUP_NAME }}
-          BKT=${{ secrets.CODEDEPLOY_S3_BUCKET }}
-          KEY=${{ github.sha }}.zip
-
-          aws deploy push \
-            --application-name "$APP_NAME" \
-            --s3-location s3://$BKT/$KEY \
-            --source ./bundle
-
-          aws deploy create-deployment \
-            --application-name "$APP_NAME" \
-            --deployment-config-name CodeDeployDefault.AllAtOnce \
-            --deployment-group-name "$GROUP_NAME" \
-            --s3-location bucket=$BKT,key=$KEY,bundleType=zip
-            --file-exists-behavior OVERWRITE 
+          set -e
+          aws deploy push --application-name "$APP_NAME" --s3-location s3://$BKT/$KEY --source ./bundle
+          aws deploy create-deployment --application-name "$APP_NAME" --deployment-group-name "$GROUP_NAME" --deployment-config-name CodeDeployDefault.AllAtOnce --s3-location bucket=$BKT,key=$KEY,bundleType=zip --file-exists-behavior OVERWRITE
+      

@@ -99,3 +99,4 @@ jobs:
             --deployment-config-name CodeDeployDefault.AllAtOnce \
             --deployment-group-name "$GROUP_NAME" \
             --s3-location bucket=$BKT,key=$KEY,bundleType=zip
+            --file-exists-behavior OVERWRITE 

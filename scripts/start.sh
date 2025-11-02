@@ -1,25 +1,33 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
-PROJECT_ROOT="/home/ubuntu"
-DEPLOY_DIR="$PROJECT_ROOT/app"
-JAR_SOURCE="$DEPLOY_DIR/build/libs"
-JAR_FILE="$PROJECT_ROOT/app.jar"
-ENV_FILE="$PROJECT_ROOT/.env.properties"  # 추가
+APP_DIR="/home/ubuntu/apps/grabpt"
+cd "$APP_DIR"
 
-APP_LOG="$PROJECT_ROOT/application.log"
-ERROR_LOG="$PROJECT_ROOT/error.log"
-DEPLOY_LOG="$PROJECT_ROOT/deploy.log"
+# ====== 배포 환경 변수(.env) 읽기 ======
+# GitHub Actions에서 같이 내려주는 .env 파일 (ECR_REGISTRY/ECR_REPO/IMAGE_TAG/DB_*)
+if [ -f "$APP_DIR/.env" ]; then
+  set -a
+  source "$APP_DIR/.env"
+  set +a
+fi
 
-TIME_NOW=$(date "+%Y-%m-%d %H:%M:%S")
+# ====== ECR 로그인 ======
+aws ecr get-login-password --region "${AWS_REGION:-ap-northeast-2}" \
+| docker login --username AWS --password-stdin "${ECR_REGISTRY}"
 
-echo "$TIME_NOW > JAR 파일 복사: $JAR_SOURCE → $JAR_FILE" >> $DEPLOY_LOG
-echo "$TIME_NOW > build/libs 내부 확인" >> $DEPLOY_LOG
-ls -al $JAR_SOURCE >> $DEPLOY_LOG
-cp $JAR_SOURCE/*.jar $JAR_FILE
+# ====== 이미지 미리 풀(옵션) ======
+docker pull "${ECR_REGISTRY}/${ECR_REPO}:${IMAGE_TAG}"
 
-# jar 파일 실행 (환경설정 포함)
-echo "$TIME_NOW > $JAR_FILE 파일 실행" >> $DEPLOY_LOG
-nohup java -jar $JAR_FILE --spring.config.import=optional:file:$ENV_FILE > $APP_LOG 2> $ERROR_LOG &
+# ====== Compose 업데이트(무중단) ======
+docker compose --env-file "$APP_DIR/.env" up -d
 
-CURRENT_PID=$(pgrep -f $JAR_FILE)
-echo "$TIME_NOW > 실행된 프로세스 아이디 $CURRENT_PID 입니다." >> $DEPLOY_LOG
+# ====== 앱 헬스 확인(필요 시 포트/엔드포인트 조정) ======
+for i in {1..30}; do
+  if curl -fsS "http://127.0.0.1:8080/actuator/health" | grep -q '"status":"UP"'; then
+    echo "App is UP"
+    break
+  fi
+  echo "Waiting app health... ($i/30)"; sleep 2
+done
+

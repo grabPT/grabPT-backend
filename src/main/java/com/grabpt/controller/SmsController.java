@@ -59,7 +59,7 @@ public class SmsController {
 	)
 	@PostMapping("/verify-sms")
 	public ApiResponse<String> verifySms(@RequestBody SmsVerifyResponseDto dto) {
-		String savedCode = smsCertificationStorage.getCertificationCode(dto.getPhoneNum());
+		String savedCode = smsCertificationStorage.getCertificationCode(dto.getPhoneNumber());
 		if (savedCode != null && savedCode.equals(dto.getInputCode())) {
 			return ApiResponse.onSuccess("인증 성공");
 		} else {

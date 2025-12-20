@@ -25,11 +25,11 @@ public class SmsVerifyResponseDto {
 	}
 
 	// Getter/Setter
-	public String getPhoneNum() {
+	public String getPhoneNumber() {
 		return phoneNumber;
 	}
 
-	public void setPhoneNum(String phoneNum) {
+	public void setPhoneNumber(String phoneNum) {
 		this.phoneNumber = phoneNum;
 	}
 

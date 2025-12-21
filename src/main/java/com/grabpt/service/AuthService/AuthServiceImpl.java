@@ -2,14 +2,10 @@ package com.grabpt.service.AuthService;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -24,8 +20,7 @@ import com.grabpt.aws.s3.AmazonS3Manager;
 import com.grabpt.aws.s3.Uuid;
 import com.grabpt.config.auth.PrincipalDetails;
 import com.grabpt.config.jwt.JwtTokenProvider;
-import com.grabpt.config.jwt.properties.CookieSupport;
-import com.grabpt.config.oauth.DynamicCookieSupport;
+import com.grabpt.config.jwt.properties.CookieManagerV2;
 import com.grabpt.domain.entity.Address;
 import com.grabpt.domain.entity.Category;
 import com.grabpt.domain.entity.ProProfile;
@@ -63,12 +58,11 @@ public class AuthServiceImpl implements AuthService {
 	private final UserDetailsService userDetailsService;
 	private final UserQueryService userQueryService;
 
-	private static final String SHARED_DOMAIN = "grabpt.com";
-
 	@Override
 	public void registerUser_photo(SignupRequest.UserSignupRequestDto req,
 		MultipartFile profileImage,
-		HttpServletResponse response) {
+		HttpServletResponse response,
+		HttpServletRequest request) {
 
 		// 프로필 사진 S3 업로드
 		String imageUrl = null;
@@ -106,7 +100,7 @@ public class AuthServiceImpl implements AuthService {
 			.nickname(req.getUserNickname())
 			.role(mapToRole(req.getRole()))
 			.authRole(AuthRole.ROLE_USER)
-			.profileImageUrl(imageUrl)  // S3 URL 저장
+			.profileImageUrl(imageUrl)
 			.agreeMarketing(req.getIsAgreeMarketing())
 			.agreeMarketingAt(req.getIsAgreeMarketing() ? LocalDateTime.now() : null)
 			.oauthId(URLDecoder.decode(req.getOauthId(), StandardCharsets.UTF_8))
@@ -122,14 +116,15 @@ public class AuthServiceImpl implements AuthService {
 		// 필수 약관 동의 저장
 		saveUserAgreements(savedUser, req.getAgreedTermsIds());
 
-		// 토큰 생성 및 쿠키 세팅
-		createTokenAndSetCookie(savedUser, response);
+		// 토큰 생성 및 쿠키 세팅 (request 전달)
+		createTokenAndSetCookie(savedUser, response, request);
 	}
 
 	@Override
 	public void registerPro_photo(SignupRequest.ProSignupRequestDto req,
 		MultipartFile profileImage,
-		HttpServletResponse response) {
+		HttpServletResponse response,
+		HttpServletRequest request) {
 
 		// 프로필 사진 S3 업로드
 		String imageUrl = null;
@@ -171,7 +166,7 @@ public class AuthServiceImpl implements AuthService {
 			.role(mapToRole(req.getRole()))
 			.gender(mapToGender(req.getGender()))
 			.authRole(AuthRole.ROLE_USER)
-			.profileImageUrl(imageUrl)  // S3 URL 저장
+			.profileImageUrl(imageUrl)
 			.agreeMarketing(req.getIsAgreeMarketing())
 			.agreeMarketingAt(req.getIsAgreeMarketing() ? LocalDateTime.now() : null)
 			.oauthId(URLDecoder.decode(req.getOauthId(), StandardCharsets.UTF_8))
@@ -187,8 +182,8 @@ public class AuthServiceImpl implements AuthService {
 		// 필수 약관 동의 저장
 		saveUserAgreements(savedUser, req.getAgreedTermsIds());
 
-		// 토큰 생성 및 쿠키 세팅
-		createTokenAndSetCookie(savedUser, response);
+		// 토큰 생성 및 쿠키 세팅 (request 전달)
+		createTokenAndSetCookie(savedUser, response, request);
 	}
 
 	@Override
@@ -208,30 +203,28 @@ public class AuthServiceImpl implements AuthService {
 		}
 	}
 
+	/**
+	 * 토큰 생성 및 쿠키 설정
+	 * - CookieManagerV2를 사용하여 환경별 자동 처리
+	 */
 	@Override
-	public void createTokenAndSetCookie(Users user, HttpServletResponse response) {
+	public void createTokenAndSetCookie(Users user, HttpServletResponse response, HttpServletRequest request) {
 		String accessToken = jwtTokenProvider.generateToken(user);
 		String refreshToken = jwtTokenProvider.createRefreshToken(user.getEmail());
-		String role = user.getRole().name();
 
-		log.info("JWT 토큰 생성: {}", accessToken);
+		log.info("[AUTH] JWT 토큰 생성 완료: userId={}", user.getId());
 
+		// DB에 Refresh Token 저장
 		user.setRefreshToken(refreshToken);
 		userRepository.save(user);
 
-		// 쿠키 생성
-		// 1) accessToken (HttpOnly)
-		addCookie(response, "accessToken", accessToken, Duration.ofMinutes(30), true);
+		// 쿠키 설정 (환경별 자동 처리)
+		CookieManagerV2.setAccessToken(response, request, accessToken);
+		CookieManagerV2.setRefreshToken(response, request, refreshToken);
+		CookieManagerV2.setRole(response, request, user.getRole().name());
+		CookieManagerV2.setUserId(response, request, user.getId().toString());
 
-		// 2) refreshToken (HttpOnly)
-		addCookie(response, "refreshToken", refreshToken, Duration.ofDays(7), true);
-
-		// 3) role (Base64, 프론트에서 읽어야 하므로 HttpOnly=false)
-		String cookieRole = user.getRole().toString();
-		addCookie(response, "role", b64(cookieRole), Duration.ofMinutes(30), false);
-
-		// userId 쿠키 추가
-		addCookie(response, "userId", b64(user.getId().toString()), Duration.ofMinutes(30), false);
+		log.info("[AUTH] 쿠키 설정 완료: userId={}, role={}", user.getId(), user.getRole());
 	}
 
 	@Override
@@ -258,12 +251,18 @@ public class AuthServiceImpl implements AuthService {
 		}
 	}
 
+	/**
+	 * 토큰 재발급
+	 * - 환경별 자동 처리 (CookieManagerV2 사용)
+	 */
 	@Override
 	public void reissueTokens(HttpServletRequest request, HttpServletResponse response) {
-		// 1) 쿠키에서 refresh 읽기 (신/구 이름 모두 허용)
-		String refreshToken = findCookie(request, "REFRESH_TOKEN", "refreshToken");
+		log.info("[REISSUE] 토큰 재발급 요청");
+
+		// 1) 쿠키에서 Refresh Token 읽기
+		String refreshToken = CookieManagerV2.getRefreshToken(request);
 		if (refreshToken == null || refreshToken.isBlank()) {
-			log.warn("[REISSUE] missing refresh cookie");
+			log.warn("[REISSUE] Refresh token not found in cookie");
 			throw new AuthHandler(ErrorStatus.AUTH_MISSING_REFRESH_COOKIE);
 		}
 
@@ -272,31 +271,32 @@ public class AuthServiceImpl implements AuthService {
 			try {
 				jwtTokenProvider.getUserEmail(refreshToken);
 			} catch (io.jsonwebtoken.ExpiredJwtException e) {
-				log.warn("[REISSUE] expired refresh token");
+				log.warn("[REISSUE] Refresh token expired");
 				throw new AuthHandler(ErrorStatus.AUTH_EXPIRED);
 			}
-			log.warn("[REISSUE] invalid/expired refresh token");
+			log.warn("[REISSUE] Invalid refresh token");
 			throw new AuthHandler(ErrorStatus.AUTH_INVALID_OR_EXPIRED);
 		}
 
 		String email = jwtTokenProvider.getUserEmail(refreshToken);
 		Users user = userQueryService.findByEmail(email).orElse(null);
 		if (user == null) {
-			log.warn("[REISSUE] user not found: {}", email);
+			log.warn("[REISSUE] User not found: {}", email);
 			throw new AuthHandler(ErrorStatus.AUTH_USER_NOT_FOUND);
 		}
 
-		String stored = user.getRefreshToken();
-		if (stored == null) {
-			log.warn("[REISSUE] stored refresh is null for {}", email);
+		// 3) DB 저장된 Refresh Token과 비교
+		String storedRefresh = user.getRefreshToken();
+		if (storedRefresh == null) {
+			log.warn("[REISSUE] Stored refresh token is null for user: {}", email);
 			throw new AuthHandler(ErrorStatus.AUTH_STORED_REFRESH_NULL);
 		}
-		if (!refreshToken.equals(stored)) {
-			log.warn("[REISSUE] refresh mismatch for {}", email);
+		if (!refreshToken.equals(storedRefresh)) {
+			log.warn("[REISSUE] Refresh token mismatch for user: {}", email);
 			throw new AuthHandler(ErrorStatus.AUTH_REFRESH_MISMATCH);
 		}
 
-		// 3) 재발급(회전)
+		// 4) 새 토큰 생성
 		var userDetails = userDetailsService.loadUserByUsername(email);
 		var authentication = new UsernamePasswordAuthenticationToken(
 			userDetails, null, userDetails.getAuthorities());
@@ -304,108 +304,79 @@ public class AuthServiceImpl implements AuthService {
 		String newAccessToken = jwtTokenProvider.generateToken(authentication);
 		String newRefreshToken = jwtTokenProvider.createRefreshToken(email);
 
+		// 5) DB에 새 Refresh Token 저장
 		user.setRefreshToken(newRefreshToken);
 		userQueryService.save(user);
 
-		// 4) 쿠키 재설정 (동적 속성)
-		var access = DynamicCookieSupport.newCookie("ACCESS_TOKEN", newAccessToken, request)
-			.maxAge(java.time.Duration.ofHours(4)).build();
-		var refresh = DynamicCookieSupport.newCookie("REFRESH_TOKEN", newRefreshToken, request)
-			.maxAge(java.time.Duration.ofDays(30)).build();
+		// 6) 쿠키 재설정 (환경별 자동 처리)
+		CookieManagerV2.setAccessToken(response, request, newAccessToken);
+		CookieManagerV2.setRefreshToken(response, request, newRefreshToken);
 
-		response.addHeader(org.springframework.http.HttpHeaders.SET_COOKIE, access.toString());
-		response.addHeader(org.springframework.http.HttpHeaders.SET_COOKIE, refresh.toString());
+		log.info("[REISSUE] 토큰 재발급 완료: userId={}", user.getId());
 	}
 
-	private static String findCookie(HttpServletRequest request, String... names) {
-		var cs = request.getCookies();
-		if (cs == null)
-			return null;
-		for (String n : names) {
-			for (var c : cs)
-				if (n.equals(c.getName()))
-					return c.getValue();
-		}
-		return null;
-	}
-
+	/**
+	 * 로그아웃
+	 * - 모든 인증 쿠키 삭제
+	 * - DB Refresh Token 무효화
+	 */
 	@Override
-	public void logout(RefreshTokenRequestDto body, HttpServletRequest req, HttpServletResponse res,
+	public void logout(RefreshTokenRequestDto body, HttpServletRequest request, HttpServletResponse response,
 		Authentication authentication) {
-		log.info("[LOGOUT] start");
+		log.info("[LOGOUT] 로그아웃 시작");
 
-		// 1) 쿠키 삭제(레거시 포함) — 기존 유틸 재사용
-		for (var c : CookieSupport.logoutDeletionSet()) {
-			res.addHeader(HttpHeaders.SET_COOKIE, c.toString());
-			log.info("[LOGOUT] Set-Cookie -> {}", c);
-		}
+		// 1) 모든 인증 쿠키 삭제 (환경별 자동 처리)
+		CookieManagerV2.clearAuthCookies(response, request);
+		CookieManagerV2.clearOAuthTempCookies(response, request);
 
-		// 2) refresh 토큰 확보: 바디 우선 > 쿠키(신/구 이름 허용)
-		String refresh = null;
+		// 2) Refresh Token 확보 (우선순위: body > 쿠키)
+		String refreshToken = null;
 		if (body != null && body.getRefreshToken() != null && !body.getRefreshToken().isBlank()) {
-			refresh = body.getRefreshToken();
+			refreshToken = body.getRefreshToken();
+			log.debug("[LOGOUT] Refresh token from request body");
 		} else {
-			refresh = findCookie(req, "REFRESH_TOKEN", "refreshToken");
+			refreshToken = CookieManagerV2.getRefreshToken(request);
+			log.debug("[LOGOUT] Refresh token from cookie");
 		}
 
-		boolean revoked = false;
+		boolean tokenRevoked = false;
 
-		// 3) DB refreshToken 무효화
-		// 3-1) 바디/쿠키에서 가져온 refresh가 있고, 유효하면 이메일로 무효화
-		if (refresh != null && !refresh.isBlank()) {
-			if (jwtTokenProvider.validateToken(refresh)) {
-				String email = jwtTokenProvider.getUserEmail(refresh);
-				userQueryService.findByEmail(email).ifPresent(u -> {
-					u.setRefreshToken(null);
-					userQueryService.save(u);
-					log.info("[LOGOUT] refreshToken removed by email");
+		// 3) DB Refresh Token 무효화
+		if (refreshToken != null && !refreshToken.isBlank()) {
+			if (jwtTokenProvider.validateToken(refreshToken)) {
+				String email = jwtTokenProvider.getUserEmail(refreshToken);
+				userQueryService.findByEmail(email).ifPresent(user -> {
+					user.setRefreshToken(null);
+					userQueryService.save(user);
+					log.info("[LOGOUT] Refresh token revoked for user: {}", email);
 				});
-				revoked = true;
+				tokenRevoked = true;
 			} else {
-				// (선택) 요청 바디로 들어온 refresh가 '명백히' 유효하지 않다면 401로 처리하고 싶을 때:
-				// - 로그아웃을 항상 200으로 유지하고 싶다면 아래 3줄을 제거하시면 됩니다.
+				// body로 전달된 잘못된 토큰이면 예외 (선택)
 				if (body != null && body.getRefreshToken() != null) {
+					log.warn("[LOGOUT] Invalid refresh token in request body");
 					throw new AuthHandler(ErrorStatus.AUTH_INVALID_OR_EXPIRED);
 				}
-				// 바디가 아니고 쿠키에서만 온 경우엔 조용히 계속 진행(idempotent)
+				// 쿠키의 잘못된 토큰은 무시 (idempotent)
 			}
 		}
 
-		// 3-2) (보조) 인증 정보가 있다면 그 유저의 refreshToken 도 제거
-		if (!revoked && authentication != null && authentication.getPrincipal() instanceof PrincipalDetails pd) {
-			Users u = pd.getUser();
-			u.setRefreshToken(null);
-			userQueryService.save(u);
-			log.info("[LOGOUT] refreshToken removed by authentication principal");
+		// 4) 인증 정보로도 토큰 무효화 시도 (보조)
+		if (!tokenRevoked && authentication != null
+			&& authentication.getPrincipal() instanceof PrincipalDetails pd) {
+			Users user = pd.getUser();
+			user.setRefreshToken(null);
+			userQueryService.save(user);
+			log.info("[LOGOUT] Refresh token revoked via authentication principal: {}", user.getEmail());
 		}
 
-		// 4) 세션 & 시큐리티 컨텍스트 정리 (항상)
-		var session = req.getSession(false);
-		if (session != null)
+		// 5) 세션 및 시큐리티 컨텍스트 정리
+		var session = request.getSession(false);
+		if (session != null) {
 			session.invalidate();
+		}
 		SecurityContextHolder.clearContext();
 
-		log.info("[LOGOUT] completed");
+		log.info("[LOGOUT] 로그아웃 완료");
 	}
-
-	private static void addCookie(HttpServletResponse res, String name, String value,
-		Duration maxAge, boolean httpOnly) {
-		ResponseCookie c = ResponseCookie.from(name, value == null ? "" : value)
-			.domain(SHARED_DOMAIN)   // 앞에 점(.) 금지
-			.path("/")
-			.maxAge(maxAge)
-			.secure(true)            // HTTPS 전제
-			.httpOnly(httpOnly)      // 프론트에서 읽을 값(role)은 false
-			.sameSite("None")        // 서브도메인 간 쿠키 공유를 위해 필수
-			.build();
-		res.addHeader(HttpHeaders.SET_COOKIE, c.toString());
-	}
-
-	private static String b64(String s) {
-		if (s == null)
-			return "";
-		return Base64.getEncoder()
-			.encodeToString(s.getBytes(StandardCharsets.UTF_8));
-	}
-
 }

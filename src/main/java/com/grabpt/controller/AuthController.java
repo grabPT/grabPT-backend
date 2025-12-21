@@ -19,10 +19,8 @@ import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.grabpt.apiPayload.ApiResponse;
 import com.grabpt.domain.entity.Users;
-import com.grabpt.dto.request.ProSignupMultipart;
 import com.grabpt.dto.request.RefreshTokenRequestDto;
 import com.grabpt.dto.request.SignupRequest;
-import com.grabpt.dto.request.UserSignupMultipart;
 import com.grabpt.dto.response.UserResponseDto;
 import com.grabpt.service.AuthService.AuthService;
 import com.grabpt.service.UserService.UserQueryService;
@@ -50,48 +48,33 @@ public class AuthController {
 	private final AuthService authService;
 
 	@PostMapping(value = "/user-signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	@Operation(summary = "User 회원가입 요청 (Multipart)", description = "JSON 데이터와 프로필 이미지를 동시에 전송하는 회원가입")
-	@io.swagger.v3.oas.annotations.parameters.RequestBody(
-		required = true,
-		content = @Content(
-			mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
-			schema = @Schema(implementation = UserSignupMultipart.class)
-			// encoding(name="data", contentType="application/json")는 남겨도 되고 빼도 됩니다.
-		)
-	)
+	@Operation(summary = "User 회원가입 요청 (Multipart)")
 	public ApiResponse<String> userSignup(
-		@RequestPart("data") String data, // ← 핵심: String으로 받기
+		@RequestPart("data") String data,
 		@RequestPart(value = "profileImage", required = false) MultipartFile profileImage,
+		HttpServletRequest request,
 		HttpServletResponse response
 	) throws Exception {
 
-		// String → DTO 수동 파싱
 		SignupRequest.UserSignupRequestDto signupRequest =
 			objectMapper.readValue(data, SignupRequest.UserSignupRequestDto.class);
-
-		authService.registerUser_photo(signupRequest, profileImage, response);
+		authService.registerUser_photo(signupRequest, profileImage, response, request);
 		return ApiResponse.onSuccess("user 회원가입 성공");
 	}
 
 	@PostMapping(value = "/pro-signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	@Operation(summary = "Pro 회원가입 요청 (Multipart)", description = "JSON 데이터와 프로필 이미지를 동시에 전송하는 회원가입")
-	@io.swagger.v3.oas.annotations.parameters.RequestBody(
-		required = true,
-		content = @Content(
-			mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
-			schema = @Schema(implementation = ProSignupMultipart.class)
-		)
-	)
+	@Operation(summary = "Pro 회원가입 요청 (Multipart)")
 	public ApiResponse<String> proSignup(
-		@RequestPart("data") String data, // ← String
+		@RequestPart("data") String data,
 		@RequestPart(value = "profileImage", required = false) MultipartFile profileImage,
+		HttpServletRequest request,
 		HttpServletResponse response
 	) throws Exception {
 
 		SignupRequest.ProSignupRequestDto signupRequest =
 			objectMapper.readValue(data, SignupRequest.ProSignupRequestDto.class);
 
-		authService.registerPro_photo(signupRequest, profileImage, response);
+		authService.registerPro_photo(signupRequest, profileImage, response, request);
 		return ApiResponse.onSuccess("pro 회원가입 성공");
 	}
 

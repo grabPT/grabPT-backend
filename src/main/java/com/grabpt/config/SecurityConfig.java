@@ -25,7 +25,7 @@ import com.grabpt.config.jwt.JwtTokenProvider;
 import com.grabpt.config.oauth.HttpCookieOAuth2AuthorizationRequestRepository;
 import com.grabpt.config.oauth.PrincipalOauth2UserService;
 import com.grabpt.config.oauth.handler.OAuth2FailureHandler;
-import com.grabpt.config.oauth.handler.OAuth2SuccessHandler;
+import com.grabpt.config.oauth.handler.OAuth2SuccessHandlerImproved;
 
 import lombok.RequiredArgsConstructor;
 
@@ -36,7 +36,7 @@ public class SecurityConfig {
 	private final PrincipalOauth2UserService principalOauth2UserService;
 	private final PrincipalDetailsService principalDetailsService;
 	private final JwtTokenProvider jwtTokenProvider;
-	private final OAuth2SuccessHandler oauth2SuccessHandler;
+	private final OAuth2SuccessHandlerImproved oauth2SuccessHandler;
 	private final OAuth2FailureHandler oAuth2FailureHandler;
 
 	@Bean

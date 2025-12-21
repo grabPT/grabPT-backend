@@ -8,8 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.grabpt.apiPayload.ApiResponse;
-import com.grabpt.config.jwt.properties.CookieManager;
-import com.grabpt.config.jwt.properties.CookieManager.OAuthTempInfo;
+import com.grabpt.config.jwt.properties.CookieManagerV2;
 
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,7 +32,7 @@ public class AuthControllerOAuthHelper {
 	public ApiResponse<Map<String, String>> getOAuthTempInfo(HttpServletRequest request) {
 
 		// HttpOnly 쿠키에서 OAuth 정보 조회
-		OAuthTempInfo tempInfo = CookieManager.getOAuthTempInfo(request);
+		CookieManagerV2.OAuthTempInfo tempInfo = CookieManagerV2.getOAuthTempInfo(request);
 
 		if (!tempInfo.isValid()) {
 			log.warn("[OAuth TempInfo] Invalid or expired temporary OAuth information");

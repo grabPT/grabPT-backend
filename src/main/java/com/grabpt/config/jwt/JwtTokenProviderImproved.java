@@ -15,7 +15,7 @@ import org.springframework.util.StringUtils;
 
 import com.grabpt.config.auth.PrincipalDetails;
 import com.grabpt.config.auth.PrincipalDetailsService;
-import com.grabpt.config.jwt.properties.CookieManager;
+import com.grabpt.config.jwt.properties.CookieManagerV2;
 import com.grabpt.config.jwt.properties.JwtProperties;
 import com.grabpt.domain.entity.Users;
 
@@ -137,7 +137,7 @@ public class JwtTokenProviderImproved {
 		}
 
 		// 2. 쿠키에서 액세스 토큰 확인 (CookieManager 사용)
-		String cookieToken = CookieManager.getAccessToken(request);
+		String cookieToken = CookieManagerV2.getAccessToken(request);
 		if (StringUtils.hasText(cookieToken)) {
 			return cookieToken;
 		}

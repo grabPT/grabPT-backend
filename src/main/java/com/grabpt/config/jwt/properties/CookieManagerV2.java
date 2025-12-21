@@ -2,6 +2,10 @@ package com.grabpt.config.jwt.properties;
 
 import static com.grabpt.config.jwt.properties.CookieConstants.*;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
 import org.springframework.http.HttpHeaders;
@@ -19,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
  * 통합 쿠키 관리 클래스 v2
  * - 환경별(로컬/개발/운영) 쿠키 설정 자동화
  * - EnvironmentDetector와 연동하여 일관된 환경 감지
+ * - 한글 등 non-ASCII 문자 URL 인코딩 처리
  */
 @Slf4j
 public final class CookieManagerV2 {
@@ -115,7 +120,7 @@ public final class CookieManagerV2 {
 	 * - PROD: HttpOnly 쿠키로 안전하게 설정
 	 */
 	public static void setOAuthTempInfo(HttpServletResponse response, HttpServletRequest request,
-		String email, String name, String oauthId, String provider) {
+		String email, String name, String oauthId, String oauthProvider) {
 		EnvironmentProfile env = EnvironmentDetector.detectEnvironment(request);
 
 		// 개발 환경: URL 파라미터 사용하므로 쿠키 불필요
@@ -127,33 +132,47 @@ public final class CookieManagerV2 {
 		// 운영 환경: HttpOnly 쿠키로 설정
 		Duration ttl = Duration.ofMinutes(5);
 
-		addCookie(response, createCookie(env, OAUTH_EMAIL, email)
-			.httpOnly(true)
-			.maxAge(ttl).path("/").build());
+		// URL 인코딩 처리 (한글 등 non-ASCII 문자 지원)
+		try {
+			addCookie(response, createCookie(env, OAUTH_EMAIL, urlEncode(email))
+				.httpOnly(true)
+				.maxAge(ttl).path("/").build());
 
-		addCookie(response, createCookie(env, OAUTH_NAME, name)
-			.httpOnly(true)
-			.maxAge(ttl).path("/").build());
+			addCookie(response, createCookie(env, OAUTH_NAME, urlEncode(name))
+				.httpOnly(true)
+				.maxAge(ttl).path("/").build());
 
-		addCookie(response, createCookie(env, OAUTH_ID, oauthId)
-			.httpOnly(true)
-			.maxAge(ttl).path("/").build());
+			addCookie(response, createCookie(env, OAUTH_ID, urlEncode(oauthId))
+				.httpOnly(true)
+				.maxAge(ttl).path("/").build());
 
-		addCookie(response, createCookie(env, OAUTH_PROVIDER, provider)
-			.httpOnly(true)
-			.maxAge(ttl).path("/").build());
+			addCookie(response, createCookie(env, OAUTH_PROVIDER, urlEncode(oauthProvider))
+				.httpOnly(true)
+				.maxAge(ttl).path("/").build());
+
+			log.debug("[Cookie] OAuth temp info set (URL encoded)");
+		} catch (Exception e) {
+			log.error("[Cookie] Failed to set OAuth temp info", e);
+			throw new RuntimeException("Failed to encode OAuth temp info", e);
+		}
 	}
 
 	/**
 	 * OAuth 임시 정보 조회 (서버 사이드에서만)
+	 * URL 디코딩 처리
 	 */
 	public static OAuthTempInfo getOAuthTempInfo(HttpServletRequest request) {
-		return new OAuthTempInfo(
-			getCookieValue(request, OAUTH_EMAIL),
-			getCookieValue(request, OAUTH_NAME),
-			getCookieValue(request, OAUTH_ID),
-			getCookieValue(request, OAUTH_PROVIDER)
-		);
+		try {
+			return new OAuthTempInfo(
+				urlDecode(getCookieValue(request, OAUTH_EMAIL)),
+				urlDecode(getCookieValue(request, OAUTH_NAME)),
+				urlDecode(getCookieValue(request, OAUTH_ID)),
+				urlDecode(getCookieValue(request, OAUTH_PROVIDER))
+			);
+		} catch (Exception e) {
+			log.error("[Cookie] Failed to decode OAuth temp info", e);
+			return new OAuthTempInfo(null, null, null, null);
+		}
 	}
 
 	public record OAuthTempInfo(String email, String name, String oauthId, String provider) {
@@ -186,6 +205,39 @@ public final class CookieManagerV2 {
 	}
 
 	// ==================== Helper Methods ====================
+
+	/**
+	 * URL 인코딩 (UTF-8)
+	 * null-safe
+	 */
+	private static String urlEncode(String value) {
+		if (value == null || value.isBlank()) {
+			return "";
+		}
+		try {
+			return URLEncoder.encode(value, StandardCharsets.UTF_8.toString());
+		} catch (UnsupportedEncodingException e) {
+			// UTF-8은 항상 지원되므로 이 예외는 발생하지 않음
+			log.error("[Cookie] UTF-8 encoding not supported", e);
+			return value;
+		}
+	}
+
+	/**
+	 * URL 디코딩 (UTF-8)
+	 * null-safe
+	 */
+	private static String urlDecode(String value) {
+		if (value == null || value.isBlank()) {
+			return null;
+		}
+		try {
+			return URLDecoder.decode(value, StandardCharsets.UTF_8.toString());
+		} catch (UnsupportedEncodingException e) {
+			log.error("[Cookie] UTF-8 decoding not supported", e);
+			return value;
+		}
+	}
 
 	/**
 	 * 쿠키 빌더 생성 (환경별 설정 자동 적용)

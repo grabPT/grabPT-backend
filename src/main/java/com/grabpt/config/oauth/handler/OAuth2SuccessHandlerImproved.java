@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.grabpt.config.jwt.JwtTokenProvider;
-import com.grabpt.config.jwt.properties.CookieManager;
+import com.grabpt.config.jwt.properties.CookieManagerV2;
 import com.grabpt.config.oauth.RedirectTargetResolver;
 import com.grabpt.domain.entity.Users;
 import com.grabpt.domain.enums.Role;
@@ -80,10 +80,10 @@ public class OAuth2SuccessHandlerImproved implements AuthenticationSuccessHandle
 		userRepository.save(user);
 
 		// 쿠키 설정
-		CookieManager.setAccessToken(response, request, accessToken);
-		CookieManager.setRefreshToken(response, request, refreshToken);
-		CookieManager.setRole(response, request, getRoleString(user.getRole()));
-		CookieManager.setUserId(response, request, user.getId().toString());
+		CookieManagerV2.setAccessToken(response, request, accessToken);
+		CookieManagerV2.setRefreshToken(response, request, refreshToken);
+		CookieManagerV2.setRole(response, request, getRoleString(user.getRole()));
+		CookieManagerV2.setUserId(response, request, user.getId().toString());
 
 		log.info("[OAuth Success] Existing user logged in: userId={}, role={}",
 			user.getId(), user.getRole());
@@ -104,7 +104,7 @@ public class OAuth2SuccessHandlerImproved implements AuthenticationSuccessHandle
 		OAuthUserInfo oauthInfo, String frontendBase) throws IOException {
 
 		// OAuth 정보를 HttpOnly 쿠키로 저장 (XSS 방지)
-		CookieManager.setOAuthTempInfo(response, request,
+		CookieManagerV2.setOAuthTempInfo(response, request,
 			oauthInfo.email,
 			oauthInfo.name,
 			oauthInfo.oauthId,

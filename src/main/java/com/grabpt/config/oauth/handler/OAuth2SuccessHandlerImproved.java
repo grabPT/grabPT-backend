@@ -79,22 +79,43 @@ public class OAuth2SuccessHandlerImproved implements AuthenticationSuccessHandle
 		user.setRefreshToken(refreshToken);
 		userRepository.save(user);
 
-		// 쿠키 설정
-		CookieManagerV2.setAccessToken(response, request, accessToken);
-		CookieManagerV2.setRefreshToken(response, request, refreshToken);
-		CookieManagerV2.setRole(response, request, getRoleString(user.getRole()));
-		CookieManagerV2.setUserId(response, request, user.getId().toString());
+		// ⭐ 프론트엔드 환경에 따라 분기
+		boolean isDevelopment = isDevelopmentFrontend(frontendBase);
+
+		if (isDevelopment) {
+			// 개발: URL 파라미터로 전달
+			log.info("[OAuth Success] Dev environment - tokens in URL params");
+
+			String redirectUrl = UriComponentsBuilder.fromUriString(frontendBase)
+				.path("/authcallback")
+				.queryParam("access_token", accessToken)
+				.queryParam("refresh_token", refreshToken)
+				.queryParam("role", getRoleString(user.getRole()))
+				.queryParam("user_id", user.getId().toString())
+				.build()
+				.toUriString();
+
+			response.sendRedirect(redirectUrl);
+
+		} else {
+			// 운영: 쿠키로만 전달
+			log.info("[OAuth Success] Prod environment - tokens in cookies");
+
+			CookieManagerV2.setAccessToken(response, request, accessToken);
+			CookieManagerV2.setRefreshToken(response, request, refreshToken);
+			CookieManagerV2.setRole(response, request, getRoleString(user.getRole()));
+			CookieManagerV2.setUserId(response, request, user.getId().toString());
+
+			String redirectUrl = UriComponentsBuilder.fromUriString(frontendBase)
+				.path("/authcallback")
+				.build()
+				.toUriString();
+
+			response.sendRedirect(redirectUrl);
+		}
 
 		log.info("[OAuth Success] Existing user logged in: userId={}, role={}",
 			user.getId(), user.getRole());
-
-		// 리다이렉트
-		String redirectUrl = UriComponentsBuilder.fromUriString(frontendBase)
-			.path("/authcallback")
-			.build()
-			.toUriString();
-
-		response.sendRedirect(redirectUrl);
 	}
 
 	/**
@@ -103,23 +124,60 @@ public class OAuth2SuccessHandlerImproved implements AuthenticationSuccessHandle
 	private void handleNewUser(HttpServletRequest request, HttpServletResponse response,
 		OAuthUserInfo oauthInfo, String frontendBase) throws IOException {
 
-		// OAuth 정보를 HttpOnly 쿠키로 저장 (XSS 방지)
-		CookieManagerV2.setOAuthTempInfo(response, request,
-			oauthInfo.email,
-			oauthInfo.name,
-			oauthInfo.oauthId,
-			oauthInfo.provider
-		);
+		// ⭐ 프론트엔드 환경에 따라 분기
+		boolean isDevelopment = isDevelopmentFrontend(frontendBase);
+
+		if (isDevelopment) {
+			// 개발: URL 파라미터로 전달
+			log.info("[OAuth Success] Dev environment - OAuth info in URL params");
+
+			String redirectUrl = UriComponentsBuilder.fromUriString(frontendBase)
+				.path("/signup")
+				.queryParam("oauthEmail", oauthInfo.email)
+				.queryParam("oauthName", oauthInfo.name)
+				.queryParam("oauthId", oauthInfo.oauthId)
+				.queryParam("oauthProvider", oauthInfo.provider)
+				.build()
+				.toUriString();
+
+			response.sendRedirect(redirectUrl);
+
+		} else {
+			// 운영: 쿠키로 전달 (HttpOnly=false로 프론트에서 읽을 수 있게)
+			log.info("[OAuth Success] Prod environment - OAuth info in cookies");
+
+			CookieManagerV2.setOAuthTempInfo(response, request,
+				oauthInfo.email,
+				oauthInfo.name,
+				oauthInfo.oauthId,
+				oauthInfo.provider
+			);
+
+			String redirectUrl = UriComponentsBuilder.fromUriString(frontendBase)
+				.path("/signup")
+				.build()
+				.toUriString();
+
+			response.sendRedirect(redirectUrl);
+		}
 
 		log.info("[OAuth Success] New user redirected to signup: provider={}", oauthInfo.provider);
+	}
 
-		// 회원가입 페이지로 리다이렉트
-		String redirectUrl = UriComponentsBuilder.fromUriString(frontendBase)
-			.path("/signup")
-			.build()
-			.toUriString();
+	/**
+	 * ⭐ 프론트엔드 환경 판단 (frontendBase 기준)
+	 * 백엔드 환경이 아닌 프론트엔드 환경으로 판단!
+	 */
+	private boolean isDevelopmentFrontend(String frontendBase) {
+		if (frontendBase == null) {
+			return false;
+		}
 
-		response.sendRedirect(redirectUrl);
+		// localhost 또는 개발 도메인이면 개발 환경
+		return frontendBase.contains("localhost")
+			|| frontendBase.contains("127.0.0.1")
+			|| frontendBase.contains("vercel.app")
+			|| frontendBase.contains("-dev.");
 	}
 
 	/**
@@ -217,4 +275,3 @@ public class OAuth2SuccessHandlerImproved implements AuthenticationSuccessHandle
 	private record OAuthUserInfo(String provider, String email, String name, String oauthId) {
 	}
 }
-

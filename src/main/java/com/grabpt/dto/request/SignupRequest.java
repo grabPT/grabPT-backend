@@ -18,7 +18,7 @@ public class SignupRequest {
 	@AllArgsConstructor
 	public static class UserSignupRequestDto {
 		@Schema(description = "oauth로 인증되어 가져온 이름", example = "홍길동")
-		private String username;
+		private String userName;
 
 		@Schema(description = "oauth로 인증되어 가져온 이메일", example = "email@gmail.com")
 		private String email;
@@ -27,7 +27,7 @@ public class SignupRequest {
 		private String phoneNumber;
 
 		@Schema(description = "사용자가 지정한 이름", example = "동이")
-		private String nickname;
+		private String userNickName;
 
 		@Schema(description = "주소 객체")
 		private AddressRequest address;
@@ -49,7 +49,7 @@ public class SignupRequest {
 		private List<Long> agreedTermsIds;
 
 		@Schema(description = "마케팅 정보 수신 동의 여부", example = "true")
-		private Boolean agreeMarketing;
+		private Boolean isAgreeMarketing;
 
 		@Data
 		public static class AddressRequest {
@@ -74,7 +74,7 @@ public class SignupRequest {
 	@AllArgsConstructor
 	public static class ProSignupRequestDto {
 		@Schema(description = "oauth로 인증되어 가져온 이름", example = "홍길동")
-		private String username;
+		private String userName;
 
 		@Schema(description = "oauth로 인증되어 가져온 이메일", example = "email@gmail.com")
 		private String email;
@@ -83,7 +83,7 @@ public class SignupRequest {
 		private String phoneNumber;
 
 		@Schema(description = "사용자가 지정한 이름", example = "동이")
-		private String nickname;
+		private String userNickName;
 
 		@Schema(description = "나이", example = "24")
 		private Integer age;
@@ -127,7 +127,7 @@ public class SignupRequest {
 		private List<Long> agreedTermsIds;
 
 		@Schema(description = "마케팅 정보 수신 동의 여부", example = "true")
-		private Boolean agreeMarketing;
+		private Boolean isAgreeMarketing;
 
 		@Schema(description = "센터 주소")
 		private String center;

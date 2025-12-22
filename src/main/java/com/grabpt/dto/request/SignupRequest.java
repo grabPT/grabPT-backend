@@ -18,7 +18,7 @@ public class SignupRequest {
 	@AllArgsConstructor
 	public static class UserSignupRequestDto {
 		@Schema(description = "oauth로 인증되어 가져온 이름", example = "홍길동")
-		private String userName;
+		private String username;
 
 		@Schema(description = "oauth로 인증되어 가져온 이메일", example = "email@gmail.com")
 		private String email;
@@ -74,7 +74,7 @@ public class SignupRequest {
 	@AllArgsConstructor
 	public static class ProSignupRequestDto {
 		@Schema(description = "oauth로 인증되어 가져온 이름", example = "홍길동")
-		private String userName;
+		private String username;
 
 		@Schema(description = "oauth로 인증되어 가져온 이메일", example = "email@gmail.com")
 		private String email;
@@ -130,7 +130,7 @@ public class SignupRequest {
 		private Boolean agreeMarketing;
 
 		@Schema(description = "센터 주소")
-		private String centerName;
+		private String center;
 
 		@Schema(description = "연차", example = "3")
 		private Integer career;

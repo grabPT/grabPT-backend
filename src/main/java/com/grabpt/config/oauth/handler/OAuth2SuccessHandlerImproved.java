@@ -93,6 +93,7 @@ public class OAuth2SuccessHandlerImproved implements AuthenticationSuccessHandle
 				.queryParam("role", getRoleString(user.getRole()))
 				.queryParam("user_id", user.getId().toString())
 				.build()
+				.encode()  // ✅ URL 인코딩 추가!
 				.toUriString();
 
 			response.sendRedirect(redirectUrl);
@@ -128,7 +129,7 @@ public class OAuth2SuccessHandlerImproved implements AuthenticationSuccessHandle
 		boolean isDevelopment = isDevelopmentFrontend(frontendBase);
 
 		if (isDevelopment) {
-			// 개발: URL 파라미터로 전달
+			// 개발: URL 파라미터로 전달 (URL 인코딩 자동 적용)
 			log.info("[OAuth Success] Dev environment - OAuth info in URL params");
 
 			String redirectUrl = UriComponentsBuilder.fromUriString(frontendBase)
@@ -138,6 +139,7 @@ public class OAuth2SuccessHandlerImproved implements AuthenticationSuccessHandle
 				.queryParam("oauthId", oauthInfo.oauthId)
 				.queryParam("oauthProvider", oauthInfo.provider)
 				.build()
+				.encode()  // ✅ URL 인코딩 추가!
 				.toUriString();
 
 			response.sendRedirect(redirectUrl);

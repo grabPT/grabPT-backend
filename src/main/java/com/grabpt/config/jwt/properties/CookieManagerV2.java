@@ -135,19 +135,19 @@ public final class CookieManagerV2 {
 		// URL 인코딩 처리 (한글 등 non-ASCII 문자 지원)
 		try {
 			addCookie(response, createCookie(env, OAUTH_EMAIL, urlEncode(email))
-				.httpOnly(true)
+				.httpOnly(false)
 				.maxAge(ttl).path("/").build());
 
 			addCookie(response, createCookie(env, OAUTH_NAME, urlEncode(name))
-				.httpOnly(true)
+				.httpOnly(false)
 				.maxAge(ttl).path("/").build());
 
 			addCookie(response, createCookie(env, OAUTH_ID, urlEncode(oauthId))
-				.httpOnly(true)
+				.httpOnly(false)
 				.maxAge(ttl).path("/").build());
 
 			addCookie(response, createCookie(env, OAUTH_PROVIDER, urlEncode(oauthProvider))
-				.httpOnly(true)
+				.httpOnly(false)
 				.maxAge(ttl).path("/").build());
 
 			log.debug("[Cookie] OAuth temp info set (URL encoded)");

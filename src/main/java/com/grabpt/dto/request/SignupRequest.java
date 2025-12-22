@@ -27,7 +27,7 @@ public class SignupRequest {
 		private String phoneNumber;
 
 		@Schema(description = "사용자가 지정한 이름", example = "동이")
-		private String userNickname;
+		private String nickname;
 
 		@Schema(description = "주소 객체")
 		private AddressRequest address;
@@ -49,7 +49,7 @@ public class SignupRequest {
 		private List<Long> agreedTermsIds;
 
 		@Schema(description = "마케팅 정보 수신 동의 여부", example = "true")
-		private Boolean isAgreeMarketing;
+		private Boolean agreeMarketing;
 
 		@Data
 		public static class AddressRequest {
@@ -83,7 +83,7 @@ public class SignupRequest {
 		private String phoneNumber;
 
 		@Schema(description = "사용자가 지정한 이름", example = "동이")
-		private String userNickname;
+		private String nickname;
 
 		@Schema(description = "나이", example = "24")
 		private Integer age;
@@ -127,7 +127,7 @@ public class SignupRequest {
 		private List<Long> agreedTermsIds;
 
 		@Schema(description = "마케팅 정보 수신 동의 여부", example = "true")
-		private Boolean isAgreeMarketing;
+		private Boolean agreeMarketing;
 
 		@Schema(description = "센터 주소")
 		private String centerName;

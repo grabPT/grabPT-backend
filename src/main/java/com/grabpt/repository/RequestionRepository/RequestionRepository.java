@@ -56,7 +56,7 @@ public interface RequestionRepository extends JpaRepository<Requestions, Long> {
 		    where r.category.name = :categoryName
 		      and r.location = :region
 		""")
-	Optional<Double> avgPriceByCategoryAndRegion(@Param("categoryName") String categoryName,
+	Double avgPriceByCategoryAndRegion(@Param("categoryName") String categoryName,
 		@Param("region") String region);
 
 	@Query("""

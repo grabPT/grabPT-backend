@@ -20,8 +20,7 @@ public class PriceQueryService {
 	public IntAvgPriceResult getAvgUnitPrice(String categoryName, String city, String district, String street) {
 		String fullRegion = buildFullRegion(city, district, street);
 
-		double avg = requestionRepository.avgPriceByCategoryAndRegion(categoryName, fullRegion)
-			.orElse(0.0);
+		Double avg = requestionRepository.avgPriceByCategoryAndRegion(categoryName, fullRegion);
 		long cnt = requestionRepository.countByCategoryAndRegion(categoryName, fullRegion);
 
 		// 1,000원 단위 반올림

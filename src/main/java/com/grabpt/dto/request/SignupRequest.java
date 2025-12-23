@@ -27,7 +27,7 @@ public class SignupRequest {
 		private String phoneNumber;
 
 		@Schema(description = "사용자가 지정한 이름", example = "동이")
-		private String userNickName;
+		private String userNickname;
 
 		@Schema(description = "주소 객체")
 		private AddressRequest address;
@@ -83,7 +83,7 @@ public class SignupRequest {
 		private String phoneNumber;
 
 		@Schema(description = "사용자가 지정한 이름", example = "동이")
-		private String userNickName;
+		private String userNickname;
 
 		@Schema(description = "나이", example = "24")
 		private Integer age;
@@ -130,7 +130,7 @@ public class SignupRequest {
 		private Boolean isAgreeMarketing;
 
 		@Schema(description = "센터 주소")
-		private String center;
+		private String centerName;
 
 		@Schema(description = "연차", example = "3")
 		private Integer career;

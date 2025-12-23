@@ -97,7 +97,7 @@ public class AuthServiceImpl implements AuthService {
 			.email(req.getEmail())
 			.phone_number(req.getPhoneNumber())
 			.address(address)
-			.nickname(req.getUserNickName())
+			.nickname(req.getUserNickname())
 			.role(mapToRole(req.getRole()))
 			.authRole(AuthRole.ROLE_USER)
 			.profileImageUrl(imageUrl)
@@ -139,7 +139,7 @@ public class AuthServiceImpl implements AuthService {
 
 		// ProProfile 생성
 		ProProfile proProfile = ProProfile.builder()
-			.center(req.getCenter())
+			.center(req.getCenterName())
 			.career(req.getCareer())
 			.category(proCategory)
 			.age(req.getAge())
@@ -162,7 +162,7 @@ public class AuthServiceImpl implements AuthService {
 			.email(req.getEmail())
 			.phone_number(req.getPhoneNumber())
 			.address(address)
-			.nickname(req.getUserNickName())
+			.nickname(req.getUserNickname())
 			.role(mapToRole(req.getRole()))
 			.gender(mapToGender(req.getGender()))
 			.authRole(AuthRole.ROLE_USER)

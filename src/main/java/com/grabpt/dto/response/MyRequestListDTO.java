@@ -2,6 +2,7 @@ package com.grabpt.dto.response;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.grabpt.domain.entity.Address;
 import com.grabpt.domain.entity.Requestions;
 import com.grabpt.domain.enums.RequestStatus;
@@ -27,6 +28,7 @@ public class MyRequestListDTO {
 	// 추가
 	private String proNickname;
 	private Long proId;
+	@JsonProperty("isWriteReview")
 	private boolean isWriteReview;
 
 	public void setProProfileId(Long proId) {

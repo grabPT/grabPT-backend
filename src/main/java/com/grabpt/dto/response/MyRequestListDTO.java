@@ -8,10 +8,12 @@ import com.grabpt.domain.enums.RequestStatus;
 
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
+@Setter
 public class MyRequestListDTO {
-	private Long requestId;
+	private Long requestionId;
 	private String profileImageURL;
 	private Long userId;
 	private List<String> availableDays;
@@ -26,18 +28,6 @@ public class MyRequestListDTO {
 	private String proNickname;
 	private Long proId;
 	private boolean isWriteReview;
-
-	public void setProNickname(String proNickname) {
-		this.proNickname = proNickname;
-	}
-
-	public void setProProfileId(Long proId) {
-		this.proId = proId;
-	}
-
-	public void setCanWriteReview(boolean canWriteReview) {
-		this.isWriteReview = canWriteReview;
-	}
 
 	@Getter
 	@Builder
@@ -58,7 +48,7 @@ public class MyRequestListDTO {
 	}
 
 	public MyRequestListDTO(Requestions requestion) {
-		this.requestId = requestion.getId();
+		this.requestionId = requestion.getId();
 		this.profileImageURL = requestion.getUser().getProfileImageUrl();
 		this.userId = requestion.getUser().getId();
 		Address addresses = requestion.getUser().getAddress();

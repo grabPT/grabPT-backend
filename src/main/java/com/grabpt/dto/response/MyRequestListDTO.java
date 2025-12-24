@@ -20,7 +20,7 @@ public class MyRequestListDTO {
 	private Integer sessionCount;
 	private String content;
 	private AddressDTO address;
-	private RequestStatus MatchingStatus;
+	private RequestStatus matchingStatus;
 
 	// 추가
 	private String proNickname;
@@ -67,7 +67,7 @@ public class MyRequestListDTO {
 		this.availableTimes = requestion.getAvailableTimes();
 		this.categoryName = requestion.getCategory().getName();
 		this.sessionCount = requestion.getSessionCount();
-		this.content= requestion.getContent();
-		this.MatchingStatus = requestion.getStatus();
+		this.content = requestion.getContent();
+		this.matchingStatus = requestion.getStatus();
 	}
 }

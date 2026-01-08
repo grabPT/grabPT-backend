@@ -56,8 +56,9 @@ public class OrderServiceImpl implements OrderService {
 	public Order customOrder(Users user, Long price, String itemName, Long matchingId) {
 
 		// 매칭 조회
-		Matching matching = (Matching)matchingService.findById(matchingId)
+		Object matchingObj = matchingService.findById(matchingId)
 			.orElseThrow(() -> new IllegalArgumentException("Matching not found with id: " + matchingId));
+		Matching matching = (Matching) matchingObj;
 
 		// 결제내역 생성
 		Payment payment = Payment.builder()

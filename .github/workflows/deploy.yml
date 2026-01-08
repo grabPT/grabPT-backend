@@ -2,7 +2,10 @@ name: Deploy to EC2 via CodeDeploy + Docker
 
 on:
   push:
-    branches: [ develop ]
+    branches: [ develop, main ]
+  pull_request:
+    types: [ closed ]
+    branches: [ develop, main ]
 
 env:
   AWS_REGION: ap-northeast-2
@@ -15,6 +18,8 @@ permissions:
 jobs:
   build_and_push:
     runs-on: ubuntu-latest
+    # PR이 closed되었지만 merged되지 않은 경우는 배포하지 않음
+    if: github.event_name == 'push' || github.event.pull_request.merged == true
     steps:
       - uses: actions/checkout@v4
 

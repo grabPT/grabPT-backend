@@ -22,7 +22,7 @@ public interface MatchingService {
 
 	Long getActiveContractsByUser(Long userId, MatchingStatus matchingStatus);
 
-	Optional<Object> findById(Long matchingId);
+	Optional<Matching> findById(Long matchingId);
 
 	List<Matching> matchings(List<Long> requestionIds);
 

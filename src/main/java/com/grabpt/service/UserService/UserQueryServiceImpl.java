@@ -11,7 +11,7 @@ import com.grabpt.apiPayload.code.status.ErrorStatus;
 import com.grabpt.apiPayload.exception.handler.UserHandler;
 import com.grabpt.config.SecurityUtils;
 import com.grabpt.config.auth.PrincipalDetails;
-import com.grabpt.config.jwt.JwtTokenProvider;
+import com.grabpt.config.jwt.JwtTokenProviderImproved;
 import com.grabpt.converter.UserConverter;
 import com.grabpt.domain.entity.Users;
 import com.grabpt.dto.response.UserResponseDto;
@@ -27,7 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 public class UserQueryServiceImpl implements UserQueryService {
 
 	private final UserRepository userRepository;
-	private final JwtTokenProvider jwtTokenProvider;
+	private final JwtTokenProviderImproved jwtTokenProvider;
 
 	@Override
 	@Transactional(readOnly = true)

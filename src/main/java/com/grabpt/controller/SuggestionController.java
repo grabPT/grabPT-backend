@@ -28,7 +28,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Encoding;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -47,7 +46,7 @@ public class SuggestionController {
 
 	@Operation(
 		summary = "제안서 저장 API (Multipart)",
-		description = "트레이너가 보낸 제안서를 저장합니다. `data`(JSON)와 `photos`(이미지 리스트)를 함께 업로드하세요."
+		description = "트레이너가 보낸 제안서를 저장합니다. JSON(`data`) + 이미지 리스트(`photos`)로 업로드하세요."
 	)
 	@ApiResponses({
 		@io.swagger.v3.oas.annotations.responses.ApiResponse(
@@ -66,16 +65,17 @@ public class SuggestionController {
 			)
 		)
 	})
-	// 핵심: Swagger UI가 multipart 각 필드를 인식하도록 메서드 레벨에서 정의
-	@io.swagger.v3.oas.annotations.parameters.RequestBody(
-		content = @Content(
-			mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
-			schema = @Schema(type = "object"),
-			encoding = @Encoding(name = "data", contentType = MediaType.APPLICATION_JSON_VALUE),
-			examples = @ExampleObject(
-				name = "data 예시",
-				summary = "제안서 본문 예시",
-				value = """
+	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ApiResponse<SuggestionResponseDto.SuggestionSaveResponseDto> setSuggestion(
+		// JSON part: SuggestionRequestDto
+		@Parameter(
+			name = "data",
+			description = "제안서 JSON 본문 (SuggestionRequestDto)",
+			required = true,
+			content = @Content(
+				mediaType = MediaType.APPLICATION_JSON_VALUE,
+				schema = @Schema(implementation = SuggestionRequestDto.class),
+				examples = @ExampleObject(name = "data 예시", value = """
 					{
 					  "requestionId": 77,
 					  "price": 50000,
@@ -85,28 +85,30 @@ public class SuggestionController {
 					  "sentAt": "2025-10-01",
 					  "isMatched": false
 					}
-					"""
+					""")
 			)
 		)
-	)
-	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ApiResponse<SuggestionResponseDto.SuggestionSaveResponseDto> setSuggestion(
-		// Swagger UI에서 이 파트를 JSON 입력창으로 인식하게 함
 		@RequestPart("data") SuggestionRequestDto dto,
 
-		// Swagger UI에서 이 파트를 '파일 선택' 버튼으로 인식하게 함 (format = binary 필수)
-		@RequestPart(value = "photos", required = false)
+		// Files part: photos[]
 		@Parameter(
-			description = "첨부 이미지 배열",
-			content = @Content(array = @ArraySchema(schema = @Schema(type = "string", format = "binary")))
+			name = "photos",
+			description = "첨부 이미지 배열(선택)",
+			required = false,
+			content = @Content(
+				mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE,
+				array = @ArraySchema(
+					items = @Schema(type = "string", format = "binary", description = "이미지 파일")
+				)
+			)
 		)
-		List<MultipartFile> photos,
+		@RequestPart(value = "photos", required = false) List<MultipartFile> photos,
 
 		HttpServletRequest request
 	) throws IllegalAccessException {
 
 		UserResponseDto.UserInfoDTO userInfo = userQueryService.getUserInfo(request);
-		String email = userInfo.getEmail();
+		String email = userInfo.getEmail();  // 현재 로그인한 트레이너 이메일
 
 		Suggestions saved = suggestionService.save(dto, email, photos);
 

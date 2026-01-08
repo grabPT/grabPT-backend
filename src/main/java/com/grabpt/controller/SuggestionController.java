@@ -26,8 +26,8 @@ import com.grabpt.service.UserService.UserQueryService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Encoding;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -51,65 +51,33 @@ public class SuggestionController {
 	@ApiResponses({
 		@io.swagger.v3.oas.annotations.responses.ApiResponse(
 			responseCode = "200", description = "저장 성공",
-			content = @Content(
-				mediaType = "application/json",
-				schema = @Schema(implementation = SuggestionResponseDto.SuggestionSaveResponseDto.class),
-				examples = @ExampleObject(name = "성공 예시", value = """
-					{
-					  "isSuccess": true,
-					  "code": "OK",
-					  "message": "요청에 성공했습니다.",
-					  "result": { "suggestionId": 123 }
-					}
-					""")
-			)
+			content = @Content(schema = @Schema(implementation = SuggestionResponseDto.SuggestionSaveResponseDto.class))
 		)
 	})
+	// 1. Swagger가 multipart 내부의 각 파트 타입을 알 수 있도록 RequestBody 설정을 추가합니다.
+	@io.swagger.v3.oas.annotations.parameters.RequestBody(
+		content = @Content(
+			mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+			schema = @Schema(type = "object"), // 전체를 오브젝트로 정의
+			encoding = {
+				@Encoding(name = "data", contentType = MediaType.APPLICATION_JSON_VALUE), // data 파트는 JSON임을 명시
+				@Encoding(name = "photos", contentType = MediaType.IMAGE_JPEG_VALUE) // 사진 파트 설정 (생략 가능)
+			}
+		)
+	)
 	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ApiResponse<SuggestionResponseDto.SuggestionSaveResponseDto> setSuggestion(
-		// JSON part: SuggestionRequestDto
-		@Parameter(
-			name = "data",
-			description = "제안서 JSON 본문 (SuggestionRequestDto)",
-			required = true,
-			content = @Content(
-				mediaType = MediaType.APPLICATION_JSON_VALUE,
-				schema = @Schema(implementation = SuggestionRequestDto.class),
-				examples = @ExampleObject(name = "data 예시", value = """
-					{
-					  "requestionId": 77,
-					  "price": 50000,
-					  "sessionCount": 10,
-					  "message": "안녕하세요, 반갑습니다.",
-					  "location": "성북동",
-					  "sentAt": "2025-10-01",
-					  "isMatched": false
-					}
-					""")
-			)
-		)
+		// 2. @RequestPart를 사용하되, 복잡한 @Parameter 설정은 위 RequestBody로 옮겼으므로 간단하게 유지합니다.
 		@RequestPart("data") SuggestionRequestDto dto,
-
-		// Files part: photos[]
-		@Parameter(
-			name = "photos",
-			description = "첨부 이미지 배열(선택)",
-			required = false,
-			content = @Content(
-				mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE,
-				array = @ArraySchema(
-					items = @Schema(type = "string", format = "binary", description = "이미지 파일")
-				)
-			)
-		)
 		@RequestPart(value = "photos", required = false) List<MultipartFile> photos,
-
 		HttpServletRequest request
 	) throws IllegalAccessException {
 
+		// 사용자 정보 추출
 		UserResponseDto.UserInfoDTO userInfo = userQueryService.getUserInfo(request);
-		String email = userInfo.getEmail();  // 현재 로그인한 트레이너 이메일
+		String email = userInfo.getEmail();
 
+		// 서비스 호출
 		Suggestions saved = suggestionService.save(dto, email, photos);
 
 		return ApiResponse.onSuccess(

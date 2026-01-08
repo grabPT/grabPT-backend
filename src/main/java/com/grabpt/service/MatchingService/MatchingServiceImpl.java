@@ -157,8 +157,8 @@ public class MatchingServiceImpl implements MatchingService {
 	}
 
 	@Override
-	public Optional<Object> findById(Long matchingId) {
-		return Optional.of(matchingRepository.findById(matchingId));
+	public Optional<Matching> findById(Long matchingId) {
+		return matchingRepository.findById(matchingId);
 	}
 
 	@Override

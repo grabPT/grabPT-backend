@@ -39,7 +39,7 @@ public class PaymentServiceImpl implements PaymentService {
 				request.getPayment_uid());
 
 			// 주문내역 조회
-			Order order = (Order)orderService.findOrderAndPayment(request.getOrder_uid())
+			Order order = orderService.findOrderAndPayment(request.getOrder_uid())
 				.orElseThrow(() -> new IllegalArgumentException("주문 내역이 없습니다."));
 
 			// 결제 완료가 아니면
@@ -88,7 +88,7 @@ public class PaymentServiceImpl implements PaymentService {
 
 	@Override
 	public ImPortRequestDto.RequestPayDto findRequestDto(String orderUid) {
-		Order order = (Order)orderService.findOrderAndPaymentAndMember(orderUid)
+		Order order = orderService.findOrderAndPaymentAndMember(orderUid)
 			.orElseThrow(() -> new IllegalArgumentException("주문이 없습니다."));
 
 		return ImPortRequestDto.RequestPayDto.builder()
@@ -103,7 +103,7 @@ public class PaymentServiceImpl implements PaymentService {
 
 	@Override
 	public ImPortRequestDto.CustomRequestPayDto findCustomRequestDto(String orderUid) {
-		Order order = (Order)orderService.findOrderAndPaymentAndMember(orderUid)
+		Order order = orderService.findOrderAndPaymentAndMember(orderUid)
 			.orElseThrow(() -> new IllegalArgumentException("주문이 없습니다."));
 
 		return ImPortRequestDto.CustomRequestPayDto.builder()
@@ -148,7 +148,7 @@ public class PaymentServiceImpl implements PaymentService {
 				request.getPayment_uid());
 
 			// 주문내역 조회
-			Order order = (Order)orderService.findOrderAndPayment(request.getOrder_uid())
+			Order order = orderService.findOrderAndPayment(request.getOrder_uid())
 				.orElseThrow(() -> new IllegalArgumentException("주문 내역이 없습니다."));
 
 			// 결제 완료가 아니면

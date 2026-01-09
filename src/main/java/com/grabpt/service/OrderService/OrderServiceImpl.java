@@ -80,8 +80,8 @@ public class OrderServiceImpl implements OrderService {
 	}
 
 	@Override
-	public Optional<Object> findOrderAndPayment(String orderUid) {
-		return Optional.ofNullable(orderRepository.findOrderAndPayment(orderUid));
+	public Optional<Order> findOrderAndPayment(String orderUid) {
+		return orderRepository.findOrderAndPayment(orderUid);
 	}
 
 	@Override
@@ -90,8 +90,8 @@ public class OrderServiceImpl implements OrderService {
 	}
 
 	@Override
-	public Optional<Object> findOrderAndPaymentAndMember(String orderUid) {
-		return Optional.ofNullable(orderRepository.findOrderAndPaymentAndMember(orderUid));
+	public Optional<Order> findOrderAndPaymentAndMember(String orderUid) {
+		return orderRepository.findOrderAndPaymentAndMember(orderUid);
 	}
 
 	@Override

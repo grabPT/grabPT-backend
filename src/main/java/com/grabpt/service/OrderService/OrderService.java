@@ -17,11 +17,11 @@ public interface OrderService {
 
 	Order customOrder(Users user, Long price, String itemName, Long matchingId);
 
-	Optional<Object> findOrderAndPayment(String orderUid);
+	Optional<Order> findOrderAndPayment(String orderUid);
 
 	void delete(Order order);
 
-	Optional<Object> findOrderAndPaymentAndMember(String orderUid);
+	Optional<Order> findOrderAndPaymentAndMember(String orderUid);
 
 	Long getTrainerTotalEarnings(Long proProfileId, PaymentStatus paymentStatus);
 

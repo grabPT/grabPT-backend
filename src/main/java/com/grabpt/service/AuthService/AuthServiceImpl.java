@@ -319,8 +319,23 @@ public class AuthServiceImpl implements AuthService {
 			log.warn("[REISSUE] Stored refresh token is null for user: {}", email);
 			throw new AuthHandler(ErrorStatus.AUTH_STORED_REFRESH_NULL);
 		}
-		if (!refreshToken.equals(storedRefresh)) {
+
+		// 디버깅: 토큰 비교
+		log.info("[REISSUE] Received token length: {}, Stored token length: {}",
+			refreshToken.length(), storedRefresh.length());
+		log.info("[REISSUE] Received token (first 20 chars): {}",
+			refreshToken.length() > 20 ? refreshToken.substring(0, 20) : refreshToken);
+		log.info("[REISSUE] Stored token (first 20 chars): {}",
+			storedRefresh.length() > 20 ? storedRefresh.substring(0, 20) : storedRefresh);
+		log.info("[REISSUE] Tokens equal: {}", refreshToken.equals(storedRefresh));
+
+		// Trim 후 비교 시도
+		String trimmedReceived = refreshToken.trim();
+		String trimmedStored = storedRefresh.trim();
+
+		if (!trimmedReceived.equals(trimmedStored)) {
 			log.warn("[REISSUE] Refresh token mismatch for user: {}", email);
+			log.warn("[REISSUE] Received (trimmed) != Stored (trimmed)");
 			throw new AuthHandler(ErrorStatus.AUTH_REFRESH_MISMATCH);
 		}
 

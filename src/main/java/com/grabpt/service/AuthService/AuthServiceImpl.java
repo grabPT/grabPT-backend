@@ -252,17 +252,45 @@ public class AuthServiceImpl implements AuthService {
 	}
 
 	/**
+	 * Authorization 헤더에서 토큰 추출
+	 * - "Bearer {token}" 형식에서 토큰만 추출
+	 * - Bearer 없이 토큰만 있는 경우도 처리
+	 */
+	private String extractTokenFromHeader(HttpServletRequest request) {
+		String authHeader = request.getHeader("Authorization");
+		if (authHeader == null || authHeader.isBlank()) {
+			return null;
+		}
+
+		// "Bearer " 접두사 제거
+		if (authHeader.startsWith("Bearer ")) {
+			return authHeader.substring(7).trim();
+		}
+
+		// Bearer 없이 토큰만 있는 경우
+		return authHeader.trim();
+	}
+
+	/**
 	 * 토큰 재발급
+	 * - Authorization 헤더 우선, 쿠키 fallback
 	 * - 환경별 자동 처리 (CookieManagerV2 사용)
 	 */
 	@Override
 	public void reissueTokens(HttpServletRequest request, HttpServletResponse response) {
 		log.info("[REISSUE] 토큰 재발급 요청");
 
-		// 1) 쿠키에서 Refresh Token 읽기
-		String refreshToken = CookieManagerV2.getRefreshToken(request);
+		// 1) Refresh Token 확보 (우선순위: Authorization 헤더 > 쿠키)
+		String refreshToken = extractTokenFromHeader(request);
 		if (refreshToken == null || refreshToken.isBlank()) {
-			log.warn("[REISSUE] Refresh token not found in cookie");
+			log.debug("[REISSUE] Refresh token not found in header, trying cookie");
+			refreshToken = CookieManagerV2.getRefreshToken(request);
+		} else {
+			log.debug("[REISSUE] Refresh token found in Authorization header");
+		}
+
+		if (refreshToken == null || refreshToken.isBlank()) {
+			log.warn("[REISSUE] Refresh token not found in both header and cookie");
 			throw new AuthHandler(ErrorStatus.AUTH_MISSING_REFRESH_COOKIE);
 		}
 
@@ -329,14 +357,23 @@ public class AuthServiceImpl implements AuthService {
 		CookieManagerV2.clearAuthCookies(response, request);
 		CookieManagerV2.clearOAuthTempCookies(response, request);
 
-		// 2) Refresh Token 확보 (우선순위: body > 쿠키)
+		// 2) Refresh Token 확보 (우선순위: body > Authorization 헤더 > 쿠키)
 		String refreshToken = null;
 		if (body != null && body.getRefreshToken() != null && !body.getRefreshToken().isBlank()) {
 			refreshToken = body.getRefreshToken();
 			log.debug("[LOGOUT] Refresh token from request body");
 		} else {
-			refreshToken = CookieManagerV2.getRefreshToken(request);
-			log.debug("[LOGOUT] Refresh token from cookie");
+			// Authorization 헤더 확인
+			refreshToken = extractTokenFromHeader(request);
+			if (refreshToken != null && !refreshToken.isBlank()) {
+				log.debug("[LOGOUT] Refresh token from Authorization header");
+			} else {
+				// 쿠키 확인
+				refreshToken = CookieManagerV2.getRefreshToken(request);
+				if (refreshToken != null && !refreshToken.isBlank()) {
+					log.debug("[LOGOUT] Refresh token from cookie");
+				}
+			}
 		}
 
 		boolean tokenRevoked = false;

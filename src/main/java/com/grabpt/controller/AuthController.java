@@ -81,19 +81,19 @@ public class AuthController {
 	// JWT 토큰 재발행
 	@Operation(
 		summary = "JWT Refresh Token으로 인증 토큰 재발행",
-		description = "유효한 Refresh Token 전달 시 인증 토큰 재발행, access, refresh 토큰은 쿠키로 전달"
+		description = "유효한 Refresh Token 전달 시 인증 토큰 재발행, access, refresh 토큰은 쿠키와 응답 바디로 전달"
 	)
 	@ApiResponses({
 		@io.swagger.v3.oas.annotations.responses.ApiResponse(
-			responseCode = "204", description = "재발행 성공(본문 없음)"
+			responseCode = "200", description = "재발행 성공, 새 토큰 반환"
 		)
 	})
 	@PostMapping("/reissue")
-	public ResponseEntity<Void> reissueToken(HttpServletRequest request, HttpServletResponse response) {
+	public ApiResponse<Map<String, String>> reissueToken(HttpServletRequest request, HttpServletResponse response) {
 
 		log.info("reissue 진입");
-		authService.reissueTokens(request, response); // 실패 시 AuthHandler 발생 → Advice에서 401 처리
-		return ResponseEntity.noContent().build();
+		Map<String, String> tokens = authService.reissueTokens(request, response);
+		return ApiResponse.onSuccess(tokens);
 	}
 
 	@Operation(summary = "로그아웃", description = "accessToken 및 refreshToken 쿠키 삭제, DB refreshToken 초기화")

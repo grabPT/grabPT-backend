@@ -26,7 +26,11 @@ import lombok.extern.slf4j.Slf4j;
 public class PaymentController {
 	private final PaymentService paymentService;
 
-	@GetMapping("/payment/{id}") // view로 전달할 결제 관련 데이터
+	@Operation(
+		summary = "결제 페이지 조회",
+		description = "orderUid로 결제 정보를 조회하여 결제 페이지(HTML View)를 반환합니다."
+	)
+	@GetMapping("/payment/{id}")
 	public String paymentPage(@PathVariable(name = "id", required = false) String orderUid, Model model) {
 
 		ImPortRequestDto.CustomRequestPayDto requestDto = paymentService.findCustomRequestDto(orderUid);

@@ -327,7 +327,21 @@ public class AuthServiceImpl implements AuthService {
 			refreshToken.length() > 20 ? refreshToken.substring(0, 20) : refreshToken);
 		log.info("[REISSUE] Stored token (first 20 chars): {}",
 			storedRefresh.length() > 20 ? storedRefresh.substring(0, 20) : storedRefresh);
+		log.info("[REISSUE] Received token (last 20 chars): {}",
+			refreshToken.length() > 20 ? refreshToken.substring(refreshToken.length() - 20) : refreshToken);
+		log.info("[REISSUE] Stored token (last 20 chars): {}",
+			storedRefresh.length() > 20 ? storedRefresh.substring(storedRefresh.length() - 20) : storedRefresh);
 		log.info("[REISSUE] Tokens equal: {}", refreshToken.equals(storedRefresh));
+
+		// 문자별 비교
+		for (int i = 0; i < Math.min(refreshToken.length(), storedRefresh.length()); i++) {
+			if (refreshToken.charAt(i) != storedRefresh.charAt(i)) {
+				log.warn("[REISSUE] First difference at position {}: received='{}' (code={}), stored='{}' (code={})",
+					i, refreshToken.charAt(i), (int)refreshToken.charAt(i),
+					storedRefresh.charAt(i), (int)storedRefresh.charAt(i));
+				break;
+			}
+		}
 
 		// Trim 후 비교 시도
 		String trimmedReceived = refreshToken.trim();

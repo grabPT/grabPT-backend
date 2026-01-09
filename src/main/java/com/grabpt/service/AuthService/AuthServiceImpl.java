@@ -3,7 +3,9 @@ package com.grabpt.service.AuthService;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -275,9 +277,10 @@ public class AuthServiceImpl implements AuthService {
 	 * 토큰 재발급
 	 * - Authorization 헤더 우선, 쿠키 fallback
 	 * - 환경별 자동 처리 (CookieManagerV2 사용)
+	 * @return 새로 발급된 accessToken과 refreshToken을 담은 Map
 	 */
 	@Override
-	public void reissueTokens(HttpServletRequest request, HttpServletResponse response) {
+	public Map<String, String> reissueTokens(HttpServletRequest request, HttpServletResponse response) {
 		log.info("[REISSUE] 토큰 재발급 요청");
 
 		// 1) Refresh Token 확보 (우선순위: Authorization 헤더 > 쿠키)
@@ -320,36 +323,8 @@ public class AuthServiceImpl implements AuthService {
 			throw new AuthHandler(ErrorStatus.AUTH_STORED_REFRESH_NULL);
 		}
 
-		// 디버깅: 토큰 비교
-		log.info("[REISSUE] Received token length: {}, Stored token length: {}",
-			refreshToken.length(), storedRefresh.length());
-		log.info("[REISSUE] Received token (first 20 chars): {}",
-			refreshToken.length() > 20 ? refreshToken.substring(0, 20) : refreshToken);
-		log.info("[REISSUE] Stored token (first 20 chars): {}",
-			storedRefresh.length() > 20 ? storedRefresh.substring(0, 20) : storedRefresh);
-		log.info("[REISSUE] Received token (last 20 chars): {}",
-			refreshToken.length() > 20 ? refreshToken.substring(refreshToken.length() - 20) : refreshToken);
-		log.info("[REISSUE] Stored token (last 20 chars): {}",
-			storedRefresh.length() > 20 ? storedRefresh.substring(storedRefresh.length() - 20) : storedRefresh);
-		log.info("[REISSUE] Tokens equal: {}", refreshToken.equals(storedRefresh));
-
-		// 문자별 비교
-		for (int i = 0; i < Math.min(refreshToken.length(), storedRefresh.length()); i++) {
-			if (refreshToken.charAt(i) != storedRefresh.charAt(i)) {
-				log.warn("[REISSUE] First difference at position {}: received='{}' (code={}), stored='{}' (code={})",
-					i, refreshToken.charAt(i), (int)refreshToken.charAt(i),
-					storedRefresh.charAt(i), (int)storedRefresh.charAt(i));
-				break;
-			}
-		}
-
-		// Trim 후 비교 시도
-		String trimmedReceived = refreshToken.trim();
-		String trimmedStored = storedRefresh.trim();
-
-		if (!trimmedReceived.equals(trimmedStored)) {
+		if (!refreshToken.equals(storedRefresh)) {
 			log.warn("[REISSUE] Refresh token mismatch for user: {}", email);
-			log.warn("[REISSUE] Received (trimmed) != Stored (trimmed)");
 			throw new AuthHandler(ErrorStatus.AUTH_REFRESH_MISMATCH);
 		}
 
@@ -369,7 +344,13 @@ public class AuthServiceImpl implements AuthService {
 		CookieManagerV2.setAccessToken(response, request, newAccessToken);
 		CookieManagerV2.setRefreshToken(response, request, newRefreshToken);
 
+		// 7) 응답 바디에 토큰 반환 (프론트엔드가 토큰을 업데이트할 수 있도록)
+		Map<String, String> tokens = new HashMap<>();
+		tokens.put("accessToken", newAccessToken);
+		tokens.put("refreshToken", newRefreshToken);
+
 		log.info("[REISSUE] 토큰 재발급 완료: userId={}", user.getId());
+		return tokens;
 	}
 
 	/**

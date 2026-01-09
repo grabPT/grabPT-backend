@@ -1,6 +1,7 @@
 package com.grabpt.service.AuthService;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.web.multipart.MultipartFile;
@@ -54,7 +55,7 @@ public interface AuthService {
 
 	Role mapToRole(int userTypeCode);
 
-	void reissueTokens(HttpServletRequest request, HttpServletResponse response);
+	Map<String, String> reissueTokens(HttpServletRequest request, HttpServletResponse response);
 
 	void logout(RefreshTokenRequestDto body, HttpServletRequest request, HttpServletResponse response,
 		Authentication authentication);

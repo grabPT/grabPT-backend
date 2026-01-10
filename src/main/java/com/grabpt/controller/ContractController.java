@@ -97,7 +97,7 @@ public class ContractController {
 		summary = "계약서 PDF 생성 및 S3 저장 API",
 		description = "계약서 ID를 받아 PDF를 생성하고 S3에 업로드한 뒤, 파일 URL을 DB에 저장합니다."
 	)
-	@PostMapping("/contracts/{contractId}/submit")
+	@PostMapping("/contract/{contractId}/submit")
 	public ApiResponse<String> generateAndSavePdf(@PathVariable Long contractId) {
 		try {
 			String fileUrl = contractService.generateAndSavePdfToS3(contractId);

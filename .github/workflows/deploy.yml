@@ -2,14 +2,7 @@ name: Deploy to EC2 via CodeDeploy + Docker
 
 on:
   push:
-    branches: [ develop, main ]
-  pull_request:
-    types: [ closed ]
-    branches: [ develop, main ]
-
-concurrency:
-  group: deploy-${{ github.ref }}
-  cancel-in-progress: true
+    branches: [ develop ]
 
 env:
   AWS_REGION: ap-northeast-2
@@ -22,8 +15,6 @@ permissions:
 jobs:
   build_and_push:
     runs-on: ubuntu-latest
-    # PR이 closed되었지만 merged되지 않은 경우는 배포하지 않음
-    if: github.event_name == 'push' || github.event.pull_request.merged == true
     steps:
       - uses: actions/checkout@v4
 
@@ -91,24 +82,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Stop active deployments
-        env:
-          APP_NAME: ${{ secrets.CODEDEPLOY_APP_NAME }}
-          GROUP_NAME: ${{ secrets.CODEDEPLOY_GROUP_NAME }}
-        run: |
-          ACTIVE_DEPLOYMENT=$(aws deploy list-deployments \
-            --application-name "$APP_NAME" \
-            --deployment-group-name "$GROUP_NAME" \
-            --include-only-statuses "InProgress" "Queued" \
-            --query 'deployments[0]' \
-            --output text)
-
-          if [ "$ACTIVE_DEPLOYMENT" != "None" ] && [ -n "$ACTIVE_DEPLOYMENT" ]; then
-            echo "Stopping active deployment: $ACTIVE_DEPLOYMENT"
-            aws deploy stop-deployment --deployment-id "$ACTIVE_DEPLOYMENT" || true
-            sleep 10
-          fi
-
       - name: Push bundle to S3 via CodeDeploy
         env:
           APP_NAME: ${{ secrets.CODEDEPLOY_APP_NAME }}
@@ -120,4 +93,3 @@ jobs:
           set -e
           aws deploy push --application-name "$APP_NAME" --s3-location s3://$BKT/$KEY --source ./bundle
           aws deploy create-deployment --application-name "$APP_NAME" --deployment-group-name "$GROUP_NAME" --deployment-config-name CodeDeployDefault.AllAtOnce --s3-location bucket=$BKT,key=$KEY,bundleType=zip --file-exists-behavior OVERWRITE
-      

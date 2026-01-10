@@ -29,7 +29,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		String token = JwtTokenProviderImproved.resolveToken(request);
 
 		// 토큰 없거나 무효 → 인증 세팅 없이 통과 (예외 절대 금지)
-		if (!StringUtils.hasText(token) || !jwtTokenProvider.validateToken(token)) {
+		if (!StringUtils.hasText(token)) {
+			log.warn("[JWT] 토큰 없음: {}", request.getRequestURI());
+			filterChain.doFilter(request, response);
+			return;
+		}
+		if (!jwtTokenProvider.validateToken(token)) {
+			log.warn("[JWT] 토큰 무효/만료: {} | URI: {}", token.substring(0, Math.min(20, token.length())) + "...", request.getRequestURI());
 			filterChain.doFilter(request, response);
 			return;
 		}

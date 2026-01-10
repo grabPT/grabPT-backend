@@ -7,6 +7,10 @@ on:
     types: [ closed ]
     branches: [ develop, main ]
 
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   AWS_REGION: ap-northeast-2
   ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-northeast-2.amazonaws.com
@@ -86,6 +90,24 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
+
+      - name: Stop active deployments
+        env:
+          APP_NAME: ${{ secrets.CODEDEPLOY_APP_NAME }}
+          GROUP_NAME: ${{ secrets.CODEDEPLOY_GROUP_NAME }}
+        run: |
+          ACTIVE_DEPLOYMENT=$(aws deploy list-deployments \
+            --application-name "$APP_NAME" \
+            --deployment-group-name "$GROUP_NAME" \
+            --include-only-statuses "InProgress" "Queued" \
+            --query 'deployments[0]' \
+            --output text)
+
+          if [ "$ACTIVE_DEPLOYMENT" != "None" ] && [ -n "$ACTIVE_DEPLOYMENT" ]; then
+            echo "Stopping active deployment: $ACTIVE_DEPLOYMENT"
+            aws deploy stop-deployment --deployment-id "$ACTIVE_DEPLOYMENT" || true
+            sleep 10
+          fi
 
       - name: Push bundle to S3 via CodeDeploy
         env:

@@ -6,7 +6,6 @@ build/
 !**/src/test/**/build/
 .env.properties
 .env
-.docker-compose.local.yml
 
 ### STS ###
 .apt_generated

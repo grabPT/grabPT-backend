@@ -23,6 +23,9 @@ public interface UserChatRoomRepository extends JpaRepository<UserChatRoom, Long
 	""") //N+1문제 방지
 	List<UserChatRoom> findByUserId(Long userId, String keyword);
 
+	@Query("SELECT ucr.chatRoom.id FROM UserChatRoom ucr WHERE ucr.user.id = :userId")
+	List<Long> findChatRoomIdsByUserId(@Param("userId") Long userId);
+
 	@Query("SELECT ucr FROM UserChatRoom ucr WHERE ucr.chatRoom.id = :roomId AND ucr.user.id = :userId")
 	Optional<UserChatRoom> findByRoomIdAndUserId(@Param("roomId") Long roomId, @Param("userId") Long userId);
 

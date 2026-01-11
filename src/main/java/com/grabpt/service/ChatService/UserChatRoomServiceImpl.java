@@ -3,6 +3,7 @@ package com.grabpt.service.ChatService;
 import com.grabpt.domain.entity.UserChatRoom;
 import com.grabpt.repository.ChatRepository.UserChatRoomRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,5 +40,10 @@ public class UserChatRoomServiceImpl implements UserChatRoomService{
 	public Optional<UserChatRoom> findByRoomIdAndUserId(Long roomId, Long userId) {
 		return userChatRoomRepository.findByRoomIdAndUserId(roomId, userId);
 	}
+
+	@Override
+	public List<Long> findChatRoomIdsByUserId(@Param("userId") Long userId){
+		return userChatRoomRepository.findChatRoomIdsByUserId(userId);
+	};
 
 }

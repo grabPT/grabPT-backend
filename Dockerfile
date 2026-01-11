@@ -6,7 +6,8 @@ COPY . .
 RUN gradle clean bootJar -x test
 
 # ---- runtime stage ----
-FROM eclipse-temurin:17-jre
+# PlayWright : PDF 생성 필요 라이브러리 추가
+FROM mcr.microsoft.com/playwright/java:v1.45.0-jammy
 ENV TZ=Asia/Seoul
 WORKDIR /app
 # 위 build 산출물 이름은 build.gradle의 bootJar 설정과 일치

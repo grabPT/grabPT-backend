@@ -1,6 +1,8 @@
 package com.grabpt.service.ChatService;
 
 import com.grabpt.domain.entity.UserChatRoom;
+import com.grabpt.dto.response.ChatResponse;
+import com.grabpt.dto.response.ChatRoomPreviewDto;
 import com.grabpt.repository.ChatRepository.UserChatRoomRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.repository.query.Param;
@@ -27,8 +29,8 @@ public class UserChatRoomServiceImpl implements UserChatRoomService{
 	}
 
 	@Override
-	public List<UserChatRoom> findByUserId(Long userId, String keyword) {
-		return userChatRoomRepository.findByUserId(userId, keyword);
+	public List<ChatRoomPreviewDto> findChatRoomPreviewsByUserId(Long userId, String keyword) {
+		return userChatRoomRepository.findChatRoomPreviewsByUserId(userId, keyword);
 	}
 
 	@Override

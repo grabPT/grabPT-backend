@@ -15,7 +15,7 @@ public interface UserChatRoomRepository extends JpaRepository<UserChatRoom, Long
 	Optional<UserChatRoom> findChatRoomByUserPair(@Param("userId") Long userId, @Param("proId") Long proId);
 
 	@Query("""
-   SELECT NEW com.grabpt.dto.response.ChatResponse.ChatRoomPreviewDto(
+   SELECT NEW com.grabpt.dto.response.ChatRoomPreviewDto(
        cr.id,
        ucr.user.id,
        ou.id,

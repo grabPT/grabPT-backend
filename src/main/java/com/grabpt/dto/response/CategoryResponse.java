@@ -41,7 +41,7 @@ public class CategoryResponse {
 	@AllArgsConstructor
 	public static class RequestListDto {
 		Long requestionId;
-		String userNickName; //request.user.nickname
+		String userNickname; //request.user.nickname
 		String location; //requestion.location
 		int sessionCount; // requestion.sessionCount 없음
 		int requestedPrice;

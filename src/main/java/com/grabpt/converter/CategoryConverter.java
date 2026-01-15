@@ -23,7 +23,7 @@ public class CategoryConverter {
 	public static List<CategoryResponse.RequestListDto> toRequestListDto(List<Requestions> requestions) {
 		return requestions.stream()
 			.map(requestion -> CategoryResponse.RequestListDto.builder()
-				.userNickName(requestion.getUser().getNickname())
+				.userNickname(requestion.getUser().getNickname())
 				.location(requestion.getLocation())
 				.matchingStatus(requestion.getStatus())
 				.profileImageUrl(requestion.getUser().getProfileImageUrl())

@@ -122,6 +122,9 @@ public class SuggestionServiceImpl implements SuggestionService {
 		Matching matching = matchingService.findMatchingBySuggestionId(suggestionId);
 		Long matchId = (matching != null) ? matching.getId() : null;
 
+		// 전문가가 제안한 총 횟수
+		long sessionCount = suggestionRepository.countByProProfileId(pro.getId());
+
 		return SuggestionResponseDto.SuggestionDetailResponseDto.builder()
 			.userNickName(user.getNickname())
 			.centerName(pro.getCenter())
@@ -138,17 +141,36 @@ public class SuggestionServiceImpl implements SuggestionService {
 			.matchingId(matchId)  // 매칭 ID (없으면 null)
 			.requestionId(requestion.getId())
 			.suggestionId(suggestionId)
+			.sessionCount(sessionCount)
 			.build();
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Page<SuggestionResponseDto.SuggestionResponsePagingDto> getSuggestionsByRequestionId(Long requestionId,
 		int page) {
 		Pageable pageable = PageRequest.of(page, 6); // 6개씩 페이징
 		Page<Suggestions> suggestionsPage = suggestionRepository.findByRequestionId(requestionId, pageable);
 
-		return SuggestionConverter.toSuggestionResponsePageDto(suggestionsPage);
+		return suggestionsPage.map(s -> {
+			var pro = s.getProProfile();
+			var user = pro.getUser();
+			var address = user.getAddress();
 
+			// 전문가가 제안한 총 횟수
+			long sessionCount = suggestionRepository.countByProProfileId(pro.getId());
+
+			return SuggestionResponseDto.SuggestionResponsePagingDto.builder()
+				.userNickname(user.getNickname())
+				.centerName(pro.getCenter())
+				.location(address != null ? address.getFullAddress() : "")
+				.suggestedPrice(s.getPrice())
+				.averageRating(pro.getAverageRating())
+				.sessionCount((int) sessionCount)
+				.profileImageUrl(user.getProfileImageUrl())
+				.suggestionId(s.getId())
+				.build();
+		});
 	}
 
 	@Transactional(readOnly = true)

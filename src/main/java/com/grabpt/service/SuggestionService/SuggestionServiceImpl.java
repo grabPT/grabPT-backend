@@ -154,16 +154,13 @@ public class SuggestionServiceImpl implements SuggestionService {
 			var user = pro.getUser();
 			var address = user.getAddress();
 
-			// 전문가가 제안한 총 횟수
-			long sessionCount = suggestionRepository.countByProProfileId(pro.getId());
-
 			return SuggestionResponseDto.SuggestionResponsePagingDto.builder()
 				.userNickname(user.getNickname())
 				.centerName(pro.getCenter())
 				.location(address != null ? address.getFullAddress() : "")
 				.suggestedPrice(s.getPrice())
 				.averageRating(pro.getAverageRating())
-				.sessionCount((int) sessionCount)
+				.sessionCount(s.getSessionCount())
 				.profileImageUrl(user.getProfileImageUrl())
 				.suggestionId(s.getId())
 				.build();

@@ -17,6 +17,8 @@ public interface SuggestionRepository extends JpaRepository<Suggestions, Long> {
 	Page<Suggestions> findByRequestionId(Long requestionId, Pageable pageable);
 
 	Page<Suggestions> findByProProfile_User_Email(String email, Pageable pageable);
+
+	long countByProProfileId(Long proProfileId);
 	
 	@Lock(PESSIMISTIC_WRITE)
 	@Query("select s from Suggestions s where s.id = :id")

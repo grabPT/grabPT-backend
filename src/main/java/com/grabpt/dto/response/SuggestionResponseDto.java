@@ -37,6 +37,7 @@ public class SuggestionResponseDto {
 		private Long matchingId;
 		private Long requestionId;
 		private Long suggestionId;
+		private Long sessionCount; // 전문가가 제안한 총 횟수
 	}
 
 	@Getter

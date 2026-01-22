@@ -23,7 +23,7 @@ public class ProfileResponseDTO {
 		private Long userId;
 		private String profileImageUrl;
 		private String userName;
-		private String userNickName;
+		private String userNickname;
 		private String email;
 		private String categoryName;
 		private List<MyProProfileDTO.AddressDTO> address;
@@ -57,7 +57,7 @@ public class ProfileResponseDTO {
 		private Long userId;
 		private String profileImageUrl;
 		private String userName;
-		private String userNickName;
+		private String userNickname;
 		private String centerName;
 		private String categoryName; // 카테고리 이름 추가
 		private Double averageRating; // 리뷰 평점 추가

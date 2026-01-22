@@ -126,7 +126,7 @@ public class RequestionServiceImpl implements RequestionService {
 			Users u = req.getUser(); // 한번만 접근해 지역 변수에 담아 사용
 			return RequestionResponseDto.RequestionResponsePagingDto.builder()
 				.userName(u.getNickname())
-				.userNickName(u.getNickname())
+				.userNickname(u.getNickname())
 				.location(req.getLocation())
 				.sessionCount(req.getSessionCount())
 				.requestedPrice(req.getPrice())

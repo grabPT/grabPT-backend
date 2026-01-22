@@ -88,7 +88,7 @@ public class RequestionResponseDto {
 		private String categoryName;
 
 		// 추가 정보
-		private String userNickName;
+		private String userNickname;
 
 		public static RequestionResponsePagingDto from(Requestions r) {
 			Users u = r.getUser();

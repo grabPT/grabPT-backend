@@ -52,7 +52,7 @@ public class UserRestController {
 					  "message": "요청에 성공했습니다.",
 					  "result": {
 					    "userId": 10,
-					    "userNickName": "동이",
+					    "userNickname": "동이",
 					    "userName": "홍길동",
 					    "address": {
 					      "city": "서울시",

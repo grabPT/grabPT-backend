@@ -9,7 +9,7 @@ public class UserConverter {
 		return UserResponseDto.UserInfoDTO.builder()
 			.userId(user.getId())
 			.userName(user.getUsername())
-			.userNickName(user.getNickname())
+			.userNickname(user.getNickname())
 			.email(user.getEmail())
 			.role(user.getRole().toString())
 			.address(UserResponseDto.AddressDto.builder()

@@ -182,7 +182,7 @@ public class RequestionController {
 					        "availableDays": ["화","목"],
 					        "availableTimes": ["저녁"],
 					        "categoryName": "체형 교정",
-					        "userNickName": "Minsu"
+					        "userNickname": "Minsu"
 					      },
 					      {
 					        "userName": "이수지",
@@ -197,7 +197,7 @@ public class RequestionController {
 					        "availableDays": ["월","수","금"],
 					        "availableTimes": ["오전","점심"],
 					        "categoryName": "다이어트",
-					        "userNickName": "Suzy"
+					        "userNickname": "Suzy"
 					      }
 					    ],
 					    "pageable": { "pageNumber": 0, "pageSize": 4 },

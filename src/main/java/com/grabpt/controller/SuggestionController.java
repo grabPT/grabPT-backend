@@ -135,7 +135,7 @@ public class SuggestionController {
 					  "code": "OK",
 					  "message": "요청에 성공했습니다.",
 					  "result": {
-					    "userNickName": "홍길동",
+					    "userNickname": "홍길동",
 					    "centerName": "그랩PT 강남점",
 					    "profileImageUrl": "https://cdn.example.com/u/1.jpg",
 

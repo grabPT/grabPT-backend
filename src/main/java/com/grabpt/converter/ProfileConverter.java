@@ -32,7 +32,7 @@ public class ProfileConverter {
 			.userId(user.getId())
 			.profileImageUrl(user.getProfileImageUrl())
 			.userName(user.getUsername())
-			.userNickName(user.getNickname())
+			.userNickname(user.getNickname())
 			.email(user.getEmail())
 			.address(addressDTOS)
 			.categoryName(categoryName)  // 없으면 null 반환
@@ -78,7 +78,7 @@ public class ProfileConverter {
 		return ProfileResponseDTO.MyProProfileDTO.builder()
 			.userId(user.getId())
 			.profileImageUrl(user.getProfileImageUrl())
-			.userNickName(user.getNickname())
+			.userNickname(user.getNickname())
 			.userName(user.getUsername())
 			.centerName(proProfile.getCenter())
 			.categoryName(user.getProProfile().getCategory().getCode().toLowerCase())
@@ -108,7 +108,7 @@ public class ProfileConverter {
 			: Collections.emptyList();
 
 		return ProProfileResponseDTO.builder()
-			.userNickName(user.getNickname()) // User 객체에서 닉네임 가져오기
+			.userNickname(user.getNickname()) // User 객체에서 닉네임 가져오기
 			.profileImageUrl(user.getProfileImageUrl())
 			.photos(photoDTOS)
 			.userId(user.getId())

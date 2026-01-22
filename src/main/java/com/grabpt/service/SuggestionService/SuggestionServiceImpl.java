@@ -122,11 +122,8 @@ public class SuggestionServiceImpl implements SuggestionService {
 		Matching matching = matchingService.findMatchingBySuggestionId(suggestionId);
 		Long matchId = (matching != null) ? matching.getId() : null;
 
-		// 전문가가 제안한 총 횟수
-		long sessionCount = suggestionRepository.countByProProfileId(pro.getId());
-
 		return SuggestionResponseDto.SuggestionDetailResponseDto.builder()
-			.userNickName(user.getNickname())
+			.userNickname(user.getNickname())
 			.centerName(pro.getCenter())
 			.profileImageUrl(user.getProfileImageUrl())
 			.suggestedPrice(suggestedPrice)
@@ -141,7 +138,7 @@ public class SuggestionServiceImpl implements SuggestionService {
 			.matchingId(matchId)  // 매칭 ID (없으면 null)
 			.requestionId(requestion.getId())
 			.suggestionId(suggestionId)
-			.sessionCount(sessionCount)
+			.sessionCount(suggestion.getSessionCount() != null ? suggestion.getSessionCount().longValue() : null)
 			.build();
 	}
 

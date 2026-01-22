@@ -18,7 +18,7 @@ import lombok.Getter;
 public class ProProfileResponseDTO {
 
 	// 프로필 카드
-	private String userNickName;
+	private String userNickname;
 	private String center;
 	private String profileImageUrl;
 

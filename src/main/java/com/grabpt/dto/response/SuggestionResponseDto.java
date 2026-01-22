@@ -19,7 +19,7 @@ public class SuggestionResponseDto {
 	@NoArgsConstructor
 	@AllArgsConstructor
 	public static class SuggestionDetailResponseDto {
-		private String userNickName;
+		private String userNickname;
 		private String centerName;
 		private String profileImageUrl;
 

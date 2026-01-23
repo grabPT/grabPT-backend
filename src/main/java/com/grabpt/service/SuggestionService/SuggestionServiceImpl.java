@@ -94,7 +94,7 @@ public class SuggestionServiceImpl implements SuggestionService {
 		}
 		Suggestions save = suggestionRepository.save(suggestion);
 		alarmService.sendAlarm(requestion.getUser().getId(), "SUGGESTION", "제안서 도착",
-			user.getNickname() + " 님이 제안서를 보냈습니다", "/matching/proposals/" + suggestion.getId());
+			user.getNickname() + " 님이 제안서를 보냈습니다", "/matching/suggests/" + suggestion.getId());
 		return save;
 	}
 

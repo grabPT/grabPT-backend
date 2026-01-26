@@ -8,18 +8,19 @@ import com.grabpt.domain.entity.UserChatRoom;
 import com.grabpt.domain.entity.Users;
 import com.grabpt.dto.request.ChatRequest;
 import com.grabpt.dto.response.ChatResponse;
+import com.grabpt.dto.response.ChatRoomPreviewDto;
 import com.grabpt.repository.ChatRepository.ChatRoomRepository;
 import com.grabpt.repository.ChatRepository.UserChatRoomRepository;
 import com.grabpt.service.UserService.UserQueryService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatRoomServiceImpl implements ChatRoomService{
@@ -73,24 +74,28 @@ public class ChatRoomServiceImpl implements ChatRoomService{
 	}
 
 	@Override //fetch join고려 //ChatRoom
-	public List<ChatResponse.ChatRoomPreviewDto> getChatRoomList(Long userId, String keyword) {
-		Users user = userQueryService.findById(userId)
-			.orElseThrow(() -> new UserHandler(ErrorStatus.MEMBER_NOT_FOUND));
+	@Transactional
+	public List<ChatRoomPreviewDto> getChatRoomList(Long userId, String keyword) {
+		long start = System.currentTimeMillis();
+		List<ChatRoomPreviewDto> chatRoomPreviews = userChatRoomService.findChatRoomPreviewsByUserId(userId, keyword);
 
-		List<UserChatRoom> chatRooms = userChatRoomService.findByUserId(userId, keyword);
+		if (chatRoomPreviews.isEmpty()) {
+			return Collections.emptyList();
+		}
 
-		List<Long> roomIds = chatRooms.stream()
-			.map(chatRoom -> chatRoom.getChatRoom().getId())
+		List<Long> roomIds = chatRoomPreviews.stream()
+			.map(chatRoom -> chatRoom.getRoomId())
 			.toList();
 		Map<Long, Long> unreadMessageCount = messageService.getUnreadMessageCount(roomIds, userId);
 
-		return chatRooms.stream()
-			.map(chatRoom -> {
-				Long roomId = chatRoom.getChatRoom().getId();
-				Long unreadCount = unreadMessageCount.getOrDefault(roomId, 0L);
-				return ChatConverter.toChatRoomPreviewDto(chatRoom, unreadCount);
-			})
-			.toList();
+		chatRoomPreviews.forEach(preview ->
+			preview.setUnreadCount(unreadMessageCount.getOrDefault(preview.getRoomId(), 0L))
+		);
+
+		long end = System.currentTimeMillis();
+		long time = end-start;
+		log.info("실행 시간:{}",time);
+		return chatRoomPreviews;
 	}
 
 	@Override

@@ -6,6 +6,7 @@ import com.grabpt.converter.ChatConverter;
 import com.grabpt.domain.entity.Messages;
 import com.grabpt.dto.request.ChatRequest;
 import com.grabpt.dto.response.ChatResponse;
+import com.grabpt.dto.response.ChatRoomPreviewDto;
 import com.grabpt.service.ChatService.ChatFacade;
 import com.grabpt.service.ChatService.ChatRoomService;
 import com.grabpt.service.ChatService.MessageService;
@@ -137,14 +138,14 @@ public class ChatController {
 			description = "채팅방 불러오기 성공",
 			content = @Content(
 				mediaType = "application/json",
-				schema = @Schema(implementation = ChatResponse.ChatRoomPreviewDto.class)
+				schema = @Schema(implementation = ChatRoomPreviewDto.class)
 			)),
 		@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증 실패"),
 		@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 내부 오류")
 	})
 	@GetMapping("/chatRoom/list") //로그인 유저 정보
 	@ResponseBody
-	public ApiResponse<List<ChatResponse.ChatRoomPreviewDto>> getChatRoomList(@RequestParam(name = "keyword", required = false) String keyword){
+	public ApiResponse<List<ChatRoomPreviewDto>> getChatRoomList(@RequestParam(name = "keyword", required = false) String keyword){
 		Long userId = SecurityUtils.currentUserIdOrThrow();
 		return ApiResponse.onSuccess(chatRoomService.getChatRoomList(userId, keyword));
 	}

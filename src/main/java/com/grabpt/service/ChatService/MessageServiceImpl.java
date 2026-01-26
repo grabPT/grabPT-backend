@@ -14,6 +14,7 @@ import com.grabpt.repository.ChatRepository.MessageRepository;
 import com.grabpt.service.AlarmService.AlarmService;
 import com.grabpt.service.UserService.UserQueryService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -25,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MessageServiceImpl implements MessageService{
@@ -60,13 +62,12 @@ public class MessageServiceImpl implements MessageService{
 		Users user = userQueryService.findById(userId)
 			.orElseThrow(() -> new UserHandler(ErrorStatus.MEMBER_NOT_FOUND));
 
-		List<UserChatRoom> chatRooms = userChatRoomService.findByUserId(userId, null);
+		List<Long> roomIds = userChatRoomService.findChatRoomIdsByUserId(userId);
 
-		List<Long> roomIds = chatRooms.stream()
-			.map(chatRoom -> chatRoom.getChatRoom().getId())
-			.toList();
 		Map<Long, Long> unreadMessageCount = getUnreadMessageCount(roomIds, userId);
-		return unreadMessageCount.values().stream().mapToLong(Long::longValue).sum();
+		return unreadMessageCount.values().stream()
+			.mapToLong(Long::longValue)
+			.sum();
 	}
 
 
@@ -98,26 +99,31 @@ public class MessageServiceImpl implements MessageService{
 	@Override
 	@Transactional
 	public void updateLastReadMessageWhenEnter(Long roomId, Long userId){
+		long startTime = System.currentTimeMillis(); // 시작 시간 측정
 		List<Messages> unreadMessages = messageRepository.findUnreadMessages(roomId, userId);
-		for (Messages msg : unreadMessages) {
-			msg.setReadCount(0);
-		}
-		messageRepository.saveAll(unreadMessages);
 
-		for (Messages msg : unreadMessages) {
-			broadcastReadStatus(roomId, msg);
+		if(!unreadMessages.isEmpty()){
+			messageRepository.markAsReadAllInRoom(roomId,userId);
+
+			for (Messages msg : unreadMessages) {
+				broadcastReadStatus(roomId, msg);
+			}
 		}
 
 		UserChatRoom chatRoom = userChatRoomService.findByRoomIdAndUserId(roomId, userId).orElseThrow(
 			() -> new ChatHandler(ErrorStatus.CHATROOM_NOT_FOUND));
-		Long lastMessageId = messageRepository.findTopByChatRoom_IdOrderByIdDesc(roomId)
-			.map(Messages::getId)
-			.orElse(null);
-		chatRoom.setLastReadMessageId(lastMessageId);
-		chatRoom.setLastReadAt(LocalDateTime.now());
-		userChatRoomService.save(chatRoom);
+
+		messageRepository.findTopByChatRoom_IdOrderByIdDesc(roomId)
+			.ifPresent(lastMessage -> {
+				chatRoom.setLastReadMessageId(lastMessage.getId());
+				chatRoom.setLastReadAt(LocalDateTime.now());
+			});
+
 
 		updateAllUnreadMessageCount(userId);
+		long endTime = System.currentTimeMillis(); // 종료 시간 측정
+		long duration = endTime - startTime; // 실행 시간 계산
+		log.info("실행시간:{}",duration);
 	}
 
 	@Override

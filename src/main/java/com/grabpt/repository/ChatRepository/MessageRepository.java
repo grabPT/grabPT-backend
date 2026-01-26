@@ -3,6 +3,7 @@ package com.grabpt.repository.ChatRepository;
 import com.grabpt.domain.entity.Messages;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -35,6 +36,15 @@ public interface MessageRepository extends JpaRepository<Messages, Long> {
 
 	@Query("SELECT m FROM Messages m WHERE m.chatRoom.id = :roomId AND m.readCount = 1 AND m.sender.id <> :userId")
 	List<Messages> findUnreadMessages(@Param("roomId") Long roomId, @Param("userId") Long userId);
+
+	@Modifying(clearAutomatically = true)
+	@Query("""
+	UPDATE Messages m SET m.readCount = 0
+	WHERE m.chatRoom.id = :roomId
+	AND m.sender.id <> :userId
+	AND m.readCount = 1
+	""")
+	void markAsReadAllInRoom(@Param("roomId") Long roomId, @Param("userId") Long userId);
 
 	@Query("""
     SELECT m.chatRoom.id, COUNT(m)

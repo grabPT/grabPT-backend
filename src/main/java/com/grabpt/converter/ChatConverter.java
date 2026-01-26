@@ -7,6 +7,7 @@ import com.grabpt.domain.entity.Users;
 import com.grabpt.domain.enums.MessageType;
 import com.grabpt.dto.request.ChatRequest;
 import com.grabpt.dto.response.ChatResponse;
+import com.grabpt.dto.response.ChatRoomPreviewDto;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -41,16 +42,4 @@ public class ChatConverter {
 			.build();
 	}
 
-	public static ChatResponse.ChatRoomPreviewDto toChatRoomPreviewDto(UserChatRoom userChatRoom, Long unreadCount){
-		return ChatResponse.ChatRoomPreviewDto.builder()
-			.roomId(userChatRoom.getChatRoom().getId())
-			.userId(userChatRoom.getUser().getId())
-			.otherUserId(userChatRoom.getOtherUser().getId())
-			.unreadCount(unreadCount)
-			.otherUserProfileImageUrl(userChatRoom.getOtherUser().getProfileImageUrl())
-			.roomName(userChatRoom.getOtherUser().getNickname())
-			.lastMessage(userChatRoom.getChatRoom().getLastMessage())
-			.lastMessageTime(userChatRoom.getChatRoom().getLastMessageTime())
-			.build();
-	}
 }

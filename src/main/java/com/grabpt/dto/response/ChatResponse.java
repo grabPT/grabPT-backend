@@ -49,25 +49,6 @@ public class ChatResponse {
 	@Setter
 	@Getter
 	@Builder
-	public static class ChatRoomPreviewDto{
-		Long roomId;
-		Long userId;
-		Long otherUserId;
-		Long unreadCount; //추가
-		@Schema(example = "뎀프시롤")
-		String roomName;
-		@Schema(example = "ㅎㅇㅎㅇ")
-		String lastMessage;
-		@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone = "Asia/Seoul")
-		LocalDateTime lastMessageTime;
-		String otherUserProfileImageUrl;
-	}
-
-	@AllArgsConstructor
-	@NoArgsConstructor
-	@Setter
-	@Getter
-	@Builder
 	public static class ReadStatusUpdateDto{
 		Long messageId;
 		int readCount;

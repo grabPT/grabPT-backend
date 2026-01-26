@@ -1,6 +1,8 @@
 package com.grabpt.repository.ChatRepository;
 
 import com.grabpt.domain.entity.UserChatRoom;
+import com.grabpt.dto.response.ChatResponse;
+import com.grabpt.dto.response.ChatRoomPreviewDto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,15 +15,26 @@ public interface UserChatRoomRepository extends JpaRepository<UserChatRoom, Long
 	Optional<UserChatRoom> findChatRoomByUserPair(@Param("userId") Long userId, @Param("proId") Long proId);
 
 	@Query("""
-    SELECT DISTINCT ucr FROM UserChatRoom ucr
-    JOIN FETCH ucr.chatRoom cr
-    JOIN FETCH ucr.user u
-    JOIN FETCH ucr.otherUser ou
-    WHERE u.id = :userId
-    AND (:keyword IS NULL OR :keyword = '' OR ucr.roomName LIKE %:keyword%)
-    ORDER BY cr.lastMessageTime DESC
-	""") //N+1문제 방지
-	List<UserChatRoom> findByUserId(Long userId, String keyword);
+   SELECT NEW com.grabpt.dto.response.ChatRoomPreviewDto(
+       cr.id,
+       ucr.user.id,
+       ou.id,
+       ou.profileImageUrl,
+       ucr.roomName,
+       cr.lastMessage,
+       cr.lastMessageTime
+   )
+   FROM UserChatRoom ucr
+   JOIN ucr.chatRoom cr
+   JOIN ucr.otherUser ou
+   WHERE ucr.user.id = :userId
+   AND (:keyword IS NULL OR :keyword LIKE %:keyword%)
+   ORDER BY cr.lastMessageTime DESC
+	""")
+	List<ChatRoomPreviewDto> findChatRoomPreviewsByUserId(@Param("userId") Long userId, @Param("keyword") String keyword);
+
+	@Query("SELECT ucr.chatRoom.id FROM UserChatRoom ucr WHERE ucr.user.id = :userId")
+	List<Long> findChatRoomIdsByUserId(@Param("userId") Long userId);
 
 	@Query("SELECT ucr FROM UserChatRoom ucr WHERE ucr.chatRoom.id = :roomId AND ucr.user.id = :userId")
 	Optional<UserChatRoom> findByRoomIdAndUserId(@Param("roomId") Long roomId, @Param("userId") Long userId);

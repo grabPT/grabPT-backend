@@ -2,6 +2,10 @@ package com.grabpt.controller;
 
 import com.grabpt.dto.response.MyReviewUserDTO;
 import com.grabpt.service.ProfileService.ProfileFacade;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -57,9 +61,35 @@ public class MyProfileController {
 	}
 
 	@PatchMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	@Operation(summary = "기본 프로필 수정", description = "{ \"nickname\": \"test\", \"address\": { \"city\": \"test\", \"district\": \"test\", \"street\": \"test\", \"zipcode\": \"test\", \"specAddress\" : \"test\"  } }")
+	@Operation(summary = "기본 프로필 수정", description = "프로필 내용&이미지를 변경합니다.")
 	public ApiResponse<String> updateMyUserProfile(
+		@Parameter(
+			name = "request",
+			description = "프로필 수정 JSON 데이터",
+			required = true,
+			content = @Content(
+				mediaType = MediaType.APPLICATION_JSON_VALUE,
+				schema = @Schema(implementation = UserProfileUpdateRequestDTO.class),
+				examples = @ExampleObject(
+					name = "프로필 수정 예시",
+					value = """
+                {
+                  "nickname": "test",
+                  "address": {
+                    "city": "test",
+                    "district": "test",
+                    "street": "test",
+                    "zipcode": "test",
+                    "specAddress": "test"
+                  }
+                }
+                """
+				)
+			)
+		)
 		@RequestParam("request") String requestJson,
+
+		@Parameter(description = "새로운 프로필 이미지 (선택 사항)")
 		@RequestPart(value = "image", required = false) MultipartFile profileImage) { // 이미지는 선택사항으로 처리
 
 		Long userId = SecurityUtils.currentUserIdOrThrow();

@@ -192,8 +192,8 @@ public class SuggestionServiceImpl implements SuggestionService {
 
 			return SuggestionResponseDto.MySuggestionPagingDto.builder()
 				.userNickname(s.getRequestion().getUser().getNickname())
-				.suggestedPrice(s.getRequestion().getPrice())
-				.sessionCount(s.getRequestion().getSessionCount())
+				.suggestedPrice(s.getPrice())
+				.sessionCount(s.getSessionCount())
 				.matchingStatus(status)
 				.requestionId(s.getRequestion().getId())
 				.suggestionId(s.getId())

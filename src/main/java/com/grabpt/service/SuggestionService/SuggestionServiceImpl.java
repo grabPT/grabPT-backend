@@ -19,7 +19,6 @@ import com.grabpt.apiPayload.exception.handler.SuggestionHandler;
 import com.grabpt.apiPayload.exception.handler.UserHandler;
 import com.grabpt.aws.s3.AmazonS3Manager;
 import com.grabpt.aws.s3.Uuid;
-import com.grabpt.converter.SuggestionConverter;
 import com.grabpt.domain.entity.Matching;
 import com.grabpt.domain.entity.ProProfile;
 import com.grabpt.domain.entity.Requestions;
@@ -122,13 +121,20 @@ public class SuggestionServiceImpl implements SuggestionService {
 		Matching matching = matchingService.findMatchingBySuggestionId(suggestionId);
 		Long matchId = (matching != null) ? matching.getId() : null;
 
+		// 세션 횟수 관련 계산
+		Integer suggestionSessionCount = suggestion.getSessionCount();
+		Integer requestionSessionCount = requestion.getSessionCount();
+		Integer sessionDiff = (requestionSessionCount != null && suggestionSessionCount != null)
+			? requestionSessionCount - suggestionSessionCount
+			: null;
+
 		return SuggestionResponseDto.SuggestionDetailResponseDto.builder()
 			.userNickname(user.getNickname())
 			.centerName(pro.getCenter())
 			.profileImageUrl(user.getProfileImageUrl())
 			.suggestedPrice(suggestedPrice)
 			.requestedPrice(originalPrice)
-			.discountAmount(discount > 0 ? discount : 0)
+			.discountedPrice(discount > 0 ? discount : 0)
 			.isDiscounted(discount > 0)
 			.message(suggestion.getMessage())
 			.location(suggestion.getLocation())
@@ -138,7 +144,9 @@ public class SuggestionServiceImpl implements SuggestionService {
 			.matchingId(matchId)  // 매칭 ID (없으면 null)
 			.requestionId(requestion.getId())
 			.suggestionId(suggestionId)
-			.sessionCount(suggestion.getSessionCount() != null ? suggestion.getSessionCount().longValue() : null)
+			.suggestionSessionCount(suggestionSessionCount)
+			.requestionSessionCount(requestionSessionCount)
+			.discountSessionCount(sessionDiff != null && sessionDiff != 0 ? sessionDiff : null)
 			.build();
 	}
 

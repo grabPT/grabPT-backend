@@ -25,7 +25,7 @@ public class SuggestionResponseDto {
 
 		private Integer suggestedPrice;
 		private Integer requestedPrice;
-		private Integer discountAmount; // = original - suggested
+		private Integer discountedPrice; // = original - suggested
 		private Boolean isDiscounted;   // true if discount exists
 
 		private String message;
@@ -37,7 +37,11 @@ public class SuggestionResponseDto {
 		private Long matchingId;
 		private Long requestionId;
 		private Long suggestionId;
-		private Long sessionCount; // 전문가가 제안한 총 횟수
+
+		// 세션 횟수 관련 상세 정보
+		private Integer suggestionSessionCount; // 전문가가 제안한 총 횟수
+		private Integer requestionSessionCount; // 요청서의 총 횟수
+		private Integer discountSessionCount;   // 횟수 차이 (요청 - 제안, 차이가 있을 경우)
 	}
 
 	@Getter

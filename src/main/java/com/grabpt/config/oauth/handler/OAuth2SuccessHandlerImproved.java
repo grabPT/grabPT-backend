@@ -92,6 +92,7 @@ public class OAuth2SuccessHandlerImproved implements AuthenticationSuccessHandle
 				.queryParam("refresh_token", refreshToken)
 				.queryParam("role", getRoleString(user.getRole()))
 				.queryParam("user_id", user.getId().toString())
+				.queryParam("profile_image", user.getProfileImageUrl())
 				.build()
 				.encode()  // ✅ URL 인코딩 추가!
 				.toUriString();
@@ -106,6 +107,7 @@ public class OAuth2SuccessHandlerImproved implements AuthenticationSuccessHandle
 			CookieManagerV2.setRefreshToken(response, request, refreshToken);
 			CookieManagerV2.setRole(response, request, getRoleString(user.getRole()));
 			CookieManagerV2.setUserId(response, request, user.getId().toString());
+			CookieManagerV2.setProfileImage(response, request, user.getProfileImageUrl());
 
 			String redirectUrl = UriComponentsBuilder.fromUriString(frontendBase)
 				.path("/authcallback")

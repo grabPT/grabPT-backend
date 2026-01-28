@@ -9,6 +9,7 @@ public final class CookieConstants {
 	// 사용자 정보 쿠키
 	public static final String ROLE = "role";
 	public static final String USER_ID = "userId";
+	public static final String PROFILE_IMAGE = "profileImage";
 
 	// OAuth 임시 정보 쿠키 (회원가입용)
 	public static final String OAUTH_EMAIL = "oauthEmail";

@@ -110,6 +110,20 @@ public final class CookieManagerV2 {
 		addCookie(response, cookie);
 	}
 
+	/**
+	 * Profile Image 쿠키 설정 (프론트에서 읽을 수 있음)
+	 */
+	public static void setProfileImage(HttpServletResponse response, HttpServletRequest request, String profileImageUrl) {
+		EnvironmentProfile env = EnvironmentDetector.detectEnvironment(request);
+
+		ResponseCookie cookie = createCookie(env, PROFILE_IMAGE, urlEncode(profileImageUrl))
+			.httpOnly(false)
+			.maxAge(Duration.ofDays(30))
+			.path("/")
+			.build();
+		addCookie(response, cookie);
+	}
+
 	// ==================== OAuth 임시 정보 쿠키 ====================
 
 	/**

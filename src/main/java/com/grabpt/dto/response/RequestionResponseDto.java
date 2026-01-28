@@ -43,6 +43,9 @@ public class RequestionResponseDto {
 		private String userNickname;
 		private String profileImageUrl;
 
+		// 매칭 여부
+		private Boolean isMatched;
+
 		public static RequestionDetailResponseDto from(Requestions r) {
 			Users u = r.getUser();
 
@@ -63,6 +66,7 @@ public class RequestionResponseDto {
 				.etcPurposeContent(r.getEtcPurposeContent())
 				.userNickname(u.getNickname())
 				.profileImageUrl(u.getProfileImageUrl())
+				.isMatched(r.getMatching() != null)
 				.build();
 		}
 	}

@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -154,7 +155,7 @@ public class SuggestionServiceImpl implements SuggestionService {
 	@Transactional(readOnly = true)
 	public Page<SuggestionResponseDto.SuggestionResponsePagingDto> getSuggestionsByRequestionId(Long requestionId,
 		int page) {
-		Pageable pageable = PageRequest.of(page, 6); // 6개씩 페이징
+		Pageable pageable = PageRequest.of(page, 6, Sort.by(Sort.Direction.DESC, "createdAt")); // 6개씩 페이징, 최신순
 		Page<Suggestions> suggestionsPage = suggestionRepository.findByRequestionId(requestionId, pageable);
 
 		return suggestionsPage.map(s -> {

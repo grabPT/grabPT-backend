@@ -183,7 +183,7 @@ public class SuggestionServiceImpl implements SuggestionService {
 		UserResponseDto.UserInfoDTO userInfo = userQueryService.getUserInfo(request);
 		String email = userInfo.getEmail();
 
-		PageRequest pageable = PageRequest.of(Math.max(page - 1, 0), 8); // 1부터 시작, 8개씩 페이징
+		PageRequest pageable = PageRequest.of(Math.max(page - 1, 0), 8, Sort.by(Sort.Direction.DESC, "createdAt")); // 1부터 시작, 8개씩 페이징, 최신순
 		Page<Suggestions> suggestionsPage = suggestionRepository.findByProProfile_User_Email(email, pageable);
 
 		return suggestionsPage.map(s -> {

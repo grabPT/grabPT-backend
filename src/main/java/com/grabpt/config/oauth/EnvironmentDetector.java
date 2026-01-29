@@ -8,7 +8,7 @@ import lombok.extern.slf4j.Slf4j;
  *
  * 환경 분류:
  * - LOCAL: localhost, 127.0.0.1
- * - DEV: Vercel 개발 서버 (grabpt-dev.vercel.app, dev-grabpt.vercel.app)
+ * - DEV: Vercel 개발 서버 (dev-grabpt.vercel.app)
  * - PROD: 운영 서버 (grabpt.com, www.grabpt.com, api.grabpt.com)
  */
 @Slf4j
@@ -73,8 +73,7 @@ public class EnvironmentDetector {
 
 		if (normalized.contains("localhost") || normalized.contains("127.0.0.1")) {
 			env = Environment.LOCAL;
-		} else if (normalized.contains("grabpt-dev.vercel.app")
-			|| normalized.contains("dev-grabpt.vercel.app")) {
+		} else if (normalized.contains("dev-grabpt.vercel.app")) {
 			env = Environment.DEV;
 		} else {
 			env = Environment.PROD;

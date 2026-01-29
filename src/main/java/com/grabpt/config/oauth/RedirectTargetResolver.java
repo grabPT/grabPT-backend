@@ -16,7 +16,7 @@ public class RedirectTargetResolver {
 		LOCAL_FE("http://localhost:5173"),
 		LOCAL_BE("http://localhost:8080"),
 		PROD_FE("https://www.grabpt.com"),
-		DEV_FE("https://grabpt-dev.vercel.app");
+		DEV_FE("https://dev-grabpt.vercel.app");
 
 		public final String base;
 
@@ -51,7 +51,7 @@ public class RedirectTargetResolver {
 		String origin = header(request, "Origin");
 		String host = firstNonEmpty(request.getHeader("X-Forwarded-Host"), request.getServerName());
 
-		if (contains(referer, "grabpt-dev.vercel.app") || contains(origin, "grabpt-dev.vercel.app")) {
+		if (contains(referer, "dev-grabpt.vercel.app") || contains(origin, "dev-grabpt.vercel.app")) {
 			return EnvTarget.DEV_FE.base;
 		}
 		if (contains(referer, "www.grabpt.com") || contains(origin, "www.grabpt.com")) {

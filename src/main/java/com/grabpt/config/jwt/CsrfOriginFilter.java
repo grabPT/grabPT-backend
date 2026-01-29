@@ -23,7 +23,8 @@ public class CsrfOriginFilter extends OncePerRequestFilter {
 		"https://localhost:5173",
 		"http://localhost:3000",
 		"https://localhost:3000",
-		"https://grabpt-dev.vercel.app" // 프론트 개발 서버
+		"https://grabpt-dev.vercel.app",
+		"https://dev-grabpt.vercel.app" // 프론트 개발 서버
 	);
 
 	// 상태 변경만 검사 (OPTIONS는 프리플라이트라서 제외하는 편이 낫습니다)

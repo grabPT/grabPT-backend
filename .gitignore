@@ -37,3 +37,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+# 로컬 IDE 실행용 설정 (개인 환경 파일)
+src/main/resources/application-local.yml

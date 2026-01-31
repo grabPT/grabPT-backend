@@ -12,6 +12,8 @@ import com.grabpt.repository.AlarmRepository.AlarmRepository;
 import com.grabpt.repository.UserRepository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -65,7 +67,13 @@ public class AlarmServiceImpl implements AlarmService {
 
 	@Override
 	public List<Alarm> findAllUnReadAlarmByUserId(Long userId){
-		return alarmRepository.findAllUnReadAlarmByUserId(userId);
+		return alarmRepository.findAllUnreadAlarmByUserId(userId);
+	}
+
+	@Override
+	public Page<AlarmResponseDto> findAllAlarmByUserId(Pageable pageable, Long userId){
+		Page<Alarm> alarms = alarmRepository.findAllAlarmByUserId(pageable, userId);
+		return alarms.map(AlarmConverter::toAlarmResponseDto);
 	}
 
 	@Override

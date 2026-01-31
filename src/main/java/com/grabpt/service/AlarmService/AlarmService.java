@@ -2,7 +2,8 @@ package com.grabpt.service.AlarmService;
 
 import com.grabpt.domain.entity.Alarm;
 import com.grabpt.dto.response.AlarmResponseDto;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -12,6 +13,8 @@ public interface AlarmService {
 	public AlarmResponseDto readAlarm(Long alarmId);
 
 	public List<Alarm> findAllUnReadAlarmByUserId(Long userId);
+
+	public Page<AlarmResponseDto> findAllAlarmByUserId(Pageable pageable, Long userId);
 
 	public Long countUnReadAlarmByUserId(Long userId);
 }

@@ -61,6 +61,7 @@ public class SmsController {
 	public ApiResponse<String> verifySms(@RequestBody SmsVerifyResponseDto dto) {
 		String savedCode = smsCertificationStorage.getCertificationCode(dto.getPhoneNumber());
 		if (savedCode != null && savedCode.equals(dto.getInputCode())) {
+			smsCertificationStorage.removeCertificationCode(dto.getPhoneNumber());
 			return ApiResponse.onSuccess("인증 성공");
 		} else {
 			throw new AuthHandler(ErrorStatus.UNAUTHORIZED_SMS);

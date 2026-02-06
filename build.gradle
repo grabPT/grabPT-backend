@@ -100,6 +100,9 @@ dependencies {
     
     // ImPort 의존성
     implementation 'com.github.iamport:iamport-rest-client-java:0.2.21'
+
+    // Caffeine Cache
+    implementation 'com.github.ben-manes.caffeine:caffeine:3.1.8'
 }
 
 tasks.named('test') {

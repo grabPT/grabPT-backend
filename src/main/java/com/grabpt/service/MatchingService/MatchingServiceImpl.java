@@ -52,10 +52,16 @@ public class MatchingServiceImpl implements MatchingService {
 			requestion.getStatus(),
 			requestion.getStatus() != null ? requestion.getStatus().name() : "null");
 
-		// 2) 매칭 가능 상태만 허용
-		if (requestion.getStatus() != RequestStatus.MATCHING) {
-			log.warn("[MATCH] BLOCK: status is not MATCHING. actual={}", requestion.getStatus());
+		// 2) 매칭 가능 상태만 허용 (WAITING 또는 MATCHING)
+		if (requestion.getStatus() != RequestStatus.WAITING && requestion.getStatus() != RequestStatus.MATCHING) {
+			log.warn("[MATCH] BLOCK: status is not WAITING or MATCHING. actual={}", requestion.getStatus());
 			throw new RequestionHandler(ErrorStatus.REQUESTION_ALREADY_MATCHED);
+		}
+
+		// 만료 체크
+		if (requestion.isExpired()) {
+			log.warn("[MATCH] BLOCK: requestion is expired. expiredAt={}", requestion.getExpiredAt());
+			throw new RequestionHandler(ErrorStatus.REQUESTION_EXPIRED);
 		}
 
 		// 3) 제안서 로드 + 연결 검증
@@ -122,9 +128,11 @@ public class MatchingServiceImpl implements MatchingService {
 
 		matching.setStatus(newStatus);
 
-		if (newStatus == MatchingStatus.CANCELLED || newStatus == MatchingStatus.COMPLETED) {
+		if (newStatus == MatchingStatus.CANCELLED) {
 			Requestions requestion = matching.getRequestion();
-			requestion.setStatus(RequestStatus.MATCHING);
+			// 제안서 유무에 따라 WAITING/MATCHING 복원
+			boolean hasSuggestions = requestion.getSuggestions() != null && !requestion.getSuggestions().isEmpty();
+			requestion.setStatus(hasSuggestions ? RequestStatus.MATCHING : RequestStatus.WAITING);
 			requestionRepository.save(requestion);
 		}
 

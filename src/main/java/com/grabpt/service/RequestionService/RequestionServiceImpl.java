@@ -1,5 +1,6 @@
 package com.grabpt.service.RequestionService;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -73,7 +74,8 @@ public class RequestionServiceImpl implements RequestionService {
 			.etcPurposeContent(dto.getEtcPurposeContent())
 			.content(dto.getContent())
 			.location(dto.getLocation())
-			.status(RequestStatus.MATCHING)
+			.status(RequestStatus.WAITING)
+			.expiredAt(LocalDateTime.now().plusWeeks(1))
 			.build();
 		requestion.setUser(user); // 연관관계 설정
 		Requestions save = requestionRepository.save(requestion);
@@ -184,8 +186,8 @@ public class RequestionServiceImpl implements RequestionService {
 			throw new RequestionHandler(ErrorStatus.REQUESTION_DELETE_NOT_OWNER);
 		}
 
-		// 상태 검사: MATCHING(= 미매칭 상태)일 때만 삭제 허용
-		if (requestion.getStatus() != RequestStatus.MATCHING) {
+		// 상태 검사: WAITING 또는 MATCHING일 때만 삭제 허용
+		if (requestion.getStatus() != RequestStatus.WAITING && requestion.getStatus() != RequestStatus.MATCHING) {
 			throw new RequestionHandler(ErrorStatus.REQUESTION_DELETE_NOT_ALLOWED);
 		}
 

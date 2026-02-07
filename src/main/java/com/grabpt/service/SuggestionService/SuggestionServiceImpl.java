@@ -27,6 +27,7 @@ import com.grabpt.domain.entity.SuggestionPhoto;
 import com.grabpt.domain.entity.Suggestions;
 import com.grabpt.domain.entity.Users;
 import com.grabpt.domain.enums.MatchingStatus;
+import com.grabpt.domain.enums.RequestStatus;
 import com.grabpt.domain.enums.SuggestStatus;
 import com.grabpt.dto.request.SuggestionRequestDto;
 import com.grabpt.dto.response.SuggestionResponseDto;
@@ -75,6 +76,12 @@ public class SuggestionServiceImpl implements SuggestionService {
 
 		suggestion.setProProfile(proProfile);
 		suggestion.setRequestion(requestion);
+
+		// WAITING → MATCHING 전환 및 expiredAt 연장
+		if (requestion.getStatus() == RequestStatus.WAITING) {
+			requestion.setStatus(RequestStatus.MATCHING);
+		}
+		requestion.extendExpiredAt();
 
 		// S3 업로드 및 SuggestionPhoto 저장
 		if (photos != null && !photos.isEmpty()) {

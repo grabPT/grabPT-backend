@@ -60,6 +60,7 @@ public enum ErrorStatus implements BaseErrorCode {
 	MATCHING_ALREADY_CANCLED(HttpStatus.BAD_REQUEST, "REQ4004", "매칭이 이미 취소되었습니다."),
 	REQUESTION_DELETE_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "REQU4005", "매칭 진행/완료된 요청서는 삭제할 수 없습니다."),
 	REQUESTION_DELETE_NOT_OWNER(HttpStatus.FORBIDDEN, "REQU4006", "요청서 작성자만 삭제할 수 있습니다."),
+	REQUESTION_EXPIRED(HttpStatus.BAD_REQUEST, "REQU4007", "요청서가 만료되었습니다."),
 
 	/// 지원서 관련 오류
 	SUGGESTION_NOT_FOUND(HttpStatus.BAD_REQUEST, "SUGG4001", "존재하지 않는 지원서입니다."),

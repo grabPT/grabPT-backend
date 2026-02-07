@@ -3,6 +3,7 @@ package com.grabpt.domain.entity;
 import static java.util.List.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -110,6 +111,16 @@ public class Requestions extends BaseEntity {
 
 	@Enumerated(EnumType.STRING)
 	private RequestStatus status;
+
+	private LocalDateTime expiredAt;
+
+	public void extendExpiredAt() {
+		this.expiredAt = LocalDateTime.now().plusWeeks(1);
+	}
+
+	public boolean isExpired() {
+		return this.expiredAt != null && LocalDateTime.now().isAfter(this.expiredAt);
+	}
 
 	public void addSuggestion(Suggestions suggestion) {
 		this.suggestions.add(suggestion);

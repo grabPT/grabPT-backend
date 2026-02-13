@@ -26,6 +26,7 @@ import com.grabpt.dto.response.RequestionResponseDto;
 import com.grabpt.dto.response.UserResponseDto;
 import com.grabpt.repository.MatchingRepository.MatchingRepository;
 import com.grabpt.repository.RequestionRepository.RequestionRepository;
+import com.grabpt.repository.ReviewRepository.reviewRepository;
 import com.grabpt.service.AlarmService.AlarmService;
 import com.grabpt.service.CategoryService.CategoryQueryService;
 import com.grabpt.service.ProProfileService.ProProfileService;
@@ -46,6 +47,7 @@ public class RequestionServiceImpl implements RequestionService {
 	private final ProProfileService proProfileService;
 	private final AlarmService alarmService;
 	private final MatchingRepository matchingRepository; // 의존성 순환 문제로 인함
+	private final reviewRepository reviewRepository;
 
 	@Override
 	public List<Requestions> getReqeustions(String categoryCode, Pageable pageable) {
@@ -230,7 +232,11 @@ public class RequestionServiceImpl implements RequestionService {
 
 			String proNickname = proProfileService.getProNicknameById(proProfileId);
 
-			return RequestionResponseDto.UserOwnRequestionDto.from(req, proProfileId, proNickname);
+			boolean hasReview = proProfileId != null
+				&& req.getUser() != null
+				&& reviewRepository.existsByUser_IdAndProProfile_Id(req.getUser().getId(), proProfileId);
+
+			return RequestionResponseDto.UserOwnRequestionDto.from(req, proProfileId, proNickname, hasReview);
 		});
 	}
 

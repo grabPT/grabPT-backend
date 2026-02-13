@@ -13,4 +13,6 @@ public interface reviewRepository extends JpaRepository<Review, Long> {
 
 	Page<Review> findAllByProProfile_IdOrderByCreatedAtDesc(Long proProfileId, Pageable pageable); // 전문가용
 
+	boolean existsByUser_IdAndProProfile_Id(Long userId, Long proProfileId);
+
 }

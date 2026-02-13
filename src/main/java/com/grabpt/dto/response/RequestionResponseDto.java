@@ -125,7 +125,8 @@ public class RequestionResponseDto {
 		private AddressDto address;
 		private Boolean isWriteReview;
 
-		public static UserOwnRequestionDto from(Requestions requestion, Long proProfileId, String proNickname) {
+		public static UserOwnRequestionDto from(Requestions requestion, Long proProfileId, String proNickname,
+			boolean hasReview) {
 			Users user = requestion.getUser();
 			Address address = user.getAddress();
 
@@ -137,7 +138,7 @@ public class RequestionResponseDto {
 				.availableDays(requestion.getAvailableDays())
 				.availableTimes(requestion.getAvailableTimes())
 				.content(requestion.getContent())
-				.isWriteReview(canWriteReview(requestion))
+				.isWriteReview(canWriteReview(requestion) && !hasReview)
 				.build();
 		}
 	}

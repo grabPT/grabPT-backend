@@ -12,6 +12,7 @@ import com.grabpt.dto.response.MyReviewListDTO;
 import com.grabpt.dto.response.MyReviewUserDTO;
 import com.grabpt.dto.response.ReviewListDto;
 import com.grabpt.repository.UserRepository.UserRepository;
+import com.grabpt.repository.ReviewRepository.reviewRepository;
 import com.grabpt.service.MatchingService.MatchingService;
 import com.grabpt.service.RequestionService.RequestionService;
 import com.grabpt.service.ReviewService.ReviewService;
@@ -35,6 +36,7 @@ public class UserActivityServiceImpl implements UserActivityService {
 	private final ReviewService reviewService;
 	private final RequestionService requestionService;
 	private final MatchingService matchingService;
+	private final reviewRepository reviewRepository;
 
 	@Override
 	public Page<MyRequestListDTO> findMyRequests(Long userId, Pageable pageable) {
@@ -53,9 +55,12 @@ public class UserActivityServiceImpl implements UserActivityService {
 			MyRequestListDTO dto = new MyRequestListDTO(req);
 			Matching m = matchingMap.get(req.getId());
 			if (m != null) {
+				Long proProfileId = m.getSuggestion().getProProfile().getId();
 				dto.setProNickname(m.getSuggestion().getProProfile().getUser().getNickname());
-				dto.setProProfileId(m.getSuggestion().getProProfile().getId());
-				dto.setCanWriteReview(m.getStatus() == MatchingStatus.COMPLETED);
+				dto.setProProfileId(proProfileId);
+				boolean completed = m.getStatus() == MatchingStatus.COMPLETED;
+				boolean alreadyReviewed = reviewRepository.existsByUser_IdAndProProfile_Id(userId, proProfileId);
+				dto.setCanWriteReview(completed && !alreadyReviewed);
 			}
 			return dto;
 		});

@@ -19,7 +19,9 @@ import com.grabpt.domain.entity.Category;
 import com.grabpt.domain.entity.ProProfile;
 import com.grabpt.domain.entity.Requestions;
 import com.grabpt.domain.entity.Users;
+import com.grabpt.domain.entity.Matching;
 import com.grabpt.domain.enums.Gender;
+import com.grabpt.domain.enums.MatchingStatus;
 import com.grabpt.domain.enums.RequestStatus;
 import com.grabpt.dto.request.RequestionRequestDto;
 import com.grabpt.dto.response.RequestionResponseDto;
@@ -219,16 +221,23 @@ public class RequestionServiceImpl implements RequestionService {
 		// 2) 요청서 ID들에 대한 매칭을 한 번에 로드
 		var matchings = matchingRepository.findAllWithProByRequestionIds(reqIds);
 
-		// 3) reqId -> proProfileId 맵 구성
+		// 3) reqId -> proProfileId 맵, reqId -> matchingStatus 맵 구성
 		var reqIdToProId = matchings.stream()
 			.collect(Collectors.toMap(
 				m -> m.getRequestion().getId(),
 				m -> m.getSuggestion().getProProfile().getId()
 			));
 
-		// 4) DTO 매핑 시 proProfileId 주입 (없으면 null)
+		var reqIdToMatchingStatus = matchings.stream()
+			.collect(Collectors.toMap(
+				m -> m.getRequestion().getId(),
+				Matching::getStatus
+			));
+
+		// 4) DTO 매핑 시 proProfileId, matchingStatus 주입 (없으면 null)
 		return page.map(req -> {
 			Long proProfileId = reqIdToProId.get(req.getId());
+			MatchingStatus matchingStatus = reqIdToMatchingStatus.get(req.getId());
 
 			String proNickname = proProfileService.getProNicknameById(proProfileId);
 
@@ -236,7 +245,7 @@ public class RequestionServiceImpl implements RequestionService {
 				&& req.getUser() != null
 				&& reviewRepository.existsByUser_IdAndProProfile_Id(req.getUser().getId(), proProfileId);
 
-			return RequestionResponseDto.UserOwnRequestionDto.from(req, proProfileId, proNickname, hasReview);
+			return RequestionResponseDto.UserOwnRequestionDto.from(req, proProfileId, proNickname, hasReview, matchingStatus);
 		});
 	}
 

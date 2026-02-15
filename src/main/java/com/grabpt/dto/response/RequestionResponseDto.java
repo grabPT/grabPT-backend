@@ -126,7 +126,7 @@ public class RequestionResponseDto {
 		private Boolean isWriteReview;
 
 		public static UserOwnRequestionDto from(Requestions requestion, Long proProfileId, String proNickname,
-			boolean hasReview) {
+			boolean hasReview, MatchingStatus matchingStatus) {
 			Users user = requestion.getUser();
 			Address address = user.getAddress();
 
@@ -138,7 +138,7 @@ public class RequestionResponseDto {
 				.availableDays(requestion.getAvailableDays())
 				.availableTimes(requestion.getAvailableTimes())
 				.content(requestion.getContent())
-				.isWriteReview(canWriteReview(requestion) && !hasReview)
+				.isWriteReview(matchingStatus == MatchingStatus.COMPLETED && !hasReview)
 				.build();
 		}
 	}
@@ -183,10 +183,4 @@ public class RequestionResponseDto {
 		};
 	}
 
-	private static boolean canWriteReview(Requestions r) {
-		if (r.getMatching() == null || r.getMatching().getStatus() == null) {
-			return false;
-		}
-		return r.getMatching().getStatus() == MatchingStatus.COMPLETED;
-	}
 }

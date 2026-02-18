@@ -122,7 +122,8 @@ public class SecurityConfig {
 					"/api/sms/**",
 					"/api/category-proprofile/**",
 					"/api/*/reviews",
-					"/api/alarmList",
+					"/api/allAlarmList",
+					"/api/unreadAlarmList",
 					"/api/auth/reissue",
 					"/login/**"
 				).permitAll()

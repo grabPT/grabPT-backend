@@ -27,6 +27,7 @@ import com.grabpt.domain.entity.Suggestions;
 import com.grabpt.domain.entity.Users;
 import com.grabpt.domain.enums.Gender;
 import com.grabpt.domain.enums.MatchingStatus;
+import com.grabpt.domain.enums.PaymentStatus;
 import com.grabpt.domain.enums.Role;
 import com.grabpt.dto.request.ContractRequest;
 import com.grabpt.dto.response.ContractResponse;
@@ -164,14 +165,19 @@ public class ContractServiceImpl implements ContractService {
 		}
 
 		Contract contract = matching.getContract();
-		MatchingStatus displayStatus = (matching.getStatus() == MatchingStatus.COMPLETED)
-			? MatchingStatus.COMPLETED
-			: MatchingStatus.MATCHED;
+
+		PaymentStatus paymentStatus = matching.getOrders().stream()
+			.filter(o -> o.getPayment() != null)
+			.map(o -> o.getPayment().getStatus())
+			.filter(s -> s == PaymentStatus.OK)
+			.findFirst()
+			.orElse(PaymentStatus.READY);
 
 		return ContractResponse.ContractListItemDto.builder()
+			.contractId(contract != null ? contract.getId() : null)
 			.userNickname(nickname)
 			.profileImageUrl(profileImageUrl)
-			.matchingStatus(displayStatus)
+			.paymentStatus(paymentStatus)
 			.sessionCount(contract != null ? contract.getTotalSession() : null)
 			.contractPrice(contract != null ? contract.getPrice() : null)
 			.startDate(contract != null ? contract.getStartDate() : null)

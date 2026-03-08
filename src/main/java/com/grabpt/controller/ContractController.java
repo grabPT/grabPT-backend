@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import com.grabpt.apiPayload.ApiResponse;
 import com.grabpt.converter.ContractConverter;
 import com.grabpt.domain.entity.Contract;
+import com.grabpt.domain.enums.PaymentStatus;
 import com.grabpt.domain.enums.Role;
 import com.grabpt.dto.request.ContractRequest;
 import com.grabpt.dto.response.ContractResponse;
@@ -37,10 +38,11 @@ public class ContractController {
 	public ApiResponse<ContractResponse.ContractListResponseDto> getContractList(
 		@RequestParam Role role,
 		@RequestParam Long userId,
+		@RequestParam(required = false) PaymentStatus paymentStatus,
 		@RequestParam(defaultValue = "1") int page,
 		@RequestParam(defaultValue = "10") int size) {
 		Pageable pageable = PageRequest.of(Math.max(page - 1, 0), size);
-		return ApiResponse.onSuccess(contractService.getContractList(role, userId, pageable));
+		return ApiResponse.onSuccess(contractService.getContractList(role, userId, paymentStatus, pageable));
 	}
 
 	@Operation(

@@ -51,10 +51,6 @@ public class ContractServiceImpl implements ContractService {
 	private final AmazonS3Manager amazonS3Manager;
 	private final AmazonConfig amazonConfig;
 
-	private static final List<MatchingStatus> ACTIVE_STATUSES =
-		List.of(MatchingStatus.MATCHED, MatchingStatus.USERWROTE);
-	private static final List<MatchingStatus> COMPLETED_STATUSES =
-		List.of(MatchingStatus.COMPLETED);
 	private static final List<MatchingStatus> ALL_CONTRACT_STATUSES =
 		List.of(MatchingStatus.MATCHED, MatchingStatus.USERWROTE, MatchingStatus.COMPLETED);
 
@@ -126,19 +122,31 @@ public class ContractServiceImpl implements ContractService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public ContractResponse.ContractListResponseDto getContractList(Role role, Long userId, Pageable pageable) {
+	public ContractResponse.ContractListResponseDto getContractList(Role role, Long userId, PaymentStatus paymentStatus, Pageable pageable) {
 		Page<Matching> matchings;
 		long totalActive;
 		long totalCompleted;
 
 		if (role == Role.USER) {
-			matchings = matchingRepository.findContractsByUserId(userId, ALL_CONTRACT_STATUSES, pageable);
-			totalActive = matchingRepository.countByRequestion_User_IdAndStatusIn(userId, ACTIVE_STATUSES);
-			totalCompleted = matchingRepository.countByRequestion_User_IdAndStatusIn(userId, COMPLETED_STATUSES);
+			if (paymentStatus == PaymentStatus.OK) {
+				matchings = matchingRepository.findContractsByUserIdAndPaymentStatusOK(userId, ALL_CONTRACT_STATUSES, pageable);
+			} else if (paymentStatus == PaymentStatus.READY) {
+				matchings = matchingRepository.findContractsByUserIdAndPaymentStatusReady(userId, ALL_CONTRACT_STATUSES, pageable);
+			} else {
+				matchings = matchingRepository.findContractsByUserId(userId, ALL_CONTRACT_STATUSES, pageable);
+			}
+			totalActive = matchingRepository.countContractsByUserIdAndNotPaymentStatus(userId, ALL_CONTRACT_STATUSES, PaymentStatus.OK);
+			totalCompleted = matchingRepository.countContractsByUserIdAndPaymentStatus(userId, ALL_CONTRACT_STATUSES, PaymentStatus.OK);
 		} else {
-			matchings = matchingRepository.findContractsByProUserId(userId, ALL_CONTRACT_STATUSES, pageable);
-			totalActive = matchingRepository.countContractsByProUserIdAndStatuses(userId, ACTIVE_STATUSES);
-			totalCompleted = matchingRepository.countContractsByProUserIdAndStatuses(userId, COMPLETED_STATUSES);
+			if (paymentStatus == PaymentStatus.OK) {
+				matchings = matchingRepository.findContractsByProUserIdAndPaymentStatusOK(userId, ALL_CONTRACT_STATUSES, pageable);
+			} else if (paymentStatus == PaymentStatus.READY) {
+				matchings = matchingRepository.findContractsByProUserIdAndPaymentStatusReady(userId, ALL_CONTRACT_STATUSES, pageable);
+			} else {
+				matchings = matchingRepository.findContractsByProUserId(userId, ALL_CONTRACT_STATUSES, pageable);
+			}
+			totalActive = matchingRepository.countContractsByProUserIdAndNotPaymentStatus(userId, ALL_CONTRACT_STATUSES, PaymentStatus.OK);
+			totalCompleted = matchingRepository.countContractsByProUserIdAndPaymentStatus(userId, ALL_CONTRACT_STATUSES, PaymentStatus.OK);
 		}
 
 		Page<ContractResponse.ContractListItemDto> items = matchings.map(m -> toContractListItem(m, role));

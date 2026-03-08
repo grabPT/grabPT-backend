@@ -6,6 +6,10 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.TemplateEngine;
@@ -20,10 +24,14 @@ import com.grabpt.domain.entity.ContractInfo;
 import com.grabpt.domain.entity.Matching;
 import com.grabpt.domain.entity.Requestions;
 import com.grabpt.domain.entity.Suggestions;
+import com.grabpt.domain.entity.Users;
 import com.grabpt.domain.enums.Gender;
 import com.grabpt.domain.enums.MatchingStatus;
+import com.grabpt.domain.enums.Role;
 import com.grabpt.dto.request.ContractRequest;
+import com.grabpt.dto.response.ContractResponse;
 import com.grabpt.repository.ContractRepository.ContractRepository;
+import com.grabpt.repository.MatchingRepository.MatchingRepository;
 import com.grabpt.service.AlarmService.AlarmService;
 import com.grabpt.service.PdfService.PdfGenerateService;
 
@@ -35,11 +43,19 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class ContractServiceImpl implements ContractService {
 	private final ContractRepository contractRepository;
+	private final MatchingRepository matchingRepository;
 	private final AlarmService alarmService;
 	private final PdfGenerateService pdfGenerateService;
 	private final TemplateEngine templateEngine;
 	private final AmazonS3Manager amazonS3Manager;
 	private final AmazonConfig amazonConfig;
+
+	private static final List<MatchingStatus> ACTIVE_STATUSES =
+		List.of(MatchingStatus.MATCHED, MatchingStatus.USERWROTE);
+	private static final List<MatchingStatus> COMPLETED_STATUSES =
+		List.of(MatchingStatus.COMPLETED);
+	private static final List<MatchingStatus> ALL_CONTRACT_STATUSES =
+		List.of(MatchingStatus.MATCHED, MatchingStatus.USERWROTE, MatchingStatus.COMPLETED);
 
 	@Override
 	@Transactional
@@ -105,6 +121,62 @@ public class ContractServiceImpl implements ContractService {
 	public Contract findById(Long contractId) {
 		return contractRepository.findById(contractId)
 			.orElseThrow(() -> new ContractHandler(ErrorStatus.CONTRACT_NOT_FOUND));
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ContractResponse.ContractListResponseDto getContractList(Role role, Long userId, Pageable pageable) {
+		Page<Matching> matchings;
+		long totalActive;
+		long totalCompleted;
+
+		if (role == Role.USER) {
+			matchings = matchingRepository.findContractsByUserId(userId, ALL_CONTRACT_STATUSES, pageable);
+			totalActive = matchingRepository.countByRequestion_User_IdAndStatusIn(userId, ACTIVE_STATUSES);
+			totalCompleted = matchingRepository.countByRequestion_User_IdAndStatusIn(userId, COMPLETED_STATUSES);
+		} else {
+			matchings = matchingRepository.findContractsByProUserId(userId, ALL_CONTRACT_STATUSES, pageable);
+			totalActive = matchingRepository.countContractsByProUserIdAndStatuses(userId, ACTIVE_STATUSES);
+			totalCompleted = matchingRepository.countContractsByProUserIdAndStatuses(userId, COMPLETED_STATUSES);
+		}
+
+		Page<ContractResponse.ContractListItemDto> items = matchings.map(m -> toContractListItem(m, role));
+
+		return ContractResponse.ContractListResponseDto.builder()
+			.totalActiveContracts((int) totalActive)
+			.totalCompletedContracts((int) totalCompleted)
+			.contracts(items)
+			.build();
+	}
+
+	private ContractResponse.ContractListItemDto toContractListItem(Matching matching, Role role) {
+		String nickname;
+		String profileImageUrl;
+
+		if (role == Role.USER) {
+			Users proUser = matching.getSuggestion().getProProfile().getUser();
+			nickname = proUser.getNickname();
+			profileImageUrl = proUser.getProfileImageUrl();
+		} else {
+			Users userEntity = matching.getRequestion().getUser();
+			nickname = userEntity.getNickname();
+			profileImageUrl = userEntity.getProfileImageUrl();
+		}
+
+		Contract contract = matching.getContract();
+		MatchingStatus displayStatus = (matching.getStatus() == MatchingStatus.COMPLETED)
+			? MatchingStatus.COMPLETED
+			: MatchingStatus.MATCHED;
+
+		return ContractResponse.ContractListItemDto.builder()
+			.userNickname(nickname)
+			.profileImageUrl(profileImageUrl)
+			.matchingStatus(displayStatus)
+			.sessionCount(contract != null ? contract.getTotalSession() : null)
+			.contractPrice(contract != null ? contract.getPrice() : null)
+			.startDate(contract != null ? contract.getStartDate() : null)
+			.expireDate(contract != null ? contract.getContractDate() : null)
+			.build();
 	}
 
 	@Transactional

@@ -4,12 +4,15 @@ import com.grabpt.service.ContractService.ContractPhotoServiceImpl;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import com.grabpt.apiPayload.ApiResponse;
 import com.grabpt.converter.ContractConverter;
 import com.grabpt.domain.entity.Contract;
+import com.grabpt.domain.enums.Role;
 import com.grabpt.dto.request.ContractRequest;
 import com.grabpt.dto.response.ContractResponse;
 import com.grabpt.service.ContractService.ContractService;
@@ -24,6 +27,21 @@ public class ContractController {
 
 	private final ContractService contractService;
 	private final ContractPhotoServiceImpl contractPhotoService;
+
+	@Operation(
+		summary = "계약 내역 목록 조회 API",
+		description = "role(USER/PRO)과 userId를 기반으로 계약 목록을 조회합니다. " +
+			"USER 조회 시 상대방(전문가) 정보, PRO 조회 시 상대방(회원) 정보를 반환합니다."
+	)
+	@GetMapping("/contract/list")
+	public ApiResponse<ContractResponse.ContractListResponseDto> getContractList(
+		@RequestParam Role role,
+		@RequestParam Long userId,
+		@RequestParam(defaultValue = "1") int page,
+		@RequestParam(defaultValue = "10") int size) {
+		Pageable pageable = PageRequest.of(Math.max(page - 1, 0), size);
+		return ApiResponse.onSuccess(contractService.getContractList(role, userId, pageable));
+	}
 
 	@Operation(
 		description = "계약서 Id를 통해 계약서에 대한 정보를 조회합니다",

@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.grabpt.domain.entity.ContractInfo;
 import com.grabpt.domain.enums.MatchingStatus;
+import com.grabpt.domain.enums.PaymentStatus;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
@@ -75,14 +76,17 @@ public class ContractResponse {
 	@Getter
 	@Builder
 	public static class ContractListItemDto {
+		@Schema(description = "계약 ID", example = "42")
+		Long contractId;
+
 		@Schema(description = "상대방 닉네임 (회원 조회 시 전문가 닉네임, 전문가 조회 시 회원 닉네임)", example = "운동초보냥")
 		String userNickname;
 
 		@Schema(description = "상대방 프로필 이미지 URL", example = "https://grabpt.com/images/default.png")
 		String profileImageUrl;
 
-		@Schema(description = "매칭 상태 (MATCHED: 진행중, COMPLETED: 결제완료)", example = "MATCHED")
-		MatchingStatus matchingStatus;
+		@Schema(description = "결제 상태 (READY: 결제 대기, OK: 결제 완료)", example = "READY")
+		PaymentStatus paymentStatus;
 
 		@Schema(description = "총 세션 횟수", example = "20")
 		Integer sessionCount;

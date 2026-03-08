@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 
 import com.grabpt.domain.entity.Matching;
 import com.grabpt.domain.enums.MatchingStatus;
+import com.grabpt.domain.enums.PaymentStatus;
 
 public interface MatchingRepository extends JpaRepository<Matching, Long> {
 	/** 트레이너 활성 회원 수 */
@@ -90,5 +91,103 @@ public interface MatchingRepository extends JpaRepository<Matching, Long> {
 		""")
 	Long countContractsByProUserIdAndStatuses(@Param("userId") Long userId,
 		@Param("statuses") List<MatchingStatus> statuses);
+
+	// 목록 조회 - 회원(USER) 기준, PaymentStatus.OK인 Order가 존재하는 매칭
+	@Query("""
+		    SELECT m FROM Matching m
+		    JOIN m.requestion req
+		    WHERE req.user.id = :userId
+		      AND m.status IN :statuses
+		      AND EXISTS (SELECT o FROM m.orders o WHERE o.payment IS NOT NULL AND o.payment.status = com.grabpt.domain.enums.PaymentStatus.OK)
+		    ORDER BY m.matchedAt DESC
+		""")
+	Page<Matching> findContractsByUserIdAndPaymentStatusOK(@Param("userId") Long userId,
+		@Param("statuses") List<MatchingStatus> statuses, Pageable pageable);
+
+	// 목록 조회 - 회원(USER) 기준, PaymentStatus.OK인 Order가 없는 매칭 (= READY)
+	@Query("""
+		    SELECT m FROM Matching m
+		    JOIN m.requestion req
+		    WHERE req.user.id = :userId
+		      AND m.status IN :statuses
+		      AND NOT EXISTS (SELECT o FROM m.orders o WHERE o.payment IS NOT NULL AND o.payment.status = com.grabpt.domain.enums.PaymentStatus.OK)
+		    ORDER BY m.matchedAt DESC
+		""")
+	Page<Matching> findContractsByUserIdAndPaymentStatusReady(@Param("userId") Long userId,
+		@Param("statuses") List<MatchingStatus> statuses, Pageable pageable);
+
+	// 목록 조회 - 전문가(PRO) 기준, PaymentStatus.OK인 Order가 존재하는 매칭
+	@Query("""
+		    SELECT m FROM Matching m
+		    JOIN m.suggestion sug
+		    JOIN sug.proProfile pp
+		    WHERE pp.user.id = :userId
+		      AND m.status IN :statuses
+		      AND EXISTS (SELECT o FROM m.orders o WHERE o.payment IS NOT NULL AND o.payment.status = com.grabpt.domain.enums.PaymentStatus.OK)
+		    ORDER BY m.matchedAt DESC
+		""")
+	Page<Matching> findContractsByProUserIdAndPaymentStatusOK(@Param("userId") Long userId,
+		@Param("statuses") List<MatchingStatus> statuses, Pageable pageable);
+
+	// 목록 조회 - 전문가(PRO) 기준, PaymentStatus.OK인 Order가 없는 매칭 (= READY)
+	@Query("""
+		    SELECT m FROM Matching m
+		    JOIN m.suggestion sug
+		    JOIN sug.proProfile pp
+		    WHERE pp.user.id = :userId
+		      AND m.status IN :statuses
+		      AND NOT EXISTS (SELECT o FROM m.orders o WHERE o.payment IS NOT NULL AND o.payment.status = com.grabpt.domain.enums.PaymentStatus.OK)
+		    ORDER BY m.matchedAt DESC
+		""")
+	Page<Matching> findContractsByProUserIdAndPaymentStatusReady(@Param("userId") Long userId,
+		@Param("statuses") List<MatchingStatus> statuses, Pageable pageable);
+
+	// 카운트 - 회원(USER) 기준, PaymentStatus.OK인 Order가 존재하는 매칭 수
+	@Query("""
+		    SELECT COUNT(DISTINCT m.id) FROM Matching m
+		    JOIN m.requestion req
+		    WHERE req.user.id = :userId
+		      AND m.status IN :statuses
+		      AND EXISTS (SELECT o FROM m.orders o WHERE o.payment IS NOT NULL AND o.payment.status = :paymentStatus)
+		""")
+	Long countContractsByUserIdAndPaymentStatus(@Param("userId") Long userId,
+		@Param("statuses") List<MatchingStatus> statuses,
+		@Param("paymentStatus") PaymentStatus paymentStatus);
+
+	// 카운트 - 회원(USER) 기준, PaymentStatus.OK인 Order가 없는 매칭 수 (= READY)
+	@Query("""
+		    SELECT COUNT(DISTINCT m.id) FROM Matching m
+		    JOIN m.requestion req
+		    WHERE req.user.id = :userId
+		      AND m.status IN :statuses
+		      AND NOT EXISTS (SELECT o FROM m.orders o WHERE o.payment IS NOT NULL AND o.payment.status = :paymentStatus)
+		""")
+	Long countContractsByUserIdAndNotPaymentStatus(@Param("userId") Long userId,
+		@Param("statuses") List<MatchingStatus> statuses,
+		@Param("paymentStatus") PaymentStatus paymentStatus);
+
+	// 카운트 - 전문가(PRO) 기준, PaymentStatus.OK인 Order가 존재하는 매칭 수
+	@Query("""
+		    SELECT COUNT(DISTINCT m.id) FROM Matching m
+		    JOIN m.suggestion sug
+		    WHERE sug.proProfile.user.id = :userId
+		      AND m.status IN :statuses
+		      AND EXISTS (SELECT o FROM m.orders o WHERE o.payment IS NOT NULL AND o.payment.status = :paymentStatus)
+		""")
+	Long countContractsByProUserIdAndPaymentStatus(@Param("userId") Long userId,
+		@Param("statuses") List<MatchingStatus> statuses,
+		@Param("paymentStatus") PaymentStatus paymentStatus);
+
+	// 카운트 - 전문가(PRO) 기준, PaymentStatus.OK인 Order가 없는 매칭 수 (= READY)
+	@Query("""
+		    SELECT COUNT(DISTINCT m.id) FROM Matching m
+		    JOIN m.suggestion sug
+		    WHERE sug.proProfile.user.id = :userId
+		      AND m.status IN :statuses
+		      AND NOT EXISTS (SELECT o FROM m.orders o WHERE o.payment IS NOT NULL AND o.payment.status = :paymentStatus)
+		""")
+	Long countContractsByProUserIdAndNotPaymentStatus(@Param("userId") Long userId,
+		@Param("statuses") List<MatchingStatus> statuses,
+		@Param("paymentStatus") PaymentStatus paymentStatus);
 
 }

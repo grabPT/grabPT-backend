@@ -26,6 +26,7 @@ public enum ErrorStatus implements BaseErrorCode {
 
 	/// 계약서 관련 오류
 	CONTRACT_NOT_FOUND(HttpStatus.BAD_REQUEST, "CONT4001", "계약이 존재하지 않습니다"),
+	CONTRACT_DELETE_NOT_AUTHORIZED(HttpStatus.FORBIDDEN, "CONT4031", "계약서 삭제 권한이 없습니다"),
 
 	/// 이미지 관련 오류
 	NOT_IMAGE(HttpStatus.BAD_REQUEST, "IMG4001", "이미지가 없습니다."),

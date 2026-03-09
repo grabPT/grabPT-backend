@@ -13,6 +13,7 @@ public interface ContractService{
 	public Contract writeProInfo(Long contractId, ContractRequest.ContractInfoForProDto request);
 	public Contract findById(Long contractId);
 	public String generateAndSavePdfToS3(Long contractId);
-	public ContractResponse.ContractListResponseDto getContractList(Role role, Long userId, PaymentStatus paymentStatus, Pageable pageable);
+	public ContractResponse.ContractListResponseDto getContractList(Role role, Long userId, PaymentStatus paymentStatus, String nickname, Pageable pageable);
+	public void deleteContract(Long contractId, String email);
 }
 

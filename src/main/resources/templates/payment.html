@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>결제</title>
+    <script src="https://cdn.iamport.kr/v1/iamport.js"></script>
+</head>
+<body>
+<h2>결제 테스트</h2>
+<p>주문번호: <span th:text="${requestDto.order_uid}"></span></p>
+<p>상품명: <span th:text="${requestDto.item_name}"></span></p>
+<p>금액: <span th:text="${requestDto.payment_price}"></span> 원</p>
+<button onclick="requestPay()">결제하기</button>
+<p id="result"></p>
+
+<script th:inline="javascript">
+    IMP.init("imp05656377");
+
+    function requestPay() {
+        const orderUid = /*[[${requestDto.order_uid}]]*/ '';
+        const itemName = /*[[${requestDto.item_name}]]*/ '';
+        const amount = /*[[${requestDto.payment_price}]]*/ 0;
+        const buyerName = /*[[${requestDto.buyer_name}]]*/ '';
+        const buyerEmail = /*[[${requestDto.buyer_email}]]*/ '';
+
+        IMP.request_pay({
+            pg: 'html5_inicis.INIpayTest',
+            pay_method: 'card',
+            merchant_uid: orderUid,
+            name: itemName,
+            amount: amount,
+            buyer_name: buyerName,
+            buyer_email: buyerEmail,
+        }, function(rsp) {
+            if (rsp.success) {
+                document.getElementById('result').innerText = 'imp_uid: ' + rsp.imp_uid;
+                fetch('/paymentCallback', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        payment_uid: rsp.imp_uid,
+                        order_uid: rsp.merchant_uid
+                    })
+                }).then(r => r.json()).then(data => {
+                    document.getElementById('result').innerText += '\n결과: ' + JSON.stringify(data);
+                });
+            } else {
+                document.getElementById('result').innerText = '결제 실패: ' + rsp.error_msg;
+            }
+        });
+    }
+</script>
+</body>
+</html>

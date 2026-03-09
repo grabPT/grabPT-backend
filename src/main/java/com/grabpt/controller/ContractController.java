@@ -1,5 +1,6 @@
 package com.grabpt.controller;
 
+import com.grabpt.config.SecurityUtils;
 import com.grabpt.service.ContractService.ContractPhotoServiceImpl;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -39,10 +40,11 @@ public class ContractController {
 		@RequestParam Role role,
 		@RequestParam Long userId,
 		@RequestParam(required = false) PaymentStatus paymentStatus,
+		@RequestParam(required = false) String nickname,
 		@RequestParam(defaultValue = "1") int page,
 		@RequestParam(defaultValue = "10") int size) {
 		Pageable pageable = PageRequest.of(Math.max(page - 1, 0), size);
-		return ApiResponse.onSuccess(contractService.getContractList(role, userId, paymentStatus, pageable));
+		return ApiResponse.onSuccess(contractService.getContractList(role, userId, paymentStatus, nickname, pageable));
 	}
 
 	@Operation(
@@ -154,6 +156,23 @@ public class ContractController {
 	public ApiResponse<String> uploadProSign(@PathVariable(name = "contractId") Long contractId, @RequestPart MultipartFile file) {
 		contractPhotoService.uploadProSign(contractId,file);
 		return ApiResponse.onSuccess("전문가 전자서명 upload");
+	}
+
+	@Operation(
+		summary = "계약서 삭제 API",
+		description = "계약서 ID를 받아 해당 계약서 + 연결된 요청서 + 해당 요청서의 모든 제안서를 삭제합니다. 요청서 작성자(수강생)만 삭제 가능합니다."
+	)
+	@ApiResponses({
+		@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "삭제 성공"),
+		@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "CONTRACT_NOT_FOUND"),
+		@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "삭제 권한 없음"),
+		@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증 필요"),
+	})
+	@DeleteMapping("/contract/{contractId}")
+	public ApiResponse<Void> deleteContract(@PathVariable(name = "contractId") Long contractId) {
+		String email = SecurityUtils.currentUserOrThrow().getUser().getEmail();
+		contractService.deleteContract(contractId, email);
+		return ApiResponse.onSuccess(null);
 	}
 
 }

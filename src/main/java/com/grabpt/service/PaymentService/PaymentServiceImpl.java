@@ -162,14 +162,17 @@ public class PaymentServiceImpl implements PaymentService {
 		Order order = orderService.findOrderAndPaymentAndMember(orderUid)
 			.orElseThrow(() -> new IllegalArgumentException("주문이 없습니다."));
 
+		String address = (order.getUser().getAddress() != null) ? order.getUser().getAddress().getStreet() : null;
+		String zipcode = (order.getUser().getAddress() != null) ? order.getUser().getAddress().getZipcode() : null;
+
 		return ImPortRequestDto.CustomRequestPayDto.builder()
 			.buyer_name(order.getUser().getUsername())
 			.buyer_email(order.getUser().getEmail())
-			.buyer_address(order.getUser().getAddress().getStreet())
+			.buyer_address(address)
 			.payment_price(order.getPayment().getPrice())
 			.item_name(order.getItemName())
 			.buyer_tel(order.getUser().getPhone_number())
-			.buyer_postcode(order.getUser().getAddress().getZipcode())
+			.buyer_postcode(zipcode)
 			.order_uid(order.getOrderUid())
 			.build();
 	}

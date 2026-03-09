@@ -119,6 +119,7 @@ public class SecurityConfig {
 					"/api/auth/**",
 					"/matching/**",
 					"/payment/**",
+					"/paymentCallback",
 					"/api/sms/**",
 					"/api/category-proprofile/**",
 					"/api/*/reviews",

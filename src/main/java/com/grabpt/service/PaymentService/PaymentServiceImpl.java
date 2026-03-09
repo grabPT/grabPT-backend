@@ -20,10 +20,12 @@ import com.siot.IamportRestClient.response.Payment;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Transactional
 @RequiredArgsConstructor
+@Slf4j
 public class PaymentServiceImpl implements PaymentService {
 
 	private final OrderService orderService;
@@ -147,7 +149,8 @@ public class PaymentServiceImpl implements PaymentService {
 	@Override
 	public boolean paymentByCallbackBoolean(ImPortRequestDto.PaymentCallbackRequest request) {
 		try {
-			log.info("[Payment] paymentCallback 수신 - payment_uid={}, order_uid={}", request.getPayment_uid(), request.getOrder_uid());
+			log.info("[Payment] paymentCallback 수신 - payment_uid={}, order_uid={}", request.getPayment_uid(),
+				request.getOrder_uid());
 			// 결제 단건 조회(아임포트)
 			IamportResponse<com.siot.IamportRestClient.response.Payment> iamportResponse = iamportClient.paymentByImpUid(
 				request.getPayment_uid());

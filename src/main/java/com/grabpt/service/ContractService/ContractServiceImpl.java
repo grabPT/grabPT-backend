@@ -33,8 +33,11 @@ import com.grabpt.dto.request.ContractRequest;
 import com.grabpt.dto.response.ContractResponse;
 import com.grabpt.repository.ContractRepository.ContractRepository;
 import com.grabpt.repository.MatchingRepository.MatchingRepository;
+import com.grabpt.repository.RequestionRepository.RequestionRepository;
 import com.grabpt.service.AlarmService.AlarmService;
 import com.grabpt.service.PdfService.PdfGenerateService;
+
+import jakarta.persistence.EntityManager;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,6 +48,8 @@ import lombok.extern.slf4j.Slf4j;
 public class ContractServiceImpl implements ContractService {
 	private final ContractRepository contractRepository;
 	private final MatchingRepository matchingRepository;
+	private final RequestionRepository requestionRepository;
+	private final EntityManager entityManager;
 	private final AlarmService alarmService;
 	private final PdfGenerateService pdfGenerateService;
 	private final TemplateEngine templateEngine;
@@ -191,6 +196,33 @@ public class ContractServiceImpl implements ContractService {
 			.startDate(contract != null ? contract.getStartDate() : null)
 			.expireDate(contract != null ? contract.getContractDate() : null)
 			.build();
+	}
+
+	@Override
+	@Transactional
+	public void deleteContract(Long contractId, String email) {
+		Contract contract = contractRepository.findById(contractId)
+			.orElseThrow(() -> new ContractHandler(ErrorStatus.CONTRACT_NOT_FOUND));
+
+		Matching matching = contract.getMatching();
+		Requestions requestion = matching.getRequestion();
+		Long requestionId = requestion.getId();
+
+		// 요청서 작성자(수강생)만 삭제 가능
+		if (!requestion.getUser().getEmail().equals(email)) {
+			throw new ContractHandler(ErrorStatus.CONTRACT_DELETE_NOT_AUTHORIZED);
+		}
+
+		// 1. Matching 삭제 → Contract, Orders cascade 삭제
+		//    matching.requestion_id, matching.suggestion_id FK 제거됨
+		matchingRepository.delete(matching);
+		entityManager.flush();
+		entityManager.clear(); // 1차 캐시 초기화 (Suggestions.matching이 null로 재조회됨)
+
+		// 2. Requestions 재조회 후 삭제 → 모든 Suggestions, SuggestionPhotos cascade 삭제
+		Requestions freshRequestion = requestionRepository.findById(requestionId)
+			.orElseThrow(() -> new ContractHandler(ErrorStatus.CONTRACT_NOT_FOUND));
+		requestionRepository.delete(freshRequestion);
 	}
 
 	@Transactional

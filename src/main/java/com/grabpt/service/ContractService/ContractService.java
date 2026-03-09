@@ -14,5 +14,6 @@ public interface ContractService{
 	public Contract findById(Long contractId);
 	public String generateAndSavePdfToS3(Long contractId);
 	public ContractResponse.ContractListResponseDto getContractList(Role role, Long userId, PaymentStatus paymentStatus, Pageable pageable);
+	public void deleteContract(Long contractId, String email);
 }
 

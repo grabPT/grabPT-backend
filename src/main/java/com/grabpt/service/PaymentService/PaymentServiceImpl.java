@@ -72,11 +72,15 @@ public class PaymentServiceImpl implements PaymentService {
 			// 결제 상태 변경
 			order.getPayment().changePaymentBySuccess(PaymentStatus.OK, iamportResponse.getResponse().getImpUid());
 
-			Long contractId = order.getMatching().getContract().getId();
-			Long proId = order.getMatching().getSuggestion().getProProfile().getUser().getId();
+			try {
+				Long contractId = order.getMatching().getContract().getId();
+				Long proId = order.getMatching().getSuggestion().getProProfile().getUser().getId();
+				alarmService.sendAlarm(proId, "SUCCESS", "결제 완료",
+					"결제가 성공적으로 완료되었습니다.", "/contracts/" + contractId);
+			} catch (Exception e) {
+				log.warn("결제 완료 알람 전송 실패 (결제 상태는 OK로 저장됨): {}", e.getMessage());
+			}
 
-			alarmService.sendAlarm(proId, "SUCCESS", "결제 완료",
-				"결제가 성공적으로 완료되었습니다.", "/contracts/" + contractId);
 			return iamportResponse;
 
 		} catch (IamportResponseException e) {
@@ -143,6 +147,7 @@ public class PaymentServiceImpl implements PaymentService {
 	@Override
 	public boolean paymentByCallbackBoolean(ImPortRequestDto.PaymentCallbackRequest request) {
 		try {
+			log.info("[Payment] paymentCallback 수신 - payment_uid={}, order_uid={}", request.getPayment_uid(), request.getOrder_uid());
 			// 결제 단건 조회(아임포트)
 			IamportResponse<com.siot.IamportRestClient.response.Payment> iamportResponse = iamportClient.paymentByImpUid(
 				request.getPayment_uid());
@@ -181,11 +186,15 @@ public class PaymentServiceImpl implements PaymentService {
 			// 결제 상태 변경
 			order.getPayment().changePaymentBySuccess(PaymentStatus.OK, iamportResponse.getResponse().getImpUid());
 
-			Long contractId = order.getMatching().getContract().getId();
-			Long proId = order.getMatching().getSuggestion().getProProfile().getUser().getId();
+			try {
+				Long contractId = order.getMatching().getContract().getId();
+				Long proId = order.getMatching().getSuggestion().getProProfile().getUser().getId();
+				alarmService.sendAlarm(proId, "SUCCESS", "결제 완료",
+					"결제가 성공적으로 완료되었습니다.", "/contracts/" + contractId);
+			} catch (Exception e) {
+				log.warn("결제 완료 알람 전송 실패 (결제 상태는 OK로 저장됨): {}", e.getMessage());
+			}
 
-			alarmService.sendAlarm(proId, "SUCCESS", "결제 완료",
-				"결제가 성공적으로 완료되었습니다.", "/contracts/" + contractId);
 			return true;
 
 		} catch (IamportResponseException e) {

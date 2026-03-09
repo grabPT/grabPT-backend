@@ -2,8 +2,16 @@ package com.grabpt.service.PaymentService;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import com.grabpt.domain.entity.Order;
 import com.grabpt.domain.entity.Users;
@@ -33,46 +41,87 @@ public class PaymentServiceImpl implements PaymentService {
 	private final IamportClient iamportClient;
 	private final AlarmService alarmService;
 
+	@Value("${import.api.key}")
+	private String impApiKey;
+
+	@Value("${import.api.secret}")
+	private String impApiSecret;
+
+	/**
+	 * PortOne V1 결제 단건 조회 (include_sandbox=true 포함)
+	 * 2026-01-26 이후 테스트 채널 결제는 기본적으로 404를 반환하므로 직접 API 호출
+	 */
+	@SuppressWarnings("unchecked")
+	private Map<String, Object> getPaymentIncludingSandbox(String impUid) {
+		RestTemplate restTemplate = new RestTemplate();
+
+		// 1. 액세스 토큰 발급
+		HttpHeaders tokenHeaders = new HttpHeaders();
+		tokenHeaders.setContentType(MediaType.APPLICATION_JSON);
+		Map<String, String> tokenBody = Map.of("imp_key", impApiKey, "imp_secret", impApiSecret);
+		ResponseEntity<Map> tokenResponse = restTemplate.postForEntity(
+			"https://api.iamport.kr/users/getToken",
+			new HttpEntity<>(tokenBody, tokenHeaders),
+			Map.class
+		);
+		Map<String, Object> tokenData = (Map<String, Object>) tokenResponse.getBody().get("response");
+		String accessToken = (String) tokenData.get("access_token");
+
+		// 2. include_sandbox=true 로 결제 단건 조회
+		HttpHeaders paymentHeaders = new HttpHeaders();
+		paymentHeaders.setBearerAuth(accessToken);
+		ResponseEntity<Map> paymentResponse = restTemplate.exchange(
+			"https://api.iamport.kr/payments/" + impUid + "?include_sandbox=true",
+			HttpMethod.GET,
+			new HttpEntity<>(paymentHeaders),
+			Map.class
+		);
+
+		Map<String, Object> body = paymentResponse.getBody();
+		if (body == null || !Integer.valueOf(0).equals(body.get("code"))) {
+			throw new RuntimeException("결제 조회 실패: " + (body != null ? body.get("message") : "응답 없음"));
+		}
+
+		Map<String, Object> paymentData = (Map<String, Object>) body.get("response");
+		if (paymentData == null) {
+			throw new RuntimeException("존재하지 않는 결제정보입니다.");
+		}
+
+		return paymentData;
+	}
+
 	@Override // 결제 정보 확인 및 검증
 	public IamportResponse<Payment> paymentByCallback(ImPortRequestDto.PaymentCallbackRequest request) {
 		try {
-			// 결제 단건 조회(아임포트)
-			IamportResponse<com.siot.IamportRestClient.response.Payment> iamportResponse = iamportClient.paymentByImpUid(
-				request.getPayment_uid());
+			Map<String, Object> payment = getPaymentIncludingSandbox(request.getPayment_uid());
 
 			// 주문내역 조회
 			Order order = orderService.findOrderAndPayment(request.getOrder_uid())
 				.orElseThrow(() -> new IllegalArgumentException("주문 내역이 없습니다."));
 
+			String status = (String) payment.get("status");
+			int iamportPrice = ((Number) payment.get("amount")).intValue();
+			String impUid = (String) payment.get("imp_uid");
+
 			// 결제 완료가 아니면
-			if (!iamportResponse.getResponse().getStatus().equals("paid")) {
-				// 주문, 결제 삭제
+			if (!"paid".equals(status)) {
 				orderService.delete(order);
 				paymentRepository.delete(order.getPayment());
-
 				throw new RuntimeException("결제 미완료");
 			}
 
-			// DB에 저장된 결제 금액
-			Long price = order.getPayment().getPrice();
-			// 실 결제 금액
-			int iamportPrice = iamportResponse.getResponse().getAmount().intValue();
-
 			// 결제 금액 검증
+			Long price = order.getPayment().getPrice();
 			if (iamportPrice != price) {
-				// 주문, 결제 삭제
 				orderService.delete(order);
 				paymentRepository.delete(order.getPayment());
-
-				// 결제금액 위변조로 의심되는 결제금액을 취소(아임포트)
 				iamportClient.cancelPaymentByImpUid(
-					new CancelData(iamportResponse.getResponse().getImpUid(), true, new BigDecimal(iamportPrice)));
-
+					new CancelData(impUid, true, new BigDecimal(iamportPrice)));
 				throw new RuntimeException("결제금액 위변조 의심");
 			}
 
 			// 결제 상태 변경
-			order.getPayment().changePaymentBySuccess(PaymentStatus.OK, iamportResponse.getResponse().getImpUid());
+			order.getPayment().changePaymentBySuccess(PaymentStatus.OK, impUid);
 
 			try {
 				Long contractId = order.getMatching().getContract().getId();
@@ -83,7 +132,8 @@ public class PaymentServiceImpl implements PaymentService {
 				log.warn("결제 완료 알람 전송 실패 (결제 상태는 OK로 저장됨): {}", e.getMessage());
 			}
 
-			return iamportResponse;
+			// 라이브러리 응답 객체가 필요한 경우 기존 방식으로 조회 (로깅용)
+			return iamportClient.paymentByImpUid(request.getPayment_uid());
 
 		} catch (IamportResponseException e) {
 			throw new RuntimeException(e);
@@ -148,46 +198,38 @@ public class PaymentServiceImpl implements PaymentService {
 
 	@Override
 	public boolean paymentByCallbackBoolean(ImPortRequestDto.PaymentCallbackRequest request) {
+		log.info("[Payment] paymentCallback 수신 - payment_uid={}, order_uid={}", request.getPayment_uid(),
+			request.getOrder_uid());
 		try {
-			log.info("[Payment] paymentCallback 수신 - payment_uid={}, order_uid={}", request.getPayment_uid(),
-				request.getOrder_uid());
-			// 결제 단건 조회(아임포트)
-			IamportResponse<com.siot.IamportRestClient.response.Payment> iamportResponse = iamportClient.paymentByImpUid(
-				request.getPayment_uid());
+			Map<String, Object> payment = getPaymentIncludingSandbox(request.getPayment_uid());
 
 			// 주문내역 조회
 			Order order = orderService.findOrderAndPayment(request.getOrder_uid())
 				.orElseThrow(() -> new IllegalArgumentException("주문 내역이 없습니다."));
 
+			String status = (String) payment.get("status");
+			int iamportPrice = ((Number) payment.get("amount")).intValue();
+			String impUid = (String) payment.get("imp_uid");
+
 			// 결제 완료가 아니면
-			if (!iamportResponse.getResponse().getStatus().equals("paid")) {
-				// 주문, 결제 삭제
+			if (!"paid".equals(status)) {
 				orderService.delete(order);
 				paymentRepository.delete(order.getPayment());
-
 				throw new RuntimeException("결제 미완료");
 			}
 
-			// DB에 저장된 결제 금액
-			Long price = order.getPayment().getPrice();
-			// 실 결제 금액
-			int iamportPrice = iamportResponse.getResponse().getAmount().intValue();
-
 			// 결제 금액 검증
+			Long price = order.getPayment().getPrice();
 			if (iamportPrice != price) {
-				// 주문, 결제 삭제
 				orderService.delete(order);
 				paymentRepository.delete(order.getPayment());
-
-				// 결제금액 위변조로 의심되는 결제금액을 취소(아임포트)
 				iamportClient.cancelPaymentByImpUid(
-					new CancelData(iamportResponse.getResponse().getImpUid(), true, new BigDecimal(iamportPrice)));
-
+					new CancelData(impUid, true, new BigDecimal(iamportPrice)));
 				throw new RuntimeException("결제금액 위변조 의심");
 			}
 
 			// 결제 상태 변경
-			order.getPayment().changePaymentBySuccess(PaymentStatus.OK, iamportResponse.getResponse().getImpUid());
+			order.getPayment().changePaymentBySuccess(PaymentStatus.OK, impUid);
 
 			try {
 				Long contractId = order.getMatching().getContract().getId();

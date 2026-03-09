@@ -60,24 +60,33 @@ public interface MatchingRepository extends JpaRepository<Matching, Long> {
 	@Query("""
 		    SELECT m FROM Matching m
 		    JOIN m.requestion req
+		    JOIN m.suggestion sug
+		    JOIN sug.proProfile pp
 		    WHERE req.user.id = :userId
 		      AND m.status IN :statuses
+		      AND (:nickname IS NULL OR pp.user.nickname LIKE CONCAT('%', :nickname, '%'))
 		    ORDER BY m.matchedAt DESC
 		""")
 	Page<Matching> findContractsByUserId(@Param("userId") Long userId,
-		@Param("statuses") List<MatchingStatus> statuses, Pageable pageable);
+		@Param("statuses") List<MatchingStatus> statuses,
+		@Param("nickname") String nickname,
+		Pageable pageable);
 
 	// 계약 목록 조회 - 전문가(PRO) 기준
 	@Query("""
 		    SELECT m FROM Matching m
 		    JOIN m.suggestion sug
 		    JOIN sug.proProfile pp
+		    JOIN m.requestion req
 		    WHERE pp.user.id = :userId
 		      AND m.status IN :statuses
+		      AND (:nickname IS NULL OR req.user.nickname LIKE CONCAT('%', :nickname, '%'))
 		    ORDER BY m.matchedAt DESC
 		""")
 	Page<Matching> findContractsByProUserId(@Param("userId") Long userId,
-		@Param("statuses") List<MatchingStatus> statuses, Pageable pageable);
+		@Param("statuses") List<MatchingStatus> statuses,
+		@Param("nickname") String nickname,
+		Pageable pageable);
 
 	// 카운트 - 회원(USER) 기준, 복수 상태
 	Long countByRequestion_User_IdAndStatusIn(Long userId, List<MatchingStatus> statuses);
@@ -96,51 +105,69 @@ public interface MatchingRepository extends JpaRepository<Matching, Long> {
 	@Query("""
 		    SELECT m FROM Matching m
 		    JOIN m.requestion req
+		    JOIN m.suggestion sug
+		    JOIN sug.proProfile pp
 		    WHERE req.user.id = :userId
 		      AND m.status IN :statuses
+		      AND (:nickname IS NULL OR pp.user.nickname LIKE CONCAT('%', :nickname, '%'))
 		      AND EXISTS (SELECT o FROM m.orders o WHERE o.payment IS NOT NULL AND o.payment.status = com.grabpt.domain.enums.PaymentStatus.OK)
 		    ORDER BY m.matchedAt DESC
 		""")
 	Page<Matching> findContractsByUserIdAndPaymentStatusOK(@Param("userId") Long userId,
-		@Param("statuses") List<MatchingStatus> statuses, Pageable pageable);
+		@Param("statuses") List<MatchingStatus> statuses,
+		@Param("nickname") String nickname,
+		Pageable pageable);
 
 	// 목록 조회 - 회원(USER) 기준, PaymentStatus.OK인 Order가 없는 매칭 (= READY)
 	@Query("""
 		    SELECT m FROM Matching m
 		    JOIN m.requestion req
+		    JOIN m.suggestion sug
+		    JOIN sug.proProfile pp
 		    WHERE req.user.id = :userId
 		      AND m.status IN :statuses
+		      AND (:nickname IS NULL OR pp.user.nickname LIKE CONCAT('%', :nickname, '%'))
 		      AND NOT EXISTS (SELECT o FROM m.orders o WHERE o.payment IS NOT NULL AND o.payment.status = com.grabpt.domain.enums.PaymentStatus.OK)
 		    ORDER BY m.matchedAt DESC
 		""")
 	Page<Matching> findContractsByUserIdAndPaymentStatusReady(@Param("userId") Long userId,
-		@Param("statuses") List<MatchingStatus> statuses, Pageable pageable);
+		@Param("statuses") List<MatchingStatus> statuses,
+		@Param("nickname") String nickname,
+		Pageable pageable);
 
 	// 목록 조회 - 전문가(PRO) 기준, PaymentStatus.OK인 Order가 존재하는 매칭
 	@Query("""
 		    SELECT m FROM Matching m
 		    JOIN m.suggestion sug
 		    JOIN sug.proProfile pp
+		    JOIN m.requestion req
 		    WHERE pp.user.id = :userId
 		      AND m.status IN :statuses
+		      AND (:nickname IS NULL OR req.user.nickname LIKE CONCAT('%', :nickname, '%'))
 		      AND EXISTS (SELECT o FROM m.orders o WHERE o.payment IS NOT NULL AND o.payment.status = com.grabpt.domain.enums.PaymentStatus.OK)
 		    ORDER BY m.matchedAt DESC
 		""")
 	Page<Matching> findContractsByProUserIdAndPaymentStatusOK(@Param("userId") Long userId,
-		@Param("statuses") List<MatchingStatus> statuses, Pageable pageable);
+		@Param("statuses") List<MatchingStatus> statuses,
+		@Param("nickname") String nickname,
+		Pageable pageable);
 
 	// 목록 조회 - 전문가(PRO) 기준, PaymentStatus.OK인 Order가 없는 매칭 (= READY)
 	@Query("""
 		    SELECT m FROM Matching m
 		    JOIN m.suggestion sug
 		    JOIN sug.proProfile pp
+		    JOIN m.requestion req
 		    WHERE pp.user.id = :userId
 		      AND m.status IN :statuses
+		      AND (:nickname IS NULL OR req.user.nickname LIKE CONCAT('%', :nickname, '%'))
 		      AND NOT EXISTS (SELECT o FROM m.orders o WHERE o.payment IS NOT NULL AND o.payment.status = com.grabpt.domain.enums.PaymentStatus.OK)
 		    ORDER BY m.matchedAt DESC
 		""")
 	Page<Matching> findContractsByProUserIdAndPaymentStatusReady(@Param("userId") Long userId,
-		@Param("statuses") List<MatchingStatus> statuses, Pageable pageable);
+		@Param("statuses") List<MatchingStatus> statuses,
+		@Param("nickname") String nickname,
+		Pageable pageable);
 
 	// 카운트 - 회원(USER) 기준, PaymentStatus.OK인 Order가 존재하는 매칭 수
 	@Query("""

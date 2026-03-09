@@ -127,28 +127,31 @@ public class ContractServiceImpl implements ContractService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public ContractResponse.ContractListResponseDto getContractList(Role role, Long userId, PaymentStatus paymentStatus, Pageable pageable) {
+	public ContractResponse.ContractListResponseDto getContractList(Role role, Long userId, PaymentStatus paymentStatus, String nickname, Pageable pageable) {
+		// 빈 문자열은 null로 처리 (전체 조회)
+		String nicknameFilter = (nickname != null && !nickname.isBlank()) ? nickname.trim() : null;
+
 		Page<Matching> matchings;
 		long totalActive;
 		long totalCompleted;
 
 		if (role == Role.USER) {
 			if (paymentStatus == PaymentStatus.OK) {
-				matchings = matchingRepository.findContractsByUserIdAndPaymentStatusOK(userId, ALL_CONTRACT_STATUSES, pageable);
+				matchings = matchingRepository.findContractsByUserIdAndPaymentStatusOK(userId, ALL_CONTRACT_STATUSES, nicknameFilter, pageable);
 			} else if (paymentStatus == PaymentStatus.READY) {
-				matchings = matchingRepository.findContractsByUserIdAndPaymentStatusReady(userId, ALL_CONTRACT_STATUSES, pageable);
+				matchings = matchingRepository.findContractsByUserIdAndPaymentStatusReady(userId, ALL_CONTRACT_STATUSES, nicknameFilter, pageable);
 			} else {
-				matchings = matchingRepository.findContractsByUserId(userId, ALL_CONTRACT_STATUSES, pageable);
+				matchings = matchingRepository.findContractsByUserId(userId, ALL_CONTRACT_STATUSES, nicknameFilter, pageable);
 			}
 			totalActive = matchingRepository.countContractsByUserIdAndNotPaymentStatus(userId, ALL_CONTRACT_STATUSES, PaymentStatus.OK);
 			totalCompleted = matchingRepository.countContractsByUserIdAndPaymentStatus(userId, ALL_CONTRACT_STATUSES, PaymentStatus.OK);
 		} else {
 			if (paymentStatus == PaymentStatus.OK) {
-				matchings = matchingRepository.findContractsByProUserIdAndPaymentStatusOK(userId, ALL_CONTRACT_STATUSES, pageable);
+				matchings = matchingRepository.findContractsByProUserIdAndPaymentStatusOK(userId, ALL_CONTRACT_STATUSES, nicknameFilter, pageable);
 			} else if (paymentStatus == PaymentStatus.READY) {
-				matchings = matchingRepository.findContractsByProUserIdAndPaymentStatusReady(userId, ALL_CONTRACT_STATUSES, pageable);
+				matchings = matchingRepository.findContractsByProUserIdAndPaymentStatusReady(userId, ALL_CONTRACT_STATUSES, nicknameFilter, pageable);
 			} else {
-				matchings = matchingRepository.findContractsByProUserId(userId, ALL_CONTRACT_STATUSES, pageable);
+				matchings = matchingRepository.findContractsByProUserId(userId, ALL_CONTRACT_STATUSES, nicknameFilter, pageable);
 			}
 			totalActive = matchingRepository.countContractsByProUserIdAndNotPaymentStatus(userId, ALL_CONTRACT_STATUSES, PaymentStatus.OK);
 			totalCompleted = matchingRepository.countContractsByProUserIdAndPaymentStatus(userId, ALL_CONTRACT_STATUSES, PaymentStatus.OK);

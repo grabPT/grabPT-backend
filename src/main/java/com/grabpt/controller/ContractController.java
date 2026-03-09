@@ -40,10 +40,11 @@ public class ContractController {
 		@RequestParam Role role,
 		@RequestParam Long userId,
 		@RequestParam(required = false) PaymentStatus paymentStatus,
+		@RequestParam(required = false) String nickname,
 		@RequestParam(defaultValue = "1") int page,
 		@RequestParam(defaultValue = "10") int size) {
 		Pageable pageable = PageRequest.of(Math.max(page - 1, 0), size);
-		return ApiResponse.onSuccess(contractService.getContractList(role, userId, paymentStatus, pageable));
+		return ApiResponse.onSuccess(contractService.getContractList(role, userId, paymentStatus, nickname, pageable));
 	}
 
 	@Operation(

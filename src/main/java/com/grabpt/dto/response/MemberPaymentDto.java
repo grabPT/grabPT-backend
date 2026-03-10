@@ -14,6 +14,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MemberPaymentDto {
+	private Long contractId;
 	private String memberName;       // 회원 이름
 	private Integer ptCount;         // PT 횟수 (Requestions.sessionCount)
 	private Long paymentAmount;      // 결제 금액

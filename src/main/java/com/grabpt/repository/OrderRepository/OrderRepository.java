@@ -46,6 +46,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
 	/** 회원 결제 내역 (페이징) */
 	@Query("SELECT new com.grabpt.dto.response.MemberPaymentDto(" +
+		"c.id, " +
 		"u.nickname, " +
 		"r.sessionCount, " +
 		"o.price, " +
@@ -56,6 +57,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 		"JOIN o.matching m " +
 		"JOIN m.suggestion s " +
 		"JOIN m.requestion r " +
+		"JOIN m.contract c " +
 		"JOIN r.user u " +
 		"WHERE s.proProfile.id = :proProfileId " +
 		"AND p.status = :status " +

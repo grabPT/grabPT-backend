@@ -48,6 +48,9 @@ public class ContractResponse {
 
 		@Schema(description = "매칭 ID", example = "101")
 		Long matchingId;
+
+		@Schema(description = "결제 상태 (READY: 결제 대기, OK: 결제 완료)", example = "READY")
+		PaymentStatus paymentStatus;
 	}
 
 	@Getter

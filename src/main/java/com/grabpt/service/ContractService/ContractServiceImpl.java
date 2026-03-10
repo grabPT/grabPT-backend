@@ -64,6 +64,11 @@ public class ContractServiceImpl implements ContractService {
 	public Contract writeUserInfo(Long contractId, ContractRequest.ContractInfoDto request) {
 		Contract contract = contractRepository.findById(contractId)
 			.orElseThrow(() -> new ContractHandler(ErrorStatus.CONTRACT_NOT_FOUND));
+
+		if (isAlreadyPaid(contract)) {
+			throw new ContractHandler(ErrorStatus.CONTRACT_ALREADY_PAID);
+		}
+
 		contract.getMatching().setStatus(MatchingStatus.USERWROTE);
 
 		ContractInfo contractInfo = toContractInfo(request);
@@ -80,6 +85,11 @@ public class ContractServiceImpl implements ContractService {
 	public Contract writeProInfo(Long contractId, ContractRequest.ContractInfoForProDto request) {
 		Contract contract = contractRepository.findById(contractId)
 			.orElseThrow(() -> new ContractHandler(ErrorStatus.CONTRACT_NOT_FOUND));
+
+		if (isAlreadyPaid(contract)) {
+			throw new ContractHandler(ErrorStatus.CONTRACT_ALREADY_PAID);
+		}
+
 		contract.getMatching().setStatus(MatchingStatus.COMPLETED);
 
 		ContractInfo contractInfo = toContractInfo(request);
@@ -120,6 +130,7 @@ public class ContractServiceImpl implements ContractService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Contract findById(Long contractId) {
 		return contractRepository.findById(contractId)
 			.orElseThrow(() -> new ContractHandler(ErrorStatus.CONTRACT_NOT_FOUND));
@@ -209,10 +220,14 @@ public class ContractServiceImpl implements ContractService {
 
 		Matching matching = contract.getMatching();
 		Requestions requestion = matching.getRequestion();
+		Suggestions suggestion = matching.getSuggestion();
 		Long requestionId = requestion.getId();
 
-		// 요청서 작성자(수강생)만 삭제 가능
-		if (!requestion.getUser().getEmail().equals(email)) {
+		// 요청서 작성자(수강생) 또는 제안서 작성자(전문가)만 삭제 가능
+		boolean isUser = requestion.getUser().getEmail().equals(email);
+		boolean isPro = suggestion.getProProfile().getUser().getEmail().equals(email);
+
+		if (!isUser && !isPro) {
 			throw new ContractHandler(ErrorStatus.CONTRACT_DELETE_NOT_AUTHORIZED);
 		}
 
@@ -231,7 +246,11 @@ public class ContractServiceImpl implements ContractService {
 	@Transactional
 	public String generateAndSavePdfToS3(Long contractId) {
 		Contract contract = contractRepository.findById(contractId)
-			.orElseThrow(() -> new RuntimeException("계약 정보를 찾을 수 없습니다. ID: " + contractId));
+			.orElseThrow(() -> new ContractHandler(ErrorStatus.CONTRACT_NOT_FOUND));
+
+		if (isAlreadyPaid(contract)) {
+			throw new ContractHandler(ErrorStatus.CONTRACT_ALREADY_PAID);
+		}
 
 		Context context = new Context();
 		DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy년 M월 d일");
@@ -309,4 +328,10 @@ public class ContractServiceImpl implements ContractService {
 		}
 	}
 
+	private boolean isAlreadyPaid(Contract contract) {
+		return contract.getMatching().getOrders().stream()
+			.filter(o -> o.getPayment() != null)
+			.map(o -> o.getPayment().getStatus())
+			.anyMatch(s -> s == PaymentStatus.OK);
+	}
 }

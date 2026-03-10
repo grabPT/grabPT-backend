@@ -1,13 +1,10 @@
 package com.grabpt.service.PdfService;
 
-
 import com.microsoft.playwright.*;
-
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
@@ -40,35 +37,45 @@ public class PdfGenerateService {
 	@PreDestroy
 	public void cleanup() {
 		executorService.submit(() -> {
-			if(browser != null) {browser.close();}
-			if(playwright != null) {playwright.close();}
+			if (browser != null) {
+				browser.close();
+			}
+			if (playwright != null) {
+				playwright.close();
+			}
 		});
 		executorService.shutdown();
 	}
 
 	public ByteArrayInputStream generatePdfFromHtml(String htmlContent) throws IOException {
-		if(browser == null){
+		if (browser == null) {
 			throw new IOException("PDF 엔진이 아직 준비되지 않았습니다.");
 		}
 
+		long startTime = System.currentTimeMillis();
+
 		try {
 			byte[] pdfBytes = CompletableFuture.supplyAsync(() -> {
-				try(BrowserContext context = browser.newContext()) {
+				try (BrowserContext context = browser.newContext()) {
 					Page page = context.newPage();
 					page.setContent(htmlContent);
 
 					Page.PdfOptions pdfOptions = new Page.PdfOptions()
-						.setFormat("A4")
-						.setPrintBackground(true);
+							.setFormat("A4")
+							.setPrintBackground(true);
 
 					return page.pdf(pdfOptions);
 				}
 			}, executorService).get();
 
+			long elapsed = System.currentTimeMillis() - startTime;
+			log.info("PDF 생성 시간: {} ms", elapsed);
+
 			return new ByteArrayInputStream(pdfBytes);
-		}  catch (Exception e) {
-			log.error("PDF 생성 중 오류 발생",e);
-			throw new IOException("PDF 변환 실패",e);
+
+		} catch (Exception e) {
+			log.error("PDF 생성 중 오류 발생", e);
+			throw new IOException("PDF 변환 실패", e);
 		}
 
 	}

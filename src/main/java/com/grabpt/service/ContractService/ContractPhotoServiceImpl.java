@@ -5,6 +5,7 @@ import com.grabpt.apiPayload.exception.handler.ContractHandler;
 import com.grabpt.aws.s3.AmazonS3Manager;
 import com.grabpt.aws.s3.Uuid;
 import com.grabpt.domain.entity.Contract;
+import com.grabpt.domain.enums.PaymentStatus;
 import com.grabpt.repository.ContractRepository.ContractRepository;
 import com.grabpt.repository.UuidRepository.UuidRepository;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,14 @@ public class ContractPhotoServiceImpl implements ContractPhotoService {
 		if (file == null || file.isEmpty()) {
 			return null;
 		}
+
+		Contract contract = contractRepository.findById(contractId)
+			.orElseThrow(() -> new ContractHandler(ErrorStatus.CONTRACT_NOT_FOUND));
+
+		if (isAlreadyPaid(contract)) {
+			throw new ContractHandler(ErrorStatus.CONTRACT_ALREADY_PAID);
+		}
+
 		Uuid uuid = Uuid.builder()
 			.uuid(java.util.UUID.randomUUID().toString())
 			.build();
@@ -43,9 +52,6 @@ public class ContractPhotoServiceImpl implements ContractPhotoService {
 		String keyName = amazonS3Manager.generateContractPhotoKeyName(uuid);
 		String fileUrl = amazonS3Manager.uploadFile(keyName, file);
 
-		Contract contract = contractRepository.findById(contractId)
-			.orElseThrow(() -> new ContractHandler(ErrorStatus.CONTRACT_NOT_FOUND));
-
 		if (isUser) {
 			contract.getUserInfo().setSignImageUrl(fileUrl);
 		} else {
@@ -53,5 +59,12 @@ public class ContractPhotoServiceImpl implements ContractPhotoService {
 		}
 
 		return contract;
+	}
+
+	private boolean isAlreadyPaid(Contract contract) {
+		return contract.getMatching().getOrders().stream()
+			.filter(o -> o.getPayment() != null)
+			.map(o -> o.getPayment().getStatus())
+			.anyMatch(s -> s == PaymentStatus.OK);
 	}
 }

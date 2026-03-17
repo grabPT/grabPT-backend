@@ -2,6 +2,7 @@ package com.grabpt.dto.response;
 
 import java.time.LocalDateTime;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,6 +20,7 @@ public class UserDashboardDto {
 	private String userName; // 회원(트레이너) 이름
 	private Integer ptCount; // PT 횟수 (Contract.totalSession)
 	private Long paymentAmount; // 결제 금액
+	@Schema(type = "string", description = "트레이너 프로필 이미지 URL")
 	private String proProfileImgUrl; // 트레이너 프로필 이미지
 	private LocalDateTime paymentDate; // 결제일
 }

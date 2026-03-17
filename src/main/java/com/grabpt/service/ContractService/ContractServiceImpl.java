@@ -284,10 +284,10 @@ public class ContractServiceImpl implements ContractService {
 		Integer pricePerSession = contract.getPrice() != null ? contract.getPrice() : 0;
 		long totalPrice = (long)totalSession * pricePerSession;
 
-		// 유효기간 (예: 시작일로부터 3개월) - 정책에 맞게 수정 필요
+		// 유효기간: 트레이너가 입력한 expireDate (contractDate 필드)를 사용
 		String endDateStr = "-";
-		if (contract.getStartDate() != null) {
-			endDateStr = contract.getStartDate().plusMonths(3).format(dateFormatter);
+		if (contract.getContractDate() != null) {
+			endDateStr = contract.getContractDate().format(dateFormatter);
 		}
 
 		Map<String, Object> service = Map.of(

@@ -15,9 +15,10 @@ import lombok.Setter;
 @AllArgsConstructor
 public class UserDashboardDto {
 
-	private Long contractId;         // 계약 id
-	private String userName;       // 회원(트레이너) 이름
-	private Integer ptCount;         // PT 횟수 (Requestions.sessionCount)
-	private Long paymentAmount;      // 결제 금액
+	private Long contractId; // 계약 id
+	private String userName; // 회원(트레이너) 이름
+	private Integer ptCount; // PT 횟수 (Contract.totalSession)
+	private Long paymentAmount; // 결제 금액
+	private String proProfileImgUrl; // 트레이너 프로필 이미지
 	private LocalDateTime paymentDate; // 결제일
 }

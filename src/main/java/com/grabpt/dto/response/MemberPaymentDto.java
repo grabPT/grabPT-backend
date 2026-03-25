@@ -2,7 +2,6 @@ package com.grabpt.dto.response;
 
 import java.time.LocalDateTime;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,6 +20,5 @@ public class MemberPaymentDto {
 	private Long paymentAmount; // 결제 금액
 	private Long earnedAmount; // 적립 금액
 	private LocalDateTime paymentDate; // 결제일
-	@Schema(type = "string", description = "회원 프로필 이미지 URL")
-	private String profileImgUrl; // 회원 프로필 이미지
+	private String imageURL; // 회원 프로필 이미지
 }

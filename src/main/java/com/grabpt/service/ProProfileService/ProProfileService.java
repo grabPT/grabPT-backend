@@ -5,6 +5,7 @@ import com.grabpt.domain.entity.Users;
 import com.grabpt.dto.request.*;
 import com.grabpt.dto.response.CertificationResponseDTO;
 import com.grabpt.dto.response.ProProfileResponseDTO;
+import com.grabpt.dto.response.ProSearchResponse;
 import com.grabpt.dto.response.ProfileResponseDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,4 +28,5 @@ public interface ProProfileService {
 	void updateProLocation(Long userId, ProLocationUpdateRequestDTO request);
 	String getProNicknameById(Long proProfileId);
 	ProProfile findByUser(Users user);
+	Page<ProSearchResponse> searchProfiles(ProSearchRequest request, Pageable pageable);
 }

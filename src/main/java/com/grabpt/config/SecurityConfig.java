@@ -122,6 +122,7 @@ public class SecurityConfig {
 					"/paymentCallback",
 					"/api/sms/**",
 					"/api/category-proprofile/**",
+					"/api/pro/search",
 					"/api/*/reviews",
 					"/api/allAlarmList",
 					"/api/unreadAlarmList",

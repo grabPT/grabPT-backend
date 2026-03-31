@@ -11,7 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 import java.util.Optional;
 
-public interface ProProfileRepository extends JpaRepository<ProProfile, Long> {
+public interface ProProfileRepository extends JpaRepository<ProProfile, Long>, ProProfileRepositoryCustom {
 	Optional<ProProfile> findByUser(Users user);
 	@Query("""
     SELECT p

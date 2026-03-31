@@ -8,6 +8,7 @@ import com.grabpt.domain.entity.*;
 import com.grabpt.dto.request.*;
 import com.grabpt.dto.response.CertificationResponseDTO;
 import com.grabpt.dto.response.ProProfileResponseDTO;
+import com.grabpt.dto.response.ProSearchResponse;
 import com.grabpt.dto.response.ProfileResponseDTO;
 import com.grabpt.repository.ProProfileRepository.ProProfileRepository;
 import com.grabpt.repository.UserRepository.UserRepository;
@@ -22,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -173,6 +175,38 @@ public class ProProfileServiceImpl implements ProProfileService {
 	public ProProfile findByUser(Users user) {
 		return proProfileRepository.findByUser(user)
 			.orElseThrow(() -> new ProHandler(ErrorStatus.PRO_NOT_FOUND));
+	}
+
+	@Override
+	public Page<ProSearchResponse> searchProfiles(ProSearchRequest request, Pageable pageable) {
+		return proProfileRepository.searchProfiles(request, pageable)
+			.map(this::toSearchResponse);
+	}
+
+	private ProSearchResponse toSearchResponse(ProProfile profile) {
+		Users user = profile.getUser();
+		Address address = user != null ? user.getAddress() : null;
+
+		List<String> photoUrls = profile.getPhotos().stream()
+			.map(ProPhoto::getImageUrl)
+			.collect(Collectors.toList());
+
+		return ProSearchResponse.builder()
+			.proProfileId(profile.getId())
+			.userId(user != null ? user.getId() : null)
+			.nickname(user != null ? user.getNickname() : null)
+			.profileImageUrl(user != null ? user.getProfileImageUrl() : null)
+			.center(profile.getCenter())
+			.categoryCode(profile.getCategory() != null ? profile.getCategory().getCode() : null)
+			.categoryName(profile.getCategory() != null ? profile.getCategory().getName() : null)
+			.career(profile.getCareer())
+			.pricePerSession(profile.getPricePerSession())
+			.averageRating(profile.getAverageRating())
+			.reviewCount((long) profile.getReviews().size())
+			.city(address != null ? address.getCity() : null)
+			.district(address != null ? address.getDistrict() : null)
+			.photoUrls(photoUrls)
+			.build();
 	}
 
 	private Users findUserById(Long userId) {

@@ -3,7 +3,9 @@ package com.grabpt.service.ProfileService;
 import com.grabpt.domain.entity.ProProfile;
 import com.grabpt.domain.entity.Users;
 import com.grabpt.dto.request.*;
+import com.grabpt.dto.request.ProSearchRequest;
 import com.grabpt.dto.response.*;
+import com.grabpt.dto.response.ProSearchResponse;
 import com.grabpt.service.ProProfileService.ProProfileService;
 import com.grabpt.service.UserActivityService.UserActivityService;
 import com.grabpt.service.UserProfileService.UserProfileService;
@@ -149,5 +151,10 @@ public class ProfileFacade implements ProfileService {
 	@Override
 	public ProProfile findByUser(Users user) {
 		return proProfileService.findByUser(user);
+	}
+
+	@Override
+	public Page<ProSearchResponse> searchProfiles(ProSearchRequest request, Pageable pageable) {
+		return proProfileService.searchProfiles(request, pageable);
 	}
 }

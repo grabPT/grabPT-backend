@@ -10,6 +10,8 @@ import org.springframework.web.multipart.MultipartFile;
 import com.grabpt.domain.entity.ProProfile;
 import com.grabpt.domain.entity.Users;
 import com.grabpt.dto.request.CenterUpdateRequestDTO;
+import com.grabpt.dto.request.ProSearchRequest;
+import com.grabpt.dto.response.ProSearchResponse;
 import com.grabpt.dto.request.CertificationUpdateRequestDTO;
 import com.grabpt.dto.request.DeletedRequestDTO;
 import com.grabpt.dto.request.DescriptionUpdateRequestDTO;
@@ -65,4 +67,6 @@ public interface ProfileService {
 	String getProNicknameById(Long proProfileId);
 
 	ProProfile findByUser(Users user);
+
+	Page<ProSearchResponse> searchProfiles(ProSearchRequest request, Pageable pageable);
 }

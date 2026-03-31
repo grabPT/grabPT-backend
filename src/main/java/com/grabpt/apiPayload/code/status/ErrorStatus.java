@@ -73,6 +73,15 @@ public enum ErrorStatus implements BaseErrorCode {
 	SUGGESTION_DELETE_NOT_ALLOWED_STATUS(HttpStatus.BAD_REQUEST, "SUGG4006", "매칭 진행/완료된 제안서는 삭제할 수 없습니다."),
 	SUGGESTION_DELETE_NOT_OWNER(HttpStatus.FORBIDDEN, "SUGG4007", "제안서 작성자만 삭제할 수 있습니다."),
 
+	/// 환불 관련 오류
+	REFUND_NOT_FOUND(HttpStatus.BAD_REQUEST, "REFUND4001", "환불 내역이 존재하지 않습니다."),
+	REFUND_ALREADY_REQUESTED(HttpStatus.BAD_REQUEST, "REFUND4002", "이미 환불 신청이 완료된 주문입니다."),
+	REFUND_NOT_PAID(HttpStatus.BAD_REQUEST, "REFUND4003", "결제 완료된 주문만 환불 신청이 가능합니다."),
+	REFUND_NOT_PENDING(HttpStatus.BAD_REQUEST, "REFUND4004", "환불 대기 상태의 신청만 처리할 수 있습니다."),
+	REFUND_UNAUTHORIZED(HttpStatus.FORBIDDEN, "REFUND4031", "해당 환불을 처리할 권한이 없습니다."),
+	REFUND_ORDER_NOT_FOUND(HttpStatus.BAD_REQUEST, "REFUND4005", "환불 대상 주문을 찾을 수 없습니다."),
+	REFUND_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "REFUND5001", "PortOne 환불 처리 중 오류가 발생했습니다."),
+
 	/// 인증 관련 오류
 	INVALID_JWT_ISSUE(HttpStatus.BAD_REQUEST, "JWT4001", "유효한 JWT 토큰이 아닙니다."),
 	INVALID_JWT_ISSUE_REFRESH(HttpStatus.BAD_REQUEST, "JWT4002", "유효한 Refresh 토큰이 아닙니다."),

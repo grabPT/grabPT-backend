@@ -70,28 +70,28 @@ public class MessageServiceImpl implements MessageService{
 			.sum();
 	}
 
-
 	//채팅방 접속상태에서 message 읽은 경우
 	@Override
 	@Transactional
 	public void updateLastReadMessageWhenExist(Long roomId, Long userId) {
-		Messages messages = messageRepository.findTopByChatRoom_IdOrderByIdDesc(roomId).orElseThrow(
-			()->new ChatHandler(ErrorStatus.MESSAGE_NOT_FOUND));
 
+		// 새로운 채팅방 생성 시 메시지 없을 때는 pass
+		messageRepository.findTopByChatRoom_IdOrderByIdDesc(roomId)
+			.ifPresent((messages -> {
+				UserChatRoom chatRoom = userChatRoomService.findByRoomIdAndUserId(roomId, userId).orElseThrow(
+					() -> new ChatHandler(ErrorStatus.CHATROOM_NOT_FOUND));
 
-		UserChatRoom chatRoom = userChatRoomService.findByRoomIdAndUserId(roomId, userId).orElseThrow(
-			() -> new ChatHandler(ErrorStatus.CHATROOM_NOT_FOUND));
+				chatRoom.setLastReadMessageId(messages.getId());
+				chatRoom.setLastReadAt(LocalDateTime.now());
+				userChatRoomService.save(chatRoom);
 
-		chatRoom.setLastReadMessageId(messages.getId());
-		chatRoom.setLastReadAt(LocalDateTime.now());
-		userChatRoomService.save(chatRoom);
-
-		if (!messages.getSender().getId().equals(userId)) {
-			if (messages.getReadCount() > 0) {
-				messages.setReadCount(messages.getReadCount() - 1);
-			}
-			broadcastReadStatus(roomId, messages);
-		}
+				if (!messages.getSender().getId().equals(userId)) {
+					if (messages.getReadCount() > 0) {
+						messages.setReadCount(messages.getReadCount() - 1);
+					}
+					broadcastReadStatus(roomId, messages);
+				}
+			}));
 		updateAllUnreadMessageCount(userId);
 	}
 

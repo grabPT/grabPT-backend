@@ -1,4 +1,4 @@
-package com.grabpt.config.stomp;
+package com.grabpt.config.websocket;
 
 import com.grabpt.config.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;

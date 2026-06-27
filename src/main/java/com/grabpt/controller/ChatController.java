@@ -10,6 +10,7 @@ import com.grabpt.dto.response.ChatRoomPreviewDto;
 import com.grabpt.service.ChatService.ChatFacade;
 import com.grabpt.service.ChatService.ChatRoomService;
 import com.grabpt.service.ChatService.MessageService;
+import com.grabpt.service.ChatService.redis.ChatRedisPublisher;
 import com.grabpt.service.UserService.UserQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -34,7 +35,7 @@ public class ChatController {
 	private final ChatRoomService chatRoomService;
 	private final MessageService messageService;
 	private final ChatFacade chatFacade;
-	private final UserQueryService userQueryService;
+	private final ChatRedisPublisher redisPublisher;
 	private final SimpMessagingTemplate messagingTemplate;
 
 	@MessageMapping("/chat/{roomId}")
@@ -42,7 +43,10 @@ public class ChatController {
 		Messages newMessage = chatFacade.createChatMessage(request);
 		ChatResponse.MessageResponseDto response = ChatConverter.toMessageResponseDto(newMessage);
 		log.info("채팅 메시지 브로드캐스트", response.getContent());
-		messagingTemplate.convertAndSend("/subscribe/chat/"+roomId, response);
+
+		//Redis를 통해 전달 (모든 서버 인스턴스에 브로드캐스트됨)
+		redisPublisher.publish(roomId, response);
+		//messagingTemplate.convertAndSend("/subscribe/chat/"+roomId, response);
 	}
 
 	@Operation(

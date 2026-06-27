@@ -1,10 +1,13 @@
 package com.grabpt.config.redis;
 
+import com.grabpt.service.ChatService.redis.ChatRedisSubscriber;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.PatternTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
@@ -15,10 +18,19 @@ public class RedisConfig {
 	* Pub/Sub 메시지를 처리하는 리스너 컨테이너
 	*/
 	@Bean
-	public RedisMessageListenerContainer redisMessageListenerContainer(RedisConnectionFactory connectionFactory){
+	public RedisMessageListenerContainer redisMessageListenerContainer(
+		RedisConnectionFactory connectionFactory,
+		MessageListenerAdapter listenerAdapter)
+	{
 		RedisMessageListenerContainer listenerContainer = new RedisMessageListenerContainer();
 		listenerContainer.setConnectionFactory(connectionFactory);
+		listenerContainer.addMessageListener(listenerAdapter, new PatternTopic("chat:room:*"));
 		return listenerContainer;
+	}
+
+	@Bean
+	public MessageListenerAdapter listenerAdapter(ChatRedisSubscriber subscriber){
+		return new MessageListenerAdapter(subscriber, "onMessage");
 	}
 
 	@Bean

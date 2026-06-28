@@ -19,6 +19,11 @@ services:
       retries: 10
     restart: unless-stopped
 
+  redis:
+    image: redis:7.2-alpine
+    ports:
+      - "6379:6379"
+
   app:
     build:
       context: .
@@ -33,6 +38,8 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/grabpt?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
       SPRING_DATASOURCE_USERNAME: grabpt
       SPRING_DATASOURCE_PASSWORD: grabptDB2025
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
     ports:
       - "8080:8080"

@@ -50,6 +50,26 @@ public class ChatController {
 	}
 
 	@Operation(
+		description = "Swagger 테스트용 채팅 메시지 전송 API (STOMP 웹소켓 전송과 동일하게 동작하며 Redis Pub/Sub을 탑니다.)",
+		summary = "채팅 메시지 전송 API (REST)"
+	)
+	@ApiResponses({
+		@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "메시지 전송 성공"),
+		@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 요청"),
+		@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 내부 오류")
+	})
+	@PostMapping("/api/chat/{roomId}/messages")
+	@ResponseBody
+	public ApiResponse<String> sendMessageApi(@PathVariable(name = "roomId") Long roomId, @RequestBody ChatRequest.MessageRequestDto request){
+		Messages newMessage = chatFacade.createChatMessage(request);
+		ChatResponse.MessageResponseDto response = ChatConverter.toMessageResponseDto(newMessage);
+		log.info("채팅 메시지 브로드캐스트 (REST API): {}", response.getContent());
+
+		redisPublisher.publish(roomId, response);
+		return ApiResponse.onSuccess("메시지 전송 성공");
+	}
+
+	@Operation(
 		description = "유저가 채팅방에 접속 상태일 경우 실시간으로 메시지를 읽음 처리합니다(인증 토큰 필요, roomId는 pathVariable",
 		summary = "채팅방 접속 상태일 시 메시지 읽음 처리"
 	)

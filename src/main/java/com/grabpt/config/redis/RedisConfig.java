@@ -1,5 +1,8 @@
 package com.grabpt.config.redis;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.grabpt.service.ChatService.redis.ChatRedisSubscriber;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -44,8 +47,11 @@ public class RedisConfig {
 		template.setHashKeySerializer(new StringRedisSerializer());
 
 		// Value는 JSON으로 저장
-		GenericJackson2JsonRedisSerializer jsonSerializer
-			= new GenericJackson2JsonRedisSerializer();
+		ObjectMapper objectMapper = new ObjectMapper();
+		objectMapper.registerModule(new JavaTimeModule());
+		objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+		GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer(objectMapper);
 		template.setValueSerializer(jsonSerializer);
 		template.setHashValueSerializer(jsonSerializer);
 

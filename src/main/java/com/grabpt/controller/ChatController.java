@@ -10,6 +10,7 @@ import com.grabpt.dto.response.ChatRoomPreviewDto;
 import com.grabpt.service.ChatService.ChatFacade;
 import com.grabpt.service.ChatService.ChatRoomService;
 import com.grabpt.service.ChatService.MessageService;
+import com.grabpt.service.ChatService.redis.ChatRedisPublisher;
 import com.grabpt.service.UserService.UserQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -34,7 +35,7 @@ public class ChatController {
 	private final ChatRoomService chatRoomService;
 	private final MessageService messageService;
 	private final ChatFacade chatFacade;
-	private final UserQueryService userQueryService;
+	private final ChatRedisPublisher redisPublisher;
 	private final SimpMessagingTemplate messagingTemplate;
 
 	@MessageMapping("/chat/{roomId}")
@@ -42,7 +43,30 @@ public class ChatController {
 		Messages newMessage = chatFacade.createChatMessage(request);
 		ChatResponse.MessageResponseDto response = ChatConverter.toMessageResponseDto(newMessage);
 		log.info("채팅 메시지 브로드캐스트", response.getContent());
-		messagingTemplate.convertAndSend("/subscribe/chat/"+roomId, response);
+
+		//Redis를 통해 전달 (모든 서버 인스턴스에 브로드캐스트됨)
+		redisPublisher.publish(roomId, response);
+		//messagingTemplate.convertAndSend("/subscribe/chat/"+roomId, response);
+	}
+
+	@Operation(
+		description = "Swagger 테스트용 채팅 메시지 전송 API (STOMP 웹소켓 전송과 동일하게 동작하며 Redis Pub/Sub을 탑니다.)",
+		summary = "채팅 메시지 전송 API (REST)"
+	)
+	@ApiResponses({
+		@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "메시지 전송 성공"),
+		@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "잘못된 요청"),
+		@io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "서버 내부 오류")
+	})
+	@PostMapping("/api/chat/{roomId}/messages")
+	@ResponseBody
+	public ApiResponse<String> sendMessageApi(@PathVariable(name = "roomId") Long roomId, @RequestBody ChatRequest.MessageRequestDto request){
+		Messages newMessage = chatFacade.createChatMessage(request);
+		ChatResponse.MessageResponseDto response = ChatConverter.toMessageResponseDto(newMessage);
+		log.info("채팅 메시지 브로드캐스트 (REST API): {}", response.getContent());
+
+		redisPublisher.publish(roomId, response);
+		return ApiResponse.onSuccess("메시지 전송 성공");
 	}
 
 	@Operation(

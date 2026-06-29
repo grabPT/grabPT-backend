@@ -1,6 +1,5 @@
-package com.grabpt.config;
+package com.grabpt.config.websocket;
 
-import com.grabpt.config.stomp.StompHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;

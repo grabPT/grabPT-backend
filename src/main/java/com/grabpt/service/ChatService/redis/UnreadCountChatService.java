@@ -3,6 +3,7 @@ package com.grabpt.service.ChatService.redis;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -15,12 +16,12 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UnreadCountChatService {
 
-	private final RedisTemplate<String, Object> redisTemplate;
+	//private final RedisTemplate<String, Object> redisTemplate;
+	private final StringRedisTemplate redisTemplate;
 
-	private String generateKey(Long roomId, Long userId){
-		return "chat:unread:"+roomId+":"+userId;
+	private String generateKey(Long roomId, Long userId) {
+		return "chat:room_unread:" + roomId + ":" + userId;
 	}
-
 	public void incrementUnreadCount(Long roomId, Long userId){
 		String key = generateKey(roomId, userId);
 		redisTemplate.opsForValue().increment(key);
@@ -42,7 +43,7 @@ public class UnreadCountChatService {
 			.toList();
 
 		// Redis MGET
-		List<Object> values = redisTemplate.opsForValue().multiGet(keys);
+		List<String> values = redisTemplate.opsForValue().multiGet(keys);
 
 		Map<Long, Long> resultMap = new HashMap<>();
 		for(int i=0; i<roomIds.size(); i++){

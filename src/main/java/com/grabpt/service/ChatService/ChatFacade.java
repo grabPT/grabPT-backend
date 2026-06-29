@@ -9,6 +9,7 @@ import com.grabpt.domain.entity.Messages;
 import com.grabpt.domain.entity.Users;
 import com.grabpt.dto.request.ChatRequest;
 import com.grabpt.service.AlarmService.AlarmService;
+import com.grabpt.service.ChatService.redis.UnreadCountChatService;
 import com.grabpt.service.UserService.UserQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -23,6 +24,7 @@ public class ChatFacade {
 	private final ChatRoomService chatRoomService;
 	private final UserChatRoomService userChatRoomService;
 	private final AlarmService alarmService;
+	private final UnreadCountChatService unreadCountChatService;
 	private final SimpMessagingTemplate messagingTemplate;
 
 	@Transactional //Message
@@ -38,6 +40,9 @@ public class ChatFacade {
 		Messages save = messageService.save(newMessage);
 
 		Long otherUserId = userChatRoomService.getOtherUserId(sender.getId(), chatRoom.getId());
+
+		// 안읽음 카운트 조회 및 전달
+		unreadCountChatService.incrementUnreadCount(chatRoom.getId(), otherUserId);
 		Long allUnreadMessageCount = messageService.getAllUnreadMessageCount(otherUserId);
 		messagingTemplate.convertAndSend("/subscribe/chat/"+otherUserId+"/unread-count", allUnreadMessageCount);
 

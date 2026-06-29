@@ -46,29 +46,30 @@ public interface MessageRepository extends JpaRepository<Messages, Long> {
 	""")
 	void markAsReadAllInRoom(@Param("roomId") Long roomId, @Param("userId") Long userId);
 
-	@Query("""
-    SELECT m.chatRoom.id, COUNT(m)
-       FROM Messages m
-       JOIN m.chatRoom r
-       WHERE r.id IN :roomIds
-       AND m.id > (
-            SELECT COALESCE(ucr.lastReadMessageId, 0)
-            FROM UserChatRoom ucr
-            WHERE ucr.chatRoom.id = m.chatRoom.id AND ucr.user.id = :userId
-       )
-       AND m.sender.id <> :userId
-       GROUP BY m.chatRoom.id
-	""")
-	List<Object[]> countUnreadMessages(@Param("roomIds") List<Long> roomIds, @Param("userId") Long userId);
-
-	default Map<Long, Long> getUnreadCountMap(List<Long> roomIds, Long userId) {
-		List<Object[]> results = countUnreadMessages(roomIds, userId);
-		return results.stream()
-			.collect(Collectors.toMap(
-				result -> (Long) result[0],  // roomId
-				result -> (Long) result[1]   // count
-			));
-	}
+	// legacy
+//	@Query("""
+//    SELECT m.chatRoom.id, COUNT(m)
+//       FROM Messages m
+//       JOIN m.chatRoom r
+//       WHERE r.id IN :roomIds
+//       AND m.id > (
+//            SELECT COALESCE(ucr.lastReadMessageId, 0)
+//            FROM UserChatRoom ucr
+//            WHERE ucr.chatRoom.id = m.chatRoom.id AND ucr.user.id = :userId
+//       )
+//       AND m.sender.id <> :userId
+//       GROUP BY m.chatRoom.id
+//	""")
+//	List<Object[]> countUnreadMessages(@Param("roomIds") List<Long> roomIds, @Param("userId") Long userId);
+//
+//	default Map<Long, Long> getUnreadCountMap(List<Long> roomIds, Long userId) {
+//		List<Object[]> results = countUnreadMessages(roomIds, userId);
+//		return results.stream()
+//			.collect(Collectors.toMap(
+//				result -> (Long) result[0],  // roomId
+//				result -> (Long) result[1]   // count
+//			));
+//	}
 }
 
 

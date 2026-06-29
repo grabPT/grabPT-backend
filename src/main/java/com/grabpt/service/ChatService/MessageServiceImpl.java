@@ -4,14 +4,12 @@ import com.grabpt.apiPayload.code.status.ErrorStatus;
 import com.grabpt.apiPayload.exception.handler.ChatHandler;
 import com.grabpt.apiPayload.exception.handler.UserHandler;
 import com.grabpt.converter.ChatConverter;
-import com.grabpt.domain.entity.ChatRooms;
 import com.grabpt.domain.entity.Messages;
 import com.grabpt.domain.entity.UserChatRoom;
 import com.grabpt.domain.entity.Users;
-import com.grabpt.dto.request.ChatRequest;
 import com.grabpt.dto.response.ChatResponse;
 import com.grabpt.repository.ChatRepository.MessageRepository;
-import com.grabpt.service.AlarmService.AlarmService;
+import com.grabpt.service.ChatService.redis.UnreadCountChatService;
 import com.grabpt.service.UserService.UserQueryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,11 +30,10 @@ import java.util.stream.Collectors;
 public class MessageServiceImpl implements MessageService{
 
 	private final MessageRepository messageRepository;
-
 	private final UserQueryService userQueryService;
 	private final UserChatRoomService userChatRoomService;
 	private final SimpMessagingTemplate messagingTemplate;
-	private final AlarmService alarmService;
+	private final UnreadCountChatService unreadCountChatService;
 
 	@Override //Message
 	public List<ChatResponse.MessageResponseDto> getMessagesByChatRoom(Long roomId, Long cursor) {
@@ -54,7 +51,8 @@ public class MessageServiceImpl implements MessageService{
 	//상대가 보낸 메시지중 lastReadMessageId보다 큰 메시지 수
 	@Override //Message
 	public Map<Long, Long> getUnreadMessageCount(List<Long> roomIds, Long userId){
-		return messageRepository.getUnreadCountMap(roomIds, userId);
+		// regacy: return messageRepository.getUnreadCountMap(roomIds, userId);
+		return unreadCountChatService.getUnreadCounts(roomIds, userId);
 	}
 
 	@Override //Message
@@ -74,6 +72,8 @@ public class MessageServiceImpl implements MessageService{
 	@Override
 	@Transactional
 	public void updateLastReadMessageWhenExist(Long roomId, Long userId) {
+
+		unreadCountChatService.resetUnreadCount(roomId, userId);
 
 		// 새로운 채팅방 생성 시 메시지 없을 때는 pass
 		messageRepository.findTopByChatRoom_IdOrderByIdDesc(roomId)
@@ -99,7 +99,9 @@ public class MessageServiceImpl implements MessageService{
 	@Override
 	@Transactional
 	public void updateLastReadMessageWhenEnter(Long roomId, Long userId){
-		long startTime = System.currentTimeMillis(); // 시작 시간 측정
+
+		unreadCountChatService.resetUnreadCount(roomId, userId);
+
 		List<Messages> unreadMessages = messageRepository.findUnreadMessages(roomId, userId);
 
 		if(!unreadMessages.isEmpty()){
@@ -121,9 +123,6 @@ public class MessageServiceImpl implements MessageService{
 
 
 		updateAllUnreadMessageCount(userId);
-		long endTime = System.currentTimeMillis(); // 종료 시간 측정
-		long duration = endTime - startTime; // 실행 시간 계산
-		log.info("실행시간:{}",duration);
 	}
 
 	@Override

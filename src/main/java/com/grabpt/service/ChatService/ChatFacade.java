@@ -9,6 +9,7 @@ import com.grabpt.domain.entity.Messages;
 import com.grabpt.domain.entity.Users;
 import com.grabpt.dto.request.ChatRequest;
 import com.grabpt.service.AlarmService.AlarmService;
+import com.grabpt.service.ChatService.redis.RecentMessageCacheService;
 import com.grabpt.service.ChatService.redis.UnreadCountChatService;
 import com.grabpt.service.UserService.UserQueryService;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ public class ChatFacade {
 	private final UserChatRoomService userChatRoomService;
 	private final AlarmService alarmService;
 	private final UnreadCountChatService unreadCountChatService;
+	private final RecentMessageCacheService recentMessageCacheService;
 	private final SimpMessagingTemplate messagingTemplate;
 
 	@Transactional //Message
@@ -36,8 +38,10 @@ public class ChatFacade {
 		ChatRooms chatRoom = chatRoomService.findById(request.getRoomId()).orElseThrow(
 			() -> new ChatHandler(ErrorStatus.CHATROOM_NOT_FOUND));
 
+		// 메시지를 저장한 후 Redis 캐시에도 저장합니다
 		Messages newMessage = ChatConverter.toMessage(request, sender, chatRoom);
 		Messages save = messageService.save(newMessage);
+		recentMessageCacheService.saveMessage(chatRoom.getId(), ChatConverter.toMessageResponseDto(save));
 
 		Long otherUserId = userChatRoomService.getOtherUserId(sender.getId(), chatRoom.getId());
 

@@ -9,6 +9,7 @@ import com.grabpt.domain.entity.UserChatRoom;
 import com.grabpt.domain.entity.Users;
 import com.grabpt.dto.response.ChatResponse;
 import com.grabpt.repository.ChatRepository.MessageRepository;
+import com.grabpt.service.ChatService.redis.RecentMessageCacheService;
 import com.grabpt.service.ChatService.redis.UnreadCountChatService;
 import com.grabpt.service.UserService.UserQueryService;
 import lombok.RequiredArgsConstructor;
@@ -34,11 +35,24 @@ public class MessageServiceImpl implements MessageService{
 	private final UserChatRoomService userChatRoomService;
 	private final SimpMessagingTemplate messagingTemplate;
 	private final UnreadCountChatService unreadCountChatService;
+	private final RecentMessageCacheService recentMessageCacheService;
 
 	@Override //Message
 	public List<ChatResponse.MessageResponseDto> getMessagesByChatRoom(Long roomId, Long cursor) {
-		if(cursor == null){
-			cursor = 0L;
+		if(cursor == null || cursor == 0L){
+			List<ChatResponse.MessageResponseDto> recentMessages =
+				recentMessageCacheService.getRecentMessages(roomId);
+			// Cache hit
+			if(!recentMessages.isEmpty()){
+				return recentMessages;
+			}
+			// Cache miss
+			Pageable cachePageable = PageRequest.of(0, 50);
+			List<Messages> messagesByCursor = messageRepository.findMessagesByCursor(roomId, 0L, cachePageable);
+			List<ChatResponse.MessageResponseDto> cacheDto =
+				messagesByCursor.stream().map(ChatConverter::toMessageResponseDto).toList();
+			recentMessageCacheService.loadMessageToCache(roomId, cacheDto);
+			return cacheDto.stream().limit(20).toList();
 		}
 		Pageable pageable = PageRequest.of(0, 20);
 

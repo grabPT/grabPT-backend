@@ -48,4 +48,8 @@ public class UserChatRoomServiceImpl implements UserChatRoomService{
 		return userChatRoomRepository.findChatRoomIdsByUserId(userId);
 	};
 
+	@Override
+	public List<UserChatRoom> findAllByRoomId(Long roomId) {
+		return userChatRoomRepository.findAllByRoomId(roomId);
+	}
 }

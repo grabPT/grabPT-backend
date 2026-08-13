@@ -137,7 +137,11 @@ public class ChatController {
 	@ResponseBody
 	public ApiResponse<ChatResponse.MessageResponseByCursorDto> getMessagesByChatRoom(@PathVariable(name = "roomId") Long roomId,
 																					  @RequestParam(name = "cursor", required = false, defaultValue = "0") long cursor){
-		List<ChatResponse.MessageResponseDto> messageResponseDto = messageService.getMessagesByChatRoom(roomId, cursor);
+
+		Long currentUserId = SecurityUtils.currentUserIdOrThrow();
+
+		List<ChatResponse.MessageResponseDto> messageResponseDto =
+			messageService.getMessagesByChatRoom(roomId, cursor, currentUserId);
 
 		long newCursor = 0;
 		if (!messageResponseDto.isEmpty()) {

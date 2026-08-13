@@ -9,6 +9,7 @@ import com.grabpt.domain.entity.UserChatRoom;
 import com.grabpt.domain.entity.Users;
 import com.grabpt.dto.response.ChatResponse;
 import com.grabpt.repository.ChatRepository.MessageRepository;
+import com.grabpt.service.ChatService.redis.ReadPointerCacheService;
 import com.grabpt.service.ChatService.redis.RecentMessageCacheService;
 import com.grabpt.service.ChatService.redis.UnreadCountChatService;
 import com.grabpt.service.UserService.UserQueryService;
@@ -19,6 +20,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,6 +30,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class MessageServiceImpl implements MessageService{
 
@@ -36,30 +40,58 @@ public class MessageServiceImpl implements MessageService{
 	private final SimpMessagingTemplate messagingTemplate;
 	private final UnreadCountChatService unreadCountChatService;
 	private final RecentMessageCacheService recentMessageCacheService;
+	private final ReadPointerCacheService readPointerCacheService;
 
 	@Override //Message
-	public List<ChatResponse.MessageResponseDto> getMessagesByChatRoom(Long roomId, Long cursor) {
+	public List<ChatResponse.MessageResponseDto> getMessagesByChatRoom(Long roomId, Long cursor, Long currentUserId) {
+
+		Map<Long, Long> readPointers = getReadPointers(roomId);
+
+		// Redis Hash에 현재 사용자가 없다면 채팅방 참여자가 아님
+		if (!readPointers.containsKey(currentUserId)) {
+			throw new ChatHandler(ErrorStatus.CHATROOM_NOT_FOUND);
+		}
+		Long otherUserId = readPointers.keySet()
+				.stream()
+				.filter(userId ->
+					!userId.equals(currentUserId)
+				)
+				.findFirst()
+				.orElseThrow(
+					() -> new ChatHandler(ErrorStatus.CHATROOM_NOT_FOUND));
+
+		List<ChatResponse.MessageResponseDto> messages;
+
 		if(cursor == null || cursor == 0L){
-			List<ChatResponse.MessageResponseDto> recentMessages =
+			List<ChatResponse.MessageResponseDto> cachedMessages =
 				recentMessageCacheService.getRecentMessages(roomId);
 			// Cache hit
-			if(!recentMessages.isEmpty()){
-				return recentMessages;
+			if(!cachedMessages.isEmpty()){
+				messages = cachedMessages;
+			} else{
+				// Cache miss
+				Pageable cachePageable = PageRequest.of(0, 50);
+				List<Messages> messagesByCursor = messageRepository.findMessagesByCursor(roomId, 0L, cachePageable);
+				List<ChatResponse.MessageResponseDto> cacheDto =
+					messagesByCursor.stream().map(ChatConverter::toMessageResponseDto).toList();
+				recentMessageCacheService.loadMessageToCache(roomId, cacheDto);
+				messages = cacheDto.stream().limit(20).toList();
 			}
-			// Cache miss
-			Pageable cachePageable = PageRequest.of(0, 50);
-			List<Messages> messagesByCursor = messageRepository.findMessagesByCursor(roomId, 0L, cachePageable);
-			List<ChatResponse.MessageResponseDto> cacheDto =
-				messagesByCursor.stream().map(ChatConverter::toMessageResponseDto).toList();
-			recentMessageCacheService.loadMessageToCache(roomId, cacheDto);
-			return cacheDto.stream().limit(20).toList();
+		} else{
+			Pageable pageable = PageRequest.of(0, 20);
+			messages = messageRepository
+				.findMessagesByCursor(roomId, cursor, pageable)
+				.stream()
+				.map(ChatConverter::toMessageResponseDto)
+				.toList();
 		}
-		Pageable pageable = PageRequest.of(0, 20);
 
-		List<Messages> messagesByChatRoom = messageRepository.findMessagesByCursor(roomId, cursor, pageable);
-		List<ChatResponse.MessageResponseDto> messageResponseDto = messagesByChatRoom.stream().map(
-			message-> ChatConverter.toMessageResponseDto(message)).collect(Collectors.toList());
-		return messageResponseDto;
+		for (ChatResponse.MessageResponseDto message : messages) {
+			Long recipientId = message.getSenderId().equals(currentUserId) ? otherUserId : currentUserId;
+			long recipientLastReadMessageId = readPointers.getOrDefault(recipientId,0L);
+			message.setReadCount(message.getMessageId()<=recipientLastReadMessageId ? 0 : 1);
+		}
+		return messages;
 	}
 
 	//상대가 보낸 메시지중 lastReadMessageId보다 큰 메시지 수
@@ -90,22 +122,7 @@ public class MessageServiceImpl implements MessageService{
 		unreadCountChatService.resetUnreadCount(roomId, userId);
 
 		// 새로운 채팅방 생성 시 메시지 없을 때는 pass
-		messageRepository.findTopByChatRoom_IdOrderByIdDesc(roomId)
-			.ifPresent((messages -> {
-				UserChatRoom chatRoom = userChatRoomService.findByRoomIdAndUserId(roomId, userId).orElseThrow(
-					() -> new ChatHandler(ErrorStatus.CHATROOM_NOT_FOUND));
-
-				chatRoom.setLastReadMessageId(messages.getId());
-				chatRoom.setLastReadAt(LocalDateTime.now());
-				userChatRoomService.save(chatRoom);
-
-				if (!messages.getSender().getId().equals(userId)) {
-					if (messages.getReadCount() > 0) {
-						messages.setReadCount(messages.getReadCount() - 1);
-					}
-					broadcastReadStatus(roomId, messages);
-				}
-			}));
+		markMessagesAsReadUpToLatest(roomId, userId);
 		updateAllUnreadMessageCount(userId);
 	}
 
@@ -116,26 +133,7 @@ public class MessageServiceImpl implements MessageService{
 
 		unreadCountChatService.resetUnreadCount(roomId, userId);
 
-		List<Messages> unreadMessages = messageRepository.findUnreadMessages(roomId, userId);
-
-		if(!unreadMessages.isEmpty()){
-			messageRepository.markAsReadAllInRoom(roomId,userId);
-
-			for (Messages msg : unreadMessages) {
-				broadcastReadStatus(roomId, msg);
-			}
-		}
-
-		UserChatRoom chatRoom = userChatRoomService.findByRoomIdAndUserId(roomId, userId).orElseThrow(
-			() -> new ChatHandler(ErrorStatus.CHATROOM_NOT_FOUND));
-
-		messageRepository.findTopByChatRoom_IdOrderByIdDesc(roomId)
-			.ifPresent(lastMessage -> {
-				chatRoom.setLastReadMessageId(lastMessage.getId());
-				chatRoom.setLastReadAt(LocalDateTime.now());
-			});
-
-
+		markMessagesAsReadUpToLatest(roomId, userId);
 		updateAllUnreadMessageCount(userId);
 	}
 
@@ -144,10 +142,10 @@ public class MessageServiceImpl implements MessageService{
 		return messageRepository.save(message);
 	}
 
-	private void broadcastReadStatus(Long roomId, Messages message) {
+	private void broadcastReadStatus(Long roomId, Long messageId) {
 		ChatResponse.ReadStatusUpdateDto dto = ChatResponse.ReadStatusUpdateDto.builder()
-			.messageId(message.getId())
-			.readCount(message.getReadCount())
+			.messageId(messageId)
+			.readCount(0)
 			.build();
 		messagingTemplate.convertAndSend("/subscribe/chat/" + roomId + "/read-status", dto);
 	}
@@ -155,5 +153,96 @@ public class MessageServiceImpl implements MessageService{
 	private void updateAllUnreadMessageCount(Long userId){
 		Long allUnreadMessageCount = getAllUnreadMessageCount(userId);
 		messagingTemplate.convertAndSend("/subscribe/chat/" + userId + "/unread-count", allUnreadMessageCount);
+	}
+
+	private Map<Long, Long> getReadPointers(Long roomId){
+		Map<Long, Long> pointers
+			= readPointerCacheService.getPointers(roomId);
+
+		if(pointers.size() == 2){
+			return pointers;
+		}
+
+		List<UserChatRoom> participants = userChatRoomService.findAllByRoomId(roomId);
+		if(participants.isEmpty()){
+			throw new ChatHandler(ErrorStatus.CHATROOM_NOT_FOUND);
+		}
+
+		Map<Long, Long> loadedPointers = participants.stream()
+			.collect(Collectors.toMap(
+				participant ->
+					participant.getUser().getId(),
+				participant -> {
+					Long pointer = participant.getLastReadMessageId();
+					return pointer == null ? 0L : pointer;
+			}));
+		readPointerCacheService.savePointers(roomId,loadedPointers);
+		return loadedPointers;
+	}
+
+	private void markMessagesAsReadUpToLatest(Long roomId, Long userId) {
+		UserChatRoom userChatRoom = userChatRoomService.findByRoomIdAndUserId(roomId, userId)
+			.orElseThrow(() -> new ChatHandler(ErrorStatus.CHATROOM_NOT_FOUND));
+
+		long oldLastReadMessageId = userChatRoom.getLastReadMessageId() == null
+			? 0L
+			: userChatRoom.getLastReadMessageId();
+
+		messageRepository.findTopByChatRoom_IdOrderByIdDesc(roomId)
+			.ifPresent(lastMessage -> {
+				long newLastReadMessageId = lastMessage.getId();
+				if (newLastReadMessageId <= oldLastReadMessageId) {
+					return;
+				}
+
+				List<Long> newlyReadMessageIds = messageRepository.findNewlyReadMessageIds(
+					roomId,
+					userId,
+					oldLastReadMessageId,
+					newLastReadMessageId
+				);
+
+				userChatRoom.setLastReadMessageId(newLastReadMessageId);
+				userChatRoom.setLastReadAt(LocalDateTime.now());
+				userChatRoomService.save(userChatRoom);
+
+				updateReadStateAfterCommit(
+					roomId,
+					userId,
+					newLastReadMessageId,
+					newlyReadMessageIds
+				);
+			});
+	}
+
+	private void updateReadStateAfterCommit(
+		Long roomId,
+		Long userId,
+		Long lastReadMessageId,
+		List<Long> newlyReadMessageIds
+	) {
+		TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+			@Override
+			public void afterCommit() {
+				try {
+					readPointerCacheService.savePointer(roomId, userId, lastReadMessageId);
+				} catch (RuntimeException exception) {
+					try {
+						readPointerCacheService.deletePointers(roomId);
+					} catch (RuntimeException deleteException) {
+						log.error("읽음 포인터 캐시 삭제 실패. roomId={}", roomId, deleteException);
+					}
+					log.error(
+						"읽음 포인터 캐시 갱신 실패. roomId={}, userId={}, lastReadMessageId={}",
+						roomId,
+						userId,
+						lastReadMessageId,
+						exception
+					);
+				}
+
+				newlyReadMessageIds.forEach(messageId -> broadcastReadStatus(roomId, messageId));
+			}
+		});
 	}
 }

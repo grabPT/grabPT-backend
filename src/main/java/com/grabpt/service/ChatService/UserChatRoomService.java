@@ -15,4 +15,5 @@ public interface UserChatRoomService {
 	Long getOtherUserId(Long userId, Long roomId);
 	Optional<UserChatRoom> findByRoomIdAndUserId(Long roomId, Long userId);
 	List<Long> findChatRoomIdsByUserId(@Param("userId") Long userId);
+	List<UserChatRoom> findAllByRoomId(Long roomId);
 }

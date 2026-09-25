@@ -22,12 +22,19 @@ docker pull "${ECR_REGISTRY}/${ECR_REPO}:${IMAGE_TAG}"
 # ====== Compose 업데이트(무중단) ======
 docker compose --env-file "$APP_DIR/.env" up -d
 
-# ====== 앱 헬스 확인(필요 시 포트/엔드포인트 조정) ======
-for i in {1..30}; do
-  if curl -fsS "http://127.0.0.1:8080/actuator/health" | grep -q '"status":"UP"'; then
-    echo "App is UP"
-    break
+# ====== 앱 헬스 확인 (실패 시 배포 실패 처리) ======
+# CodeDeploy ApplicationStart timeout(300초) 안에 끝나도록 최대 240초 대기
+HEALTH_TIMEOUT=240
+SECONDS=0
+while [ "$SECONDS" -lt "$HEALTH_TIMEOUT" ]; do
+  if curl -fsS --max-time 5 "http://127.0.0.1:8080/actuator/health" 2>/dev/null | grep -q '"status":"UP"'; then
+    echo "App is UP (${SECONDS}s)"
+    exit 0
   fi
-  echo "Waiting app health... ($i/30)"; sleep 2
+  echo "Waiting app health... (${SECONDS}s/${HEALTH_TIMEOUT}s)"; sleep 3
 done
+
+echo "App health check failed"
+docker compose --env-file "$APP_DIR/.env" logs --tail=100 app || true
+exit 1
 

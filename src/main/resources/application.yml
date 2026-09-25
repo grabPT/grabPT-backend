@@ -25,6 +25,15 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health # 배포 헬스체크용 health만 노출
+  endpoint:
+    health:
+      show-details: never
+
 spring:
   config:
     import: optional:file:.env.properties

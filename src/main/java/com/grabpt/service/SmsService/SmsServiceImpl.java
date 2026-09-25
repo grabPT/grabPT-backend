@@ -1,5 +1,7 @@
 package com.grabpt.service.SmsService;
 
+import java.security.SecureRandom;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 public class SmsServiceImpl implements SmsService {
+	private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
 	private final SmsCertificationUtil smsCertificationUtil;
 	private final SmsCertificationStorage smsCertificationStorage;
 	private final UserQueryService userQueryService;
@@ -30,8 +34,7 @@ public class SmsServiceImpl implements SmsService {
 		String phoneNum = smsRequestDto.getPhoneNumber(); // SmsrequestDto에서 전화번호를 가져온다.
 
 		String certificationCode = Integer.toString(
-			(int)(Math.random() * (999999 - 100000 + 1)) + 100000); // 6자리 인증 코드를 랜덤으로 생성
-		log.info("CertificationCode = " + certificationCode);
+			SECURE_RANDOM.nextInt(900000) + 100000); // 6자리 인증 코드를 랜덤으로 생성
 
 		// 문자 발송
 		smsCertificationUtil.sendSMS(phoneNum, certificationCode);
